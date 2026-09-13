@@ -19,7 +19,6 @@ import { GlobalProvider } from './context/GlobalContext';
 
 // Fade transition wrapper for smooth page transitions
 const FadeTransition = ({ children }: { children: ReactNode }) => {
-  const location = useLocation();
   const [displayChildren, setDisplayChildren] = useState(children);
   const [transitionStage, setTransitionStage] = useState<'enter' | 'exit'>('enter');
 
