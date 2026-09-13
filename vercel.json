@@ -1,12 +1,7 @@
 {
-  "version": 2,
-  "services": {
-    "frontend": {
-      "root": ".",
-      "framework": "vite"
-    }
-  },
-  "routes": [
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
     {
       "source": "/(.*)",
       "destination": "/index.html"
