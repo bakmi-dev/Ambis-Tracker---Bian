@@ -35,7 +35,7 @@ app.get('/api/v1/health', (_req: Request, res: Response) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes); // Auth routes
+app.use('/api/v1/auth', authRoutes); // Auth routes
 app.use('/api/v1/tasks', taskRoutes);
 app.use('/api/v1/study-sessions', studySessionRoutes);
 app.use('/api/v1/goals', goalRoutes);

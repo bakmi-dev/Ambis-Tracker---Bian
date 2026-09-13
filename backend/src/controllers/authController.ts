@@ -61,7 +61,8 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
       res.status(200).json({
         success: true,
         isNewUser: false,
-        data: { user, token }
+        user,
+        token
       });
     } else {
       // ── New user: create with is_onboarded = false ──
@@ -78,7 +79,8 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
       res.status(201).json({
         success: true,
         isNewUser: true,
-        data: { user: newUser, token }
+        user: newUser,
+        token
       });
     }
   } catch (error: any) {
@@ -123,7 +125,7 @@ export const completeOnboarding = async (req: AuthRequest, res: Response): Promi
 
     res.status(200).json({
       success: true,
-      data: { user: result.rows[0] }
+      user: result.rows[0]
     });
   } catch (error) {
     console.error('[Auth Onboarding] Error:', error);
@@ -137,32 +139,34 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      res.status(400).json({ success: false, message: 'Name, email, and password are required' });
+      res.status(400).json({ success: false, message: 'Harap isi semua field' });
       return;
     }
 
-    const existingUserResult = await query('SELECT id FROM users WHERE email = $1', [email]);
-    if (existingUserResult.rows.length > 0) {
-      res.status(409).json({ success: false, message: 'Email is already registered' });
+    // Cek apakah user sudah ada
+    const userExists = await query('SELECT * FROM users WHERE email = $1', [email]);
+    if (userExists.rows.length > 0) {
+      res.status(400).json({ success: false, message: 'Email sudah terdaftar. Silakan login.' });
       return;
     }
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    const insertResult = await query(
+    const result = await query(
       `INSERT INTO users (name, email, password_hash, is_onboarded)
-       VALUES ($1, $2, $3, TRUE)
-       RETURNING id, name, email, xp, current_streak, is_onboarded, created_at`,
+       VALUES ($1, $2, $3, FALSE)
+       RETURNING id, email, name, role_track, workspace_name, focus_target_hours, is_onboarded, created_at`,
       [name, email, passwordHash]
     );
 
-    const user = insertResult.rows[0];
-    const token = generateToken(user.id);
+    const newUser = result.rows[0];
+    const token = generateToken(newUser.id);
 
     res.status(201).json({
       success: true,
-      data: { user, token }
+      user: newUser,
+      token
     });
   } catch (error) {
     console.error('[Auth Register] Error:', error);
@@ -176,35 +180,40 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res.status(400).json({ success: false, message: 'Email and password are required' });
+      res.status(400).json({ success: false, message: 'Email dan password wajib diisi' });
       return;
     }
 
-    const userResult = await query('SELECT * FROM users WHERE email = $1', [email]);
-    if (userResult.rows.length === 0) {
-      res.status(401).json({ success: false, message: 'Invalid email or password' });
+    const result = await query('SELECT * FROM users WHERE email = $1', [email]);
+    if (result.rows.length === 0) {
+      res.status(401).json({ success: false, message: 'Kredensial tidak valid' });
       return;
     }
 
-    const user = userResult.rows[0];
+    const user = result.rows[0];
 
+    // Jika user dibuat dari Google Auth dan tidak punya password
     if (!user.password_hash) {
-      res.status(401).json({ success: false, message: 'This account uses Google login. Please sign in with Google.' });
+      res.status(401).json({
+        success: false,
+        message: 'Akun ini terdaftar menggunakan Google. Silakan klik tombol "Login with Google".'
+      });
       return;
     }
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
-      res.status(401).json({ success: false, message: 'Invalid email or password' });
+      res.status(401).json({ success: false, message: 'Kredensial tidak valid' });
       return;
     }
 
     const token = generateToken(user.id);
-    delete user.password_hash;
+    delete user.password_hash; // Jangan pernah mengirim hash password ke frontend
 
     res.status(200).json({
       success: true,
-      data: { user, token }
+      user,
+      token
     });
   } catch (error) {
     console.error('[Auth Login] Error:', error);
