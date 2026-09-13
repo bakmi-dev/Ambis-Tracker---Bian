@@ -98,8 +98,9 @@ const Register = () => {
             setVerifiedEmail(userData.email);
             setVerifiedName(userData.name);
             setVerifiedAvatar(userData.avatar_url || '');
-            setDisplayName(userData.name);
-            setWorkspaceName(`${userData.name}'s Command Deck`);
+            const firstName = userData.name ? userData.name.split(' ')[0] : 'Operator';
+            setDisplayName(firstName);
+            setWorkspaceName(`${firstName}'s Command Deck`);
             
             setLogs(prev => [
               ...prev,
@@ -162,15 +163,20 @@ const Register = () => {
   // ─── Handle onboarding submit ───
   const handleOnboardingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!displayName.trim()) {
+      setErrorMsg('Display name is required');
+      return;
+    }
+    
     setIsSubmitting(true);
     setErrorMsg('');
     setLogs(prev => [...prev, '> MENGINISIALISASI WORKSPACE...']);
 
     try {
       const result: any = await authApi.completeOnboarding({
-        name: displayName,
+        name: displayName.trim(),
         role_track: roleTrack === 'custom' ? customRoleTrack : roleTrack,
-        workspace_name: workspaceName || `${displayName}'s Command Deck`,
+        workspace_name: workspaceName.trim() || `${displayName.trim()}'s Command Deck`,
         focus_target_hours: focusTarget,
       });
 
@@ -329,7 +335,10 @@ const Register = () => {
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-secondary text-[18px]">badge</span>
                       <input
-                        type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
+                        type="text" value={displayName} onChange={(e) => {
+                          setDisplayName(e.target.value);
+                          if (errorMsg) setErrorMsg('');
+                        }}
                         placeholder="Nama tampilan Anda"
                         required
                         className="w-full bg-[rgba(18,19,25,0.6)] border border-[rgba(76,215,246,0.2)] rounded-lg py-3 pl-11 pr-4 text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all placeholder:text-[#958ea0]/50"

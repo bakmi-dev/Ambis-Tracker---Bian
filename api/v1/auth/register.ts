@@ -20,7 +20,8 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const { name, email, password } = req.body;
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const { name, email, password } = body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, message: 'Harap isi semua field' });

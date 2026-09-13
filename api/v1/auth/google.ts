@@ -21,7 +21,8 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const { credential, token } = req.body;
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const { credential, token } = body;
     const googleToken = credential || token;
 
     if (!googleToken) {

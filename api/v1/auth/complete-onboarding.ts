@@ -37,7 +37,8 @@ export default async function handler(req: any, res: any) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
-    const { name, role_track, workspace_name, focus_target_hours } = req.body;
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const { name, role_track, workspace_name, focus_target_hours } = body;
 
     if (!name) {
       return res.status(400).json({ success: false, message: 'Display name is required' });
