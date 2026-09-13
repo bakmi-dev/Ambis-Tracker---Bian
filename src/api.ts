@@ -305,7 +305,7 @@ export const authApi = {
     request<{ success: boolean; data: { user: any; token: string }; message?: string }>('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
   googleAuth: (body: { credential: string }) =>
     request<{ success: boolean; isNewUser: boolean; data: { user: any; token: string }; message?: string }>('/auth/google', { method: 'POST', body: JSON.stringify(body) }),
-  completeOnboarding: (body: { name: string; role_track?: string; workspace_name?: string; focus_target_hours?: number }) =>
+  completeOnboarding: (body: { name: string; avatar_url?: string; role_track?: string; workspace_name?: string; focus_target_hours?: number }) =>
     request<{ success: boolean; data: { user: any }; message?: string }>('/auth/complete-onboarding', {
       method: 'POST',
       body: JSON.stringify(body),

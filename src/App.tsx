@@ -104,6 +104,7 @@ function App() {
   return (
     <BrowserRouter>
       <GlobalProvider>
+        <DocumentTitleUpdater />
         <AppRoutes />
       </GlobalProvider>
     </BrowserRouter>

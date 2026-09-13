@@ -37,7 +37,7 @@ const Progress = () => {
   });
 
   const [isLoading, setIsLoading] = useState(true);
-  const [imgError, setImgError] = useState(false);
+
   const [toastMessage, setToastMessage] = useState('');
 
   // Modal State
@@ -127,7 +127,7 @@ const Progress = () => {
       });
       setProfile(form);
       setIsEditModalOpen(false);
-      setImgError(false); // reset error state in case URL changed
+
     } catch (err) {
       console.error('Error saving profile:', err);
     } finally {
