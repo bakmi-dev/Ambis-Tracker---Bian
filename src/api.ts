@@ -1,32 +1,172 @@
 const API_BASE = '/api/v1';
 
-async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${url}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-    ...options,
-  });
+// DOM-based Toast notification (Fallback/Success)
+function showToast(message: string) {
+  if (typeof window === 'undefined') return;
+  const existing = document.getElementById('ambis-toast');
+  if (existing) document.body.removeChild(existing);
 
-  if (!res.ok) {
-    let errMsg = `Request failed with status ${res.status}`;
-    try {
-      const text = await res.text();
-      if (text) {
-        const errData = JSON.parse(text);
-        if (errData.error) errMsg = errData.error;
-      }
-    } catch (e) {
-      // fallback to default errMsg
-    }
-    throw new Error(errMsg);
+  const toast = document.createElement('div');
+  toast.id = 'ambis-toast';
+  toast.textContent = message;
+  toast.style.position = 'fixed';
+  toast.style.bottom = '24px';
+  toast.style.left = '50%';
+  toast.style.transform = 'translateX(-50%)';
+  toast.style.backgroundColor = '#a078ff'; // Primary tone
+  toast.style.color = '#fff';
+  toast.style.padding = '12px 24px';
+  toast.style.borderRadius = '9999px';
+  toast.style.zIndex = '9999';
+  toast.style.fontWeight = '600';
+  toast.style.boxShadow = '0 0 20px rgba(160,120,255,0.4)';
+  toast.style.transition = 'opacity 0.3s ease-in-out';
+  toast.style.fontFamily = 'system-ui, -apple-system, sans-serif';
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => {
+      if (document.body.contains(toast)) document.body.removeChild(toast);
+    }, 300);
+  }, 3000);
+}
+
+// LocalStorage CRUD Engine
+function handleLocalStorageFallback<T>(url: string, options?: RequestInit): T {
+  const method = options?.method || 'GET';
+  const urlParts = url.split('?')[0].split('/').filter(Boolean);
+  const resource = urlParts[0];
+  const id = urlParts[1];
+  
+  // Custom mock for analytics & profile
+  if (resource === 'analytics' || resource === 'profile') {
+      return { success: true, data: resource === 'profile' ? { name: 'Bian' } : {} } as any;
   }
 
-  const text = await res.text();
-  const data = text ? JSON.parse(text) : { success: true, data: [] };
+  const storageKey = `ambis_${resource}`;
   
-  return data;
+  let data: any[] = [];
+  try {
+    data = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    if (!Array.isArray(data)) data = [];
+  } catch {
+    data = [];
+  }
+
+  const body = options?.body ? JSON.parse(options.body as string) : null;
+
+  if (method === 'GET') {
+    if (id) {
+       const item = data.find((d: any) => d.id === id);
+       return { success: true, data: item || null } as any;
+    }
+    return { success: true, data } as any;
+  }
+
+  if (method === 'POST') {
+    const newItem = {
+      id: Date.now().toString(),
+      created_at: new Date().toISOString(),
+      ...body
+    };
+    
+    // Sub-resource handling (Project Tasks)
+    if (resource === 'projects' && id && urlParts[2] === 'tasks') {
+        const pTasksKey = `ambis_project_tasks`;
+        let pTasks = JSON.parse(localStorage.getItem(pTasksKey) || '[]');
+        if (!Array.isArray(pTasks)) pTasks = [];
+        newItem.project_id = id;
+        pTasks.push(newItem);
+        localStorage.setItem(pTasksKey, JSON.stringify(pTasks));
+        showToast('Task proyek berhasil ditambahkan (Local)');
+        return { success: true, data: newItem } as any;
+    }
+    
+    data.push(newItem);
+    localStorage.setItem(storageKey, JSON.stringify(data));
+    showToast(`Data berhasil disimpan (Local)`);
+    return { success: true, data: newItem } as any;
+  }
+
+  if (method === 'PATCH' || method === 'PUT') {
+    if (resource === 'projects' && id && urlParts[2] === 'tasks') {
+        const taskId = urlParts[3];
+        const pTasksKey = `ambis_project_tasks`;
+        let pTasks = JSON.parse(localStorage.getItem(pTasksKey) || '[]');
+        if (!Array.isArray(pTasks)) pTasks = [];
+        const index = pTasks.findIndex((d: any) => d.id === taskId);
+        if (index !== -1) {
+            pTasks[index] = { ...pTasks[index], ...body };
+            localStorage.setItem(pTasksKey, JSON.stringify(pTasks));
+        }
+        // showToast('Task proyek diperbarui (Local)');
+        return { success: true, data: pTasks[index] } as any;
+    }
+
+    const index = data.findIndex((d: any) => d.id === id);
+    if (index !== -1) {
+      data[index] = { ...data[index], ...body };
+      localStorage.setItem(storageKey, JSON.stringify(data));
+    }
+    
+    // Only toast on explicit save actions, avoid spamming on checkbox toggles
+    if (body && Object.keys(body).length > 2) {
+       showToast(`Data berhasil diperbarui (Local)`);
+    }
+    return { success: true, data: data[index] } as any;
+  }
+
+  if (method === 'DELETE') {
+    if (resource === 'projects' && id && urlParts[2] === 'tasks') {
+        const taskId = urlParts[3];
+        const pTasksKey = `ambis_project_tasks`;
+        let pTasks = JSON.parse(localStorage.getItem(pTasksKey) || '[]');
+        if (!Array.isArray(pTasks)) pTasks = [];
+        pTasks = pTasks.filter((d: any) => d.id !== taskId);
+        localStorage.setItem(pTasksKey, JSON.stringify(pTasks));
+        showToast('Data berhasil dihapus (Local)');
+        return { success: true, message: 'Deleted' } as any;
+    }
+
+    data = data.filter((d: any) => d.id !== id);
+    localStorage.setItem(storageKey, JSON.stringify(data));
+    showToast('Data berhasil dihapus (Local)');
+    return { success: true, message: 'Deleted' } as any;
+  }
+
+  return { success: true, data: [] } as any;
+}
+
+// Intercepts fetch calls, falls back to localStorage on network errors
+async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  try {
+    const res = await fetch(`${API_BASE}${url}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+      ...options,
+    });
+
+    if (!res.ok) {
+      throw new Error(`Request failed with status ${res.status}`);
+    }
+
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : { success: true, data: [] };
+    
+    // Toast if backend actually worked
+    if (options?.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method)) {
+      if (options.method === 'DELETE') showToast('Data berhasil dihapus!');
+      else if (options.body && Object.keys(JSON.parse(options.body as string)).length > 2) showToast('Data berhasil disimpan!');
+    }
+
+    return data;
+  } catch (error) {
+    console.warn(`[API] Server unavailable. Using LocalStorage fallback for ${options?.method || 'GET'} ${url}`);
+    return handleLocalStorageFallback<T>(url, options);
+  }
 }
 
 // ==================== TASKS ====================
