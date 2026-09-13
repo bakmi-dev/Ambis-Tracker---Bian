@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { knowledgeApi } from '../api';
+import { useGlobalState } from '../context/GlobalContext';
 
 interface KnowledgeDoc {
   id: string;
@@ -18,6 +19,7 @@ interface ExternalLinkData {
 }
 
 const KnowledgeBase = () => {
+  const { user } = useGlobalState();
   const [activeDoc, setActiveDoc] = useState<KnowledgeDoc | null>(null);
   const [docs, setDocs] = useState<KnowledgeDoc[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -218,7 +220,7 @@ const KnowledgeBase = () => {
               <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-label-sm text-label-sm font-semibold tracking-wider uppercase">Level 4 Scholar</span>
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant mt-1 max-w-3xl">
-              Pusat dokumentasi modular, catatan arsitektur sistem terdistribusi, ringkasan RFC, cheatsheets, dan arsip referensi teknis Bian.
+              Pusat dokumentasi modular, catatan arsitektur sistem terdistribusi, ringkasan RFC, cheatsheets, dan arsip referensi teknis {user?.name || 'Operator'}.
             </p>
           </div>
           {/* Action Cluster */}

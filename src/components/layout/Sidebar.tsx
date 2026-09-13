@@ -1,21 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useGlobalState } from "../../context/GlobalContext";
+import Avatar from "../common/Avatar";
 
 const navClasses = ({ isActive }: { isActive: boolean }) =>
   isActive
     ? "flex items-center gap-space-sm px-space-md py-space-sm transition-all bg-primary-container text-on-primary-container font-semibold rounded-lg shadow-[0_0_20px_rgba(160,120,255,0.35)]"
     : "flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all";
 
-const WORKSPACES = [
-  "Bian's Command Deck",
-  "Academic & College Vault",
-  "Hackathon Prep Space"
-] as const;
-
 const Sidebar = () => {
   const navigate = useNavigate();
   const { 
+    user,
     activeWorkspace, 
     setActiveWorkspace,
     audioMode,
@@ -24,6 +20,12 @@ const Sidebar = () => {
     setIsAudioModalOpen,
     setIsSettingsModalOpen
   } = useGlobalState();
+
+  const WORKSPACES = [
+    user?.workspace_name || "My Command Deck",
+    "Academic & College Vault",
+    "Hackathon Prep Space"
+  ];
 
   const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
   const workspaceRef = useRef<HTMLDivElement>(null);
@@ -202,21 +204,17 @@ const Sidebar = () => {
           <div className="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors group">
             <div className="flex items-center gap-space-sm min-w-0 cursor-pointer" onClick={() => navigate('/progress')}>
               <div className="relative flex-shrink-0">
-                <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center">
-                  <span className="material-symbols-outlined text-on-primary text-[18px]">
-                    person
-                  </span>
-                </div>
-                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold flex items-center justify-center ring-2 ring-surface-container-low">
+                <Avatar src={user?.avatar_url} name={user?.name} size="sm" className="w-9 h-9 text-[12px]" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-[9px] font-bold flex items-center justify-center ring-2 ring-surface-container-low">
                   42
                 </span>
               </div>
               <div className="flex flex-col truncate min-w-0">
                 <span className="font-body-sm text-body-sm font-semibold text-on-surface truncate group-hover:underline">
-                  Bian
+                  {user?.name || 'Operator'}
                 </span>
                 <span className="font-label-sm text-label-sm text-on-surface-variant truncate">
-                  Level 4 Scholar
+                  {user?.role_track || 'Level 4 Scholar'}
                 </span>
               </div>
             </div>

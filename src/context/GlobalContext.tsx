@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
 type AudioMode = 'spotify' | 'binaural';
-type WorkspaceType = "Bian's Command Deck" | "Academic & College Vault" | "Hackathon Prep Space";
+type WorkspaceType = string;
 
 interface User {
   id: string;
@@ -12,6 +12,10 @@ interface User {
   workspace_name?: string;
   focus_target_hours?: number;
   is_onboarded?: boolean;
+  bio?: string;
+  github?: string;
+  linkedin?: string;
+  website?: string;
 }
 
 interface GlobalContextType {
@@ -107,7 +111,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
 
   // Workspace State
   const [activeWorkspace, setActiveWorkspaceState] = useState<WorkspaceType>(
-    (localStorage.getItem('activeWorkspace') as WorkspaceType) || "Bian's Command Deck"
+    (localStorage.getItem('activeWorkspace') as WorkspaceType) || "My Command Deck"
   );
 
   // Modals State

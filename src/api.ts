@@ -41,7 +41,9 @@ function handleLocalStorageFallback<T>(url: string, options?: RequestInit): T {
   
   // Custom mock for analytics & profile
   if (resource === 'analytics' || resource === 'profile') {
-      return { success: true, data: resource === 'profile' ? { name: 'Bian' } : {} } as any;
+    if (method === 'GET') {
+      return { success: true, data: resource === 'profile' ? { name: 'Operator' } : {} } as any;
+    }
   }
 
   const storageKey = `ambis_${resource}`;
@@ -290,9 +292,9 @@ export const analyticsApi = {
 
 // ==================== PROFILE / USER ====================
 export const profileApi = {
-  getProfile: () => request<{ success: boolean; data: any }>('/profile'),
-  updateProfile: (body: { name?: string; profile_metadata?: string }) =>
-    request<{ success: boolean; data: any }>('/profile', { method: 'PATCH', body: JSON.stringify(body) }),
+  getProfile: () => request<{ success: boolean; user: any }>('/profile'),
+  updateProfile: (body: { name?: string; avatar_url?: string; role_track?: string; bio?: string; github?: string; linkedin?: string; website?: string; workspace_name?: string }) =>
+    request<{ success: boolean; user: any }>('/profile', { method: 'PATCH', body: JSON.stringify(body) }),
 };
 
 // ==================== AUTH ====================

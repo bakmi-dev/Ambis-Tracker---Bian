@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { analyticsApi, learningApi, projectApi, competitionApi, profileApi, taskApi, studySessionApi } from '../api';
-import localAvatar from '../assets/avatar.png';
+import Avatar from '../components/common/Avatar';
 
 interface ProfileData {
   name: string;
@@ -25,14 +25,14 @@ const Progress = () => {
   });
   
   const [profile, setProfile] = useState<ProfileData>({
-    name: 'Bian',
-    tagline: 'Cognitive Architect & Distributed Systems Aspirant',
-    bio: 'Membangun disiplin kognitif, menguasai sistem terdistribusi, dan konsisten belajar setiap hari tanpa distraksi.',
-    location: 'Bandung / Jakarta, ID',
+    name: 'Operator',
+    tagline: 'Cognitive Architect',
+    bio: '',
+    location: 'Global Workspace',
     role: 'CS Undergraduate',
-    github: 'bian-dev',
-    linkedin: 'bian-arch',
-    portfolio: 'bian.dev',
+    github: '',
+    linkedin: '',
+    portfolio: '',
     avatarUrl: ''
   });
 
@@ -83,23 +83,18 @@ const Progress = () => {
           projectsAndComps: activeProjects + activeComps
         });
 
-        if (profileRes.data) {
-          const user = profileRes.data;
-          let meta = {};
-          try {
-            meta = JSON.parse(user.profile_metadata || '{}');
-          } catch (e) { }
-
+        if (profileRes.user) {
+          const u = profileRes.user;
           const pData = {
-            name: user.name || 'Bian',
-            tagline: (meta as any).tagline || 'Cognitive Architect & Distributed Systems Aspirant',
-            bio: (meta as any).bio || 'Membangun disiplin kognitif, menguasai sistem terdistribusi, dan konsisten belajar setiap hari tanpa distraksi.',
-            location: (meta as any).location || 'Bandung / Jakarta, ID',
-            role: (meta as any).role || 'CS Undergraduate',
-            github: (meta as any).github || 'bian-dev',
-            linkedin: (meta as any).linkedin || 'bian-arch',
-            portfolio: (meta as any).portfolio || 'bian.dev',
-            avatarUrl: (meta as any).avatarUrl || ''
+            name: u.name || 'Operator',
+            tagline: u.role_track || 'Cognitive Architect',
+            bio: u.bio || 'Membangun disiplin kognitif, menguasai sistem terdistribusi, dan konsisten belajar setiap hari tanpa distraksi.',
+            location: 'Global Workspace',
+            role: u.role_track || 'CS Undergraduate',
+            github: u.github || '',
+            linkedin: u.linkedin || '',
+            portfolio: u.website || '',
+            avatarUrl: u.avatar_url || ''
           };
           setProfile(pData);
         }
@@ -121,19 +116,14 @@ const Progress = () => {
   const handleSaveProfile = async () => {
     setIsLoading(true);
     try {
-      const payloadMeta = JSON.stringify({
-        tagline: form.tagline,
-        bio: form.bio,
-        location: form.location,
-        role: form.role,
-        github: form.github,
-        linkedin: form.linkedin,
-        portfolio: form.portfolio,
-        avatarUrl: form.avatarUrl
-      });
       await profileApi.updateProfile({
         name: form.name,
-        profile_metadata: payloadMeta
+        role_track: form.role,
+        bio: form.bio,
+        github: form.github,
+        linkedin: form.linkedin,
+        website: form.portfolio,
+        avatar_url: form.avatarUrl
       });
       setProfile(form);
       setIsEditModalOpen(false);
@@ -155,7 +145,6 @@ const Progress = () => {
   const level = Math.floor(metrics.xp / 100) + 1;
   const currentLevelXp = metrics.xp % 100;
 
-  const displayAvatar = profile.avatarUrl && !imgError ? profile.avatarUrl : (!imgError ? localAvatar : null);
 
   return (
     <div className="flex flex-col w-full relative">
@@ -214,15 +203,7 @@ const Progress = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-space-lg w-full lg:w-auto">
               {/* Avatar + Status Pill */}
               <div className="relative shrink-0">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-primary-container via-surface-container-high to-secondary-container p-0.5 shadow-[0_0_20px_rgba(160,120,255,0.3)] flex items-center justify-center">
-                  <div className="w-full h-full rounded-full bg-surface-container-lowest flex items-center justify-center overflow-hidden">
-                    {displayAvatar ? (
-                      <img src={displayAvatar} alt="Profile" className="w-full h-full object-cover" onError={() => setImgError(true)} />
-                    ) : (
-                      <span className="font-headline-xl text-headline-xl font-bold text-primary">{profile.name.charAt(0).toUpperCase()}</span>
-                    )}
-                  </div>
-                </div>
+                <Avatar src={profile.avatarUrl} name={profile.name} size="xl" />
                 <div className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold shadow-md flex items-center gap-0.5">
                   <span>LV</span>
                   <span>{level}</span>

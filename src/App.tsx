@@ -48,19 +48,23 @@ const FadeTransition = ({ children }: { children: ReactNode }) => {
 // Protect dashboard routes: redirect to /register if not onboarded
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, isAuthenticated } = useGlobalState();
+  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (user && !user.is_onboarded) return <Navigate to="/register" />;
+  return <FadeTransition>{children}</FadeTransition>;
+};
 
-  if (isAuthenticated && user && user.is_onboarded === false) {
-    return <Navigate to="/register" replace />;
-  }
-
-  return <>{children}</>;
+const DocumentTitleUpdater = () => {
+  const { user } = useGlobalState();
+  useEffect(() => {
+    document.title = `Ambis Tracker ${user?.name ? `[${user.name}]` : ''}`.trim();
+  }, [user?.name]);
+  return null;
 };
 
 // Inner app with routing
 const AppRoutes = () => {
   const location = useLocation();
   const isPublicPage = ['/', '/login', '/register', '/onboarding'].includes(location.pathname);
-
   if (isPublicPage) {
     return (
       <FadeTransition key={location.pathname}>

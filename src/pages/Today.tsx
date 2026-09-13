@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { taskApi, analyticsApi, studySessionApi } from "../api";
+import { useGlobalState } from "../context/GlobalContext";
 
 // Types for Mock Data
 interface TimeBlock {
@@ -43,6 +44,7 @@ interface Ritual {
 }
 
 const Today = () => {
+  const { user } = useGlobalState();
   // Time blocks, deadlines, and rituals remain as frontend-only UI state
   const [timeBlocks] = useState<TimeBlock[]>([]);
   const [deadlines] = useState<Deadline[]>([]);
@@ -568,7 +570,7 @@ const Today = () => {
                 </h2>
               </div>
               <span className="font-label-sm text-label-sm text-on-surface-variant font-medium">
-                Auto-synced with Bian's Backlog
+                Auto-synced with {user?.name || 'Operator'}'s Backlog
               </span>
             </div>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { journalApi, profileApi } from '../api';
+import { useGlobalState } from '../context/GlobalContext';
 
 const STOIC_QUOTES = [
   { text: "Jangan menuntut segala peristiwa terjadi seperti apa yang kamu inginkan; inginkanlah agar segala hal terjadi sebagaimana mestinya, maka jalan hidupmu akan mengalir dengan tenang.", author: "Epictetus", source: "Enchiridion - VIII" },
@@ -22,6 +23,7 @@ interface JournalContent {
 
 const Journal = () => {
   const navigate = useNavigate();
+  const { user } = useGlobalState();
 
   // State
   const [activeMood, setActiveMood] = useState('flow');
@@ -281,7 +283,7 @@ const Journal = () => {
               <span className="w-2.5 h-2.5 rounded-full bg-secondary shadow-[0_0_12px_rgba(76,215,246,0.8)] animate-pulse"></span>
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant max-w-3xl">
-              Ruang refleksi harian, dekonstruksi hambatan belajar, serta rekaman pemikiran strategis Bian.
+              Ruang refleksi harian, dekonstruksi hambatan belajar, serta rekaman pemikiran strategis {user?.name || 'Operator'}.
             </p>
           </div>
           
@@ -339,7 +341,7 @@ const Journal = () => {
                   <span className="material-symbols-outlined text-[20px]">psychology</span>
                 </div>
                 <div>
-                  <div className="font-headline-md text-headline-md text-on-surface">Protokol Refleksi Bian</div>
+                  <div className="font-headline-md text-headline-md text-on-surface">Protokol Refleksi {user?.name || 'Operator'}</div>
                   <div className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Sesi Harian &middot; V3.2 Protocol Active</div>
                 </div>
               </div>

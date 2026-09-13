@@ -1,7 +1,7 @@
 import { useGlobalState } from '../../context/GlobalContext';
 
 const SettingsModal = () => {
-  const { isSettingsModalOpen, setIsSettingsModalOpen } = useGlobalState();
+  const { user, isSettingsModalOpen, setIsSettingsModalOpen } = useGlobalState();
 
   if (!isSettingsModalOpen) return null;
 
@@ -22,7 +22,7 @@ const SettingsModal = () => {
           <div className="space-y-4">
             <div>
               <label className="block font-label-sm text-outline mb-1">Display Name</label>
-              <input type="text" defaultValue="Bian" className="w-full bg-surface-container p-3 rounded-xl focus:outline-none focus:bg-surface-container-high text-on-surface font-body-sm" />
+              <input type="text" defaultValue={user?.name || 'Operator'} className="w-full bg-surface-container p-3 rounded-xl focus:outline-none focus:bg-surface-container-high text-on-surface font-body-sm" />
             </div>
             <div>
               <label className="block font-label-sm text-outline mb-1">Theme</label>

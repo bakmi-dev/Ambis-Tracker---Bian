@@ -53,6 +53,7 @@ const Dashboard = () => {
   const [carouselIndex, setCarouselIndex] = useState(0);
 
   const { 
+    user,
     isFocusActive, 
     toggleTimer, 
     isPlayingBinaural, 
@@ -197,7 +198,7 @@ const Dashboard = () => {
             <div className="flex flex-wrap items-center gap-space-xs text-on-surface-variant">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">
                 <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
-                Bian's Command Deck
+                {user?.workspace_name || `${user?.name || 'My'}'s Command Deck`}
               </span>
               <span className="font-label-sm text-label-sm text-outline">•</span>
               <span className="font-label-sm text-label-sm text-outline-variant font-medium">{new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
@@ -214,7 +215,7 @@ const Dashboard = () => {
 
             <div>
               <h1 className="font-headline-xl text-headline-xl font-bold tracking-tight text-on-surface">
-                Halo, {analytics?.user?.name || 'Bian'}.
+                Halo, {user?.name || 'Operator'}.
               </h1>
               <p className="mt-1 font-body-lg text-body-lg text-on-surface-variant">
                 Pelan-pelan, satu langkah hari ini tetap membawa kamu lebih dekat ke versi terbaikmu. Momentum kognitifmu berada di level optimal.

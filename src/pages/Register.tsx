@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api';
 import { useGlobalState } from '../context/GlobalContext';
+import Avatar from '../components/common/Avatar';
 
 // ─── Google Identity Services type ───
 declare global {
@@ -45,6 +46,7 @@ const Register = () => {
 
   // ─── Onboarding form ───
   const [displayName, setDisplayName] = useState(user?.name ? user.name.split(' ')[0] : '');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [roleTrack, setRoleTrack] = useState('');
   const [customRoleTrack, setCustomRoleTrack] = useState('');
   const [workspaceName, setWorkspaceName] = useState('');
@@ -98,6 +100,7 @@ const Register = () => {
             setVerifiedEmail(userData.email);
             setVerifiedName(userData.name);
             setVerifiedAvatar(userData.avatar_url || '');
+            setAvatarUrl(userData.avatar_url || '');
             const firstName = userData.name ? userData.name.split(' ')[0] : 'Operator';
             setDisplayName(firstName);
             setWorkspaceName(`${firstName}'s Command Deck`);
@@ -175,6 +178,7 @@ const Register = () => {
     try {
       const result: any = await authApi.completeOnboarding({
         name: displayName.trim(),
+        avatar_url: avatarUrl.trim(),
         role_track: roleTrack === 'custom' ? customRoleTrack : roleTrack,
         workspace_name: workspaceName.trim() || `${displayName.trim()}'s Command Deck`,
         focus_target_hours: focusTarget,
@@ -312,13 +316,7 @@ const Register = () => {
               <div className="animate-fade-in">
                 {/* User identity badge */}
                 <div className="flex items-center gap-3 mb-6 p-3 rounded-lg bg-[rgba(40,200,64,0.06)] border border-[rgba(40,200,64,0.15)]">
-                  {verifiedAvatar ? (
-                    <img src={verifiedAvatar} alt="avatar" className="w-10 h-10 rounded-full border-2 border-[rgba(40,200,64,0.3)]" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-on-secondary font-bold">
-                      {verifiedName.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                  <Avatar src={avatarUrl || verifiedAvatar} name={displayName || verifiedName} size="md" />
                   <div>
                     <div className="font-body-sm text-on-surface font-semibold">{verifiedName}</div>
                     <div className="font-label-sm text-label-sm text-[#28c840] flex items-center gap-1">
@@ -341,6 +339,19 @@ const Register = () => {
                         }}
                         placeholder="Nama tampilan Anda"
                         required
+                        className="w-full bg-[rgba(18,19,25,0.6)] border border-[rgba(76,215,246,0.2)] rounded-lg py-3 pl-11 pr-4 text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all placeholder:text-[#958ea0]/50"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Profile Photo URL */}
+                  <div className="space-y-2">
+                    <label className="text-[12px] uppercase tracking-wider text-[#958ea0] font-bold">Profile Photo URL (Optional)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-secondary text-[18px]">link</span>
+                      <input
+                        type="text" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)}
+                        placeholder="https://... (Biarkan kosong untuk fallback/Google)"
                         className="w-full bg-[rgba(18,19,25,0.6)] border border-[rgba(76,215,246,0.2)] rounded-lg py-3 pl-11 pr-4 text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all placeholder:text-[#958ea0]/50"
                       />
                     </div>
