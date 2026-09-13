@@ -283,3 +283,19 @@ export const profileApi = {
   updateProfile: (body: { name?: string; profile_metadata?: string }) =>
     request<{ success: boolean; data: any }>('/profile', { method: 'PATCH', body: JSON.stringify(body) }),
 };
+
+// ==================== AUTH ====================
+export const authApi = {
+  login: (body: { email: string; password?: string }) =>
+    request<{ success: boolean; data: { user: any; token: string }; message?: string }>('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+  register: (body: { name: string; email: string; password?: string }) =>
+    request<{ success: boolean; data: { user: any; token: string }; message?: string }>('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
+  googleAuth: (body: { credential: string }) =>
+    request<{ success: boolean; isNewUser: boolean; data: { user: any; token: string }; message?: string }>('/auth/google', { method: 'POST', body: JSON.stringify(body) }),
+  completeOnboarding: (body: { name: string; role_track?: string; workspace_name?: string; focus_target_hours?: number }) =>
+    request<{ success: boolean; data: { user: any }; message?: string }>('/auth/complete-onboarding', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('ambis_token') || ''}` }
+    }),
+};

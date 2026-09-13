@@ -3,7 +3,26 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from '
 type AudioMode = 'spotify' | 'binaural';
 type WorkspaceType = "Bian's Command Deck" | "Academic & College Vault" | "Hackathon Prep Space";
 
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  avatar_url?: string;
+  role_track?: string;
+  workspace_name?: string;
+  focus_target_hours?: number;
+  is_onboarded?: boolean;
+}
+
 interface GlobalContextType {
+  // Auth State
+  user: User | null;
+  setUser: (user: User | null) => void;
+  token: string | null;
+  setToken: (token: string | null) => void;
+  isAuthenticated: boolean;
+  logout: () => void;
+
   // Timer State
   isFocusActive: boolean;
   isFocusPaused: boolean;
@@ -39,6 +58,39 @@ interface GlobalContextType {
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
 export const GlobalProvider = ({ children }: { children: ReactNode }) => {
+  // Auth State
+  const [user, setUserState] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem('ambis_user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  
+  const [token, setTokenState] = useState<string | null>(() => {
+    return localStorage.getItem('ambis_token') || null;
+  });
+
+  const setUser = (newUser: User | null) => {
+    setUserState(newUser);
+    if (newUser) {
+      localStorage.setItem('ambis_user', JSON.stringify(newUser));
+    } else {
+      localStorage.removeItem('ambis_user');
+    }
+  };
+
+  const setToken = (newToken: string | null) => {
+    setTokenState(newToken);
+    if (newToken) {
+      localStorage.setItem('ambis_token', newToken);
+    } else {
+      localStorage.removeItem('ambis_token');
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+  };
+
   // Timer State
   const [isFocusActive, setIsFocusActive] = useState(false);
   const [isFocusPaused, setIsFocusPaused] = useState(false);
@@ -144,6 +196,12 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   return (
     <GlobalContext.Provider
       value={{
+        user,
+        setUser,
+        token,
+        setToken,
+        isAuthenticated: !!token,
+        logout,
         isFocusActive,
         isFocusPaused,
         focusSeconds,

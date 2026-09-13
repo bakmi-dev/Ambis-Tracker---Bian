@@ -1,5 +1,5 @@
 import React, { type ReactNode } from 'react';
-import { GlobalProvider, useGlobalState } from '../../context/GlobalContext';
+import { useGlobalState } from '../../context/GlobalContext';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import CommandPalette from '../modals/CommandPalette';
@@ -10,7 +10,7 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-const LayoutContent = ({ children }: LayoutProps) => {
+const Layout = ({ children }: LayoutProps) => {
   const { isPlayingBinaural, binauralVolume } = useGlobalState();
   const audioRef = React.useRef<HTMLAudioElement>(null);
 
@@ -44,12 +44,5 @@ const LayoutContent = ({ children }: LayoutProps) => {
   );
 };
 
-const Layout = ({ children }: LayoutProps) => {
-  return (
-    <GlobalProvider>
-      <LayoutContent>{children}</LayoutContent>
-    </GlobalProvider>
-  );
-};
-
 export default Layout;
+

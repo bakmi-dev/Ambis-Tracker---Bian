@@ -2,8 +2,10 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { errorHandler } from './middlewares/errorMiddleware';
+import { initDb } from './scripts/initDb';
 
 // Route imports
+import authRoutes from './routes/authRoutes';
 import taskRoutes from './routes/taskRoutes';
 import studySessionRoutes from './routes/studySessionRoutes';
 import goalRoutes from './routes/goalRoutes';
@@ -24,12 +26,16 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Initialize Database Tables
+initDb();
+
 // Health check
 app.get('/api/v1/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Ambis Tracker Backend is running!' });
 });
 
 // API Routes
+app.use('/api/auth', authRoutes); // Auth routes
 app.use('/api/v1/tasks', taskRoutes);
 app.use('/api/v1/study-sessions', studySessionRoutes);
 app.use('/api/v1/goals', goalRoutes);

@@ -22,3 +22,64 @@
 ::-webkit-scrollbar {
   display: none;
 }
+
+/* ─── Welcome Terminal Page Animations ─── */
+
+@keyframes blink-cursor {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes float-particle {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: var(--tw-opacity, 0.2);
+  }
+  25% {
+    transform: translateY(-30px) translateX(10px);
+    opacity: 0.05;
+  }
+  50% {
+    transform: translateY(-15px) translateX(-8px);
+    opacity: var(--tw-opacity, 0.3);
+  }
+  75% {
+    transform: translateY(-40px) translateX(5px);
+    opacity: 0.08;
+  }
+}
+
+@keyframes terminal-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-blink-cursor {
+  animation: blink-cursor 0.8s step-end infinite;
+}
+
+.animate-float-particle {
+  animation: float-particle ease-in-out infinite;
+}
+
+.animate-terminal-appear {
+  animation: terminal-appear 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
