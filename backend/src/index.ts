@@ -44,7 +44,11 @@ app.use('/api/v1/profile', profileRoutes);
 // Error handler (must be last)
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`[Ambis Tracker] Server running on http://localhost:${PORT}`);
-  console.log(`[Ambis Tracker] API base: http://localhost:${PORT}/api/v1`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`[Ambis Tracker] Server running on http://localhost:${PORT}`);
+    console.log(`[Ambis Tracker] API base: http://localhost:${PORT}/api/v1`);
+  });
+}
+
+export default app;
