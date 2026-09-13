@@ -21,9 +21,10 @@ declare global {
 // ─── Role track options ───
 const ROLE_TRACKS = [
   { id: 'software_engineer', label: 'Software Engineer / AI Builder', icon: 'code', color: 'primary' },
-  { id: 'academic_researcher', label: 'Academic Researcher', icon: 'science', color: 'secondary' },
-  { id: 'competitive_programmer', label: 'Competitive Programmer', icon: 'trophy', color: 'tertiary' },
-  { id: 'product_architect', label: 'Product Architect', icon: 'architecture', color: 'primary' },
+  { id: 'academic_competitive', label: 'Academic & Competitive Student', icon: 'science', color: 'secondary' },
+  { id: 'product_architect', label: 'Product Architect / Tech Enthusiast', icon: 'architecture', color: 'primary' },
+  { id: 'creative_strategist', label: 'Creative Strategist / General Ambis', icon: 'brush', color: 'tertiary' },
+  { id: 'custom', label: 'Custom / Isi Sendiri', icon: 'terminal', color: 'secondary' },
 ] as const;
 
 type AuthStep = 'google_signin' | 'onboarding';
@@ -43,8 +44,9 @@ const Register = () => {
   const [verifiedAvatar, setVerifiedAvatar] = useState('');
 
   // ─── Onboarding form ───
-  const [displayName, setDisplayName] = useState('');
+  const [displayName, setDisplayName] = useState(user?.name ? user.name.split(' ')[0] : '');
   const [roleTrack, setRoleTrack] = useState('');
+  const [customRoleTrack, setCustomRoleTrack] = useState('');
   const [workspaceName, setWorkspaceName] = useState('');
   const [focusTarget, setFocusTarget] = useState(4);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -167,7 +169,7 @@ const Register = () => {
     try {
       const result: any = await authApi.completeOnboarding({
         name: displayName,
-        role_track: roleTrack,
+        role_track: roleTrack === 'custom' ? customRoleTrack : roleTrack,
         workspace_name: workspaceName || `${displayName}'s Command Deck`,
         focus_target_hours: focusTarget,
       });
@@ -359,6 +361,17 @@ const Register = () => {
                         </button>
                       ))}
                     </div>
+                    {roleTrack === 'custom' && (
+                      <div className="relative mt-3 animate-fade-in">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-secondary text-[18px]">terminal</span>
+                        <input
+                          type="text" value={customRoleTrack} onChange={(e) => setCustomRoleTrack(e.target.value)}
+                          placeholder="[ Tentukan Jalur / Ambisi Pribadi Anda ]"
+                          required
+                          className="w-full bg-[rgba(18,19,25,0.6)] border border-secondary/50 rounded-lg py-3 pl-11 pr-4 text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all placeholder:text-[#958ea0]/50"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* Workspace Name */}
