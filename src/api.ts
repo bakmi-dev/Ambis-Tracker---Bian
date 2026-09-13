@@ -1,4 +1,4 @@
-const API_BASE = '/api/v1';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 // DOM-based Toast notification (Fallback/Success)
 function showToast(message: string) {
@@ -138,7 +138,6 @@ function handleLocalStorageFallback<T>(url: string, options?: RequestInit): T {
   return { success: true, data: [] } as any;
 }
 
-// Intercepts fetch calls, falls back to localStorage on network errors
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   try {
     const res = await fetch(`${API_BASE}${url}`, {
@@ -150,7 +149,15 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     });
 
     if (!res.ok) {
-      throw new Error(`Request failed with status ${res.status}`);
+      let errorMsg = `Request failed with status ${res.status}`;
+      try {
+        const text = await res.text();
+        const parsed = JSON.parse(text);
+        if (parsed.message) errorMsg = parsed.message;
+      } catch (e) {
+        // ignore parse error
+      }
+      throw new Error(errorMsg);
     }
 
     const text = await res.text();
@@ -163,7 +170,11 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     }
 
     return data;
-  } catch (error) {
+  } catch (error: any) {
+    if (url.startsWith('/auth')) {
+      // Never fallback to localStorage for auth routes, throw the actual error to UI
+      throw error;
+    }
     console.warn(`[API] Server unavailable. Using LocalStorage fallback for ${options?.method || 'GET'} ${url}`);
     return handleLocalStorageFallback<T>(url, options);
   }

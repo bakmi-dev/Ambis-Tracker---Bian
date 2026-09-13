@@ -54,20 +54,27 @@ const Login = () => {
     setLogs(prev => [...prev, '> MEMVERIFIKASI TOKEN GOOGLE...']);
 
     try {
-      const result = await authApi.googleAuth({ credential: response.credential });
+      const result: any = await authApi.googleAuth({ credential: response.credential });
 
-      if (result.success && result.data) {
-        const { user: userData, token } = result.data;
-        setUser(userData);
-        setToken(token);
+      if (result.success) {
+        const userData = result?.data?.user || result?.user;
+        const token = result?.data?.token || result?.token;
 
-        if (result.isNewUser || !userData.is_onboarded) {
-          setLogs(prev => [...prev, '> AKUN BARU TERDETEKSI. REDIRECT KE ONBOARDING...']);
-          setTimeout(() => navigate('/onboarding'), 1000);
+        if (userData && typeof userData.is_onboarded !== 'undefined') {
+          setUser(userData);
+          if (token) setToken(token);
+
+          if (result.isNewUser || !userData.is_onboarded) {
+            setLogs(prev => [...prev, '> AKUN BARU TERDETEKSI. REDIRECT KE ONBOARDING...']);
+            setTimeout(() => navigate('/onboarding'), 1000);
+          } else {
+            setIsSuccess(true);
+            setLogs(prev => [...prev, '> AKSES DIIZINKAN. MEMUAT COMMAND DECK...']);
+            setTimeout(() => navigate('/dashboard'), 1200);
+          }
         } else {
-          setIsSuccess(true);
-          setLogs(prev => [...prev, '> AKSES DIIZINKAN. MEMUAT COMMAND DECK...']);
-          setTimeout(() => navigate('/dashboard'), 1200);
+          console.error('Payload user tidak valid dari server:', result);
+          throw new Error('Respons server tidak valid. Data user tidak ditemukan.');
         }
       } else {
         throw new Error(result.message || 'Autentikasi Google gagal');
@@ -117,18 +124,26 @@ const Login = () => {
     setLogs((prev) => [...prev, '> MENGOTENTIKASI KREDENSIAL...']);
 
     try {
-      const response = await authApi.login({ email, password });
+      const response: any = await authApi.login({ email, password });
       
-      if (response.success && response.data) {
-        setUser(response.data.user);
-        setToken(response.data.token);
+      if (response.success) {
+        const userData = response?.data?.user || response?.user;
+        const token = response?.data?.token || response?.token;
         
-        setIsSuccess(true);
-        setLogs((prev) => [...prev, '> AKSES DIIZINKAN. MEMUAT COMMAND DECK...']);
-        
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 1500);
+        if (userData && typeof userData.is_onboarded !== 'undefined') {
+          setUser(userData);
+          if (token) setToken(token);
+          
+          setIsSuccess(true);
+          setLogs((prev) => [...prev, '> AKSES DIIZINKAN. MEMUAT COMMAND DECK...']);
+          
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 1500);
+        } else {
+          console.error('Payload user tidak valid dari server:', response);
+          throw new Error('Respons server tidak valid.');
+        }
       } else {
         throw new Error(response.message || 'ERR_AUTH: Autentikasi Gagal.');
       }

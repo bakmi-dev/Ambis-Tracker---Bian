@@ -81,32 +81,39 @@ const Register = () => {
     setLogs(prev => [...prev, '> MEMVERIFIKASI TOKEN GOOGLE...']);
 
     try {
-      const result = await authApi.googleAuth({ credential: response.credential });
+      const result: any = await authApi.googleAuth({ credential: response.credential });
 
-      if (result.success && result.data) {
-        const { user: userData, token } = result.data;
-        setUser(userData);
-        setToken(token);
+      if (result.success) {
+        const userData = result?.data?.user || result?.user;
+        const token = result?.data?.token || result?.token;
 
-        if (result.isNewUser || !userData.is_onboarded) {
-          // New user → go to onboarding step
-          setVerifiedEmail(userData.email);
-          setVerifiedName(userData.name);
-          setVerifiedAvatar(userData.avatar_url || '');
-          setDisplayName(userData.name);
-          setWorkspaceName(`${userData.name}'s Command Deck`);
-          
-          setLogs(prev => [
-            ...prev,
-            `> IDENTITAS EMAIL TERVERIFIKASI: ${userData.email}`,
-            '> MENGALOKASIKAN RUANG PENYIMPANAN PRIBADI DI NEON POSTGRESQL...',
-            '> Lengkapi konfigurasi operator kognitif Anda:',
-          ]);
-          setStep('onboarding');
+        if (userData && typeof userData.is_onboarded !== 'undefined') {
+          setUser(userData);
+          if (token) setToken(token);
+
+          if (result.isNewUser || !userData.is_onboarded) {
+            // New user → go to onboarding step
+            setVerifiedEmail(userData.email);
+            setVerifiedName(userData.name);
+            setVerifiedAvatar(userData.avatar_url || '');
+            setDisplayName(userData.name);
+            setWorkspaceName(`${userData.name}'s Command Deck`);
+            
+            setLogs(prev => [
+              ...prev,
+              `> IDENTITAS EMAIL TERVERIFIKASI: ${userData.email}`,
+              '> MENGALOKASIKAN RUANG PENYIMPANAN PRIBADI DI NEON POSTGRESQL...',
+              '> Lengkapi konfigurasi operator kognitif Anda:',
+            ]);
+            setStep('onboarding');
+          } else {
+            // Returning user → dashboard
+            setLogs(prev => [...prev, `> SELAMAT DATANG KEMBALI, ${userData.name.toUpperCase()}.`, '> MEMUAT COMMAND DECK...']);
+            setTimeout(() => navigate('/dashboard'), 1200);
+          }
         } else {
-          // Returning user → dashboard
-          setLogs(prev => [...prev, `> SELAMAT DATANG KEMBALI, ${userData.name.toUpperCase()}.`, '> MEMUAT COMMAND DECK...']);
-          setTimeout(() => navigate('/dashboard'), 1200);
+          console.error('Payload user tidak valid dari server:', result);
+          throw new Error('Respons server tidak valid. Data user tidak ditemukan.');
         }
       } else {
         throw new Error(result.message || 'Autentikasi Google gagal');
@@ -158,23 +165,29 @@ const Register = () => {
     setLogs(prev => [...prev, '> MENGINISIALISASI WORKSPACE...']);
 
     try {
-      const result = await authApi.completeOnboarding({
+      const result: any = await authApi.completeOnboarding({
         name: displayName,
         role_track: roleTrack,
         workspace_name: workspaceName || `${displayName}'s Command Deck`,
         focus_target_hours: focusTarget,
       });
 
-      if (result.success && result.data) {
-        setUser(result.data.user);
-        setIsSuccess(true);
-        setLogs(prev => [
-          ...prev,
-          '> WORKSPACE BERHASIL DIALOKASIKAN.',
-          '> KONFIGURASI OPERATOR KOGNITIF: SELESAI.',
-          '> MEMUAT COMMAND DECK...',
-        ]);
-        setTimeout(() => navigate('/dashboard'), 1500);
+      if (result.success) {
+        const userData = result?.data?.user || result?.user || result?.data;
+        if (userData && typeof userData.is_onboarded !== 'undefined') {
+          setUser(userData);
+          setIsSuccess(true);
+          setLogs(prev => [
+            ...prev,
+            '> WORKSPACE BERHASIL DIALOKASIKAN.',
+            '> KONFIGURASI OPERATOR KOGNITIF: SELESAI.',
+            '> MEMUAT COMMAND DECK...',
+          ]);
+          setTimeout(() => navigate('/dashboard'), 1500);
+        } else {
+          console.error('Payload user tidak valid dari server saat onboarding:', result);
+          throw new Error('Respons server tidak valid.');
+        }
       } else {
         throw new Error(result.message || 'Onboarding gagal');
       }
