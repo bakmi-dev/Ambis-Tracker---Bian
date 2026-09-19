@@ -55,11 +55,11 @@ const Dashboard = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [carouselIndex, setCarouselIndex] = useState(0);
 
-  const { 
+  const {
     user,
-    isPlayingBinaural, 
-    toggleBinaural, 
-    setIsAudioModalOpen 
+    isPlayingBinaural,
+    toggleBinaural,
+    setIsAudioModalOpen
   } = useGlobalState();
 
   const {
@@ -79,15 +79,15 @@ const Dashboard = () => {
   const fetchDashboardData = useCallback(async () => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      
+
       const [
-        tasksRes, 
-        projectsRes, 
-        competitionsRes, 
-        goalsRes, 
+        tasksRes,
+        projectsRes,
+        competitionsRes,
+        goalsRes,
         analyticsRes
       ] = await Promise.all([
-        taskApi.getAll({ date: today }), 
+        taskApi.getAll({ date: today }),
         projectApi.getAll(),
         competitionApi.getAll(),
         goalApi.getAll(),
@@ -220,15 +220,15 @@ const Dashboard = () => {
 
             {/* Hero Actions */}
             <div className="flex flex-wrap items-center gap-2.5 pt-1">
-              <button 
-                onClick={() => navigate('/today')} 
+              <button
+                onClick={() => navigate('/today')}
                 className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer border border-purple-500/30"
               >
                 <span className="material-symbols-outlined text-[18px]">checklist</span>
-                <span>[ Buka Task Harian ]</span>
+                <span>Buka Task Harian</span>
               </button>
-              <button 
-                onClick={() => { isFocusActive ? (isFocusPaused ? resumeTimer() : pauseTimer()) : startTimer(45); }} 
+              <button
+                onClick={() => { isFocusActive ? (isFocusPaused ? resumeTimer() : pauseTimer()) : startTimer(45); }}
                 className="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-neutral-800/50 font-medium text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-secondary text-[18px]">{isFocusActive && !isFocusPaused ? 'pause' : 'play_arrow'}</span>
@@ -242,23 +242,23 @@ const Dashboard = () => {
           </div>
 
           {/* Right Gamified Gauge */}
-          <div 
-            onClick={() => navigate('/progress')} 
+          <div
+            onClick={() => navigate('/progress')}
             className="flex-shrink-0 self-start lg:self-center p-4 rounded-xl bg-surface-container/80 border border-neutral-800/50 flex items-center gap-4 min-w-[270px] cursor-pointer hover:bg-surface-container transition-colors"
           >
             <div className="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                 <circle className="text-surface-container-highest fill-none" cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="7"></circle>
-                <circle 
-                  className="text-primary fill-none" 
-                  cx="50" 
-                  cy="50" 
-                  r="40" 
-                  stroke="currentColor" 
-                  strokeDasharray="251.32" 
-                  strokeDashoffset={251.32 - ((analytics?.user?.xp || 0) % 100) / 100 * 251.32} 
-                  strokeLinecap="round" 
-                  strokeWidth="7" 
+                <circle
+                  className="text-primary fill-none"
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  stroke="currentColor"
+                  strokeDasharray="251.32"
+                  strokeDashoffset={251.32 - ((analytics?.user?.xp || 0) % 100) / 100 * 251.32}
+                  strokeLinecap="round"
+                  strokeWidth="7"
                   style={{ transition: 'stroke-dashoffset 1s ease-in-out' }}
                 />
               </svg>
@@ -305,8 +305,8 @@ const Dashboard = () => {
               </span>
             </div>
             <div className="mt-3 w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
-              <div 
-                className="h-full bg-secondary rounded-full transition-all duration-500" 
+              <div
+                className="h-full bg-secondary rounded-full transition-all duration-500"
                 style={{ width: `${analytics?.today?.tasksTotal > 0 ? (analytics.today.tasksCompleted / analytics.today.tasksTotal) * 100 : 0}%` }}
               />
             </div>
@@ -335,8 +335,8 @@ const Dashboard = () => {
               </span>
             </div>
             <div className="mt-3 w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
-              <div 
-                className="h-full bg-primary rounded-full transition-all duration-500" 
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(((analytics?.today?.focusTimeMinutes || 0) / 240) * 100, 100)}%` }}
               />
             </div>
@@ -363,8 +363,8 @@ const Dashboard = () => {
               </span>
             </div>
             <div className="mt-3 w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
-              <div 
-                className="h-full bg-tertiary rounded-full transition-all duration-500" 
+              <div
+                className="h-full bg-tertiary rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(((analytics?.user?.streak || 0) / 30) * 100, 100)}%` }}
               />
             </div>
@@ -390,8 +390,8 @@ const Dashboard = () => {
               </span>
             </div>
             <div className="mt-3 w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
-              <div 
-                className="h-full bg-secondary rounded-full transition-all duration-500" 
+              <div
+                className="h-full bg-secondary rounded-full transition-all duration-500"
                 style={{ width: projects.length > 0 && projects[0].deadline ? '60%' : '0%' }}
               />
             </div>
@@ -421,14 +421,14 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="flex items-center p-1 rounded-lg bg-surface-container border border-neutral-800/50 text-xs">
-                <button 
-                  onClick={() => setTaskFilter('all')} 
+                <button
+                  onClick={() => setTaskFilter('all')}
                   className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${taskFilter === 'all' ? 'bg-surface-container-high text-on-surface' : 'text-outline hover:text-on-surface'}`}
                 >
                   Semua
                 </button>
-                <button 
-                  onClick={() => setTaskFilter('priority')} 
+                <button
+                  onClick={() => setTaskFilter('priority')}
                   className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${taskFilter === 'priority' ? 'bg-surface-container-high text-on-surface' : 'text-outline hover:text-on-surface'}`}
                 >
                   Prioritas
@@ -439,22 +439,20 @@ const Dashboard = () => {
             <div className="space-y-2">
               {displayedTasks.length > 0 ? (
                 displayedTasks.map(task => (
-                  <div 
-                    key={task.id} 
-                    className={`p-3 rounded-lg transition-colors flex items-start justify-between gap-3 ${
-                      task.is_completed 
-                        ? 'bg-surface-container/40 opacity-60' 
+                  <div
+                    key={task.id}
+                    className={`p-3 rounded-lg transition-colors flex items-start justify-between gap-3 ${task.is_completed
+                        ? 'bg-surface-container/40 opacity-60'
                         : 'bg-surface-container hover:bg-surface-container-high/80'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <button 
-                        onClick={() => handleToggleTask(task.id, task.is_completed, task.xp)} 
-                        className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer ${
-                          task.is_completed 
-                            ? 'bg-secondary text-on-secondary font-bold' 
+                      <button
+                        onClick={() => handleToggleTask(task.id, task.is_completed, task.xp)}
+                        className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer ${task.is_completed
+                            ? 'bg-secondary text-on-secondary font-bold'
                             : 'bg-surface-container-high text-transparent hover:text-secondary border-0'
-                        }`}
+                          }`}
                       >
                         <span className="material-symbols-outlined text-[14px]">done</span>
                       </button>
@@ -465,13 +463,12 @@ const Dashboard = () => {
                               DONE
                             </span>
                           ) : (
-                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider ${
-                              task.priority === 'high' || task.priority === 'critical'
-                                ? 'bg-error-container/30 text-error' 
-                                : task.priority === 'medium' 
-                                ? 'bg-tertiary-container/30 text-tertiary' 
-                                : 'bg-surface-container-highest text-on-surface-variant'
-                            }`}>
+                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider ${task.priority === 'high' || task.priority === 'critical'
+                                ? 'bg-error-container/30 text-error'
+                                : task.priority === 'medium'
+                                  ? 'bg-tertiary-container/30 text-tertiary'
+                                  : 'bg-surface-container-highest text-on-surface-variant'
+                              }`}>
                               {task.priority || 'NORMAL'}
                             </span>
                           )}
@@ -500,8 +497,8 @@ const Dashboard = () => {
               )}
             </div>
 
-            <button 
-              onClick={() => setShowTaskModal(true)} 
+            <button
+              onClick={() => setShowTaskModal(true)}
               className="w-full py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-neutral-800/50"
             >
               <span className="material-symbols-outlined text-[16px]">add</span>
@@ -521,8 +518,8 @@ const Dashboard = () => {
                   <p className="text-xs text-on-surface-variant mt-0.5">{projects.length} artefak dalam jalur kompilasi</p>
                 </div>
               </div>
-              <button 
-                onClick={() => navigate('/projects')} 
+              <button
+                onClick={() => navigate('/projects')}
                 className="text-xs font-medium text-primary hover:text-primary-fixed transition-colors flex items-center gap-0.5 cursor-pointer"
               >
                 Semua Proyek <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
@@ -534,9 +531,8 @@ const Dashboard = () => {
                 projects.slice(0, 4).map((project, idx) => (
                   <div key={project.id} className="p-4 rounded-lg bg-surface-container space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider ${
-                        idx % 2 === 0 ? 'bg-secondary-container/20 text-secondary' : 'bg-primary-container/20 text-primary'
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider ${idx % 2 === 0 ? 'bg-secondary-container/20 text-secondary' : 'bg-primary-container/20 text-primary'
+                        }`}>
                         PROJECT
                       </span>
                       <span className="text-xs font-mono text-on-surface-variant font-semibold">{project.progress}% Done</span>
@@ -546,8 +542,8 @@ const Dashboard = () => {
                       <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-1">{project.description || 'Tidak ada deskripsi tambahan'}</p>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
-                      <div 
-                        className={`h-full rounded-full ${idx % 2 === 0 ? 'bg-secondary' : 'bg-primary'}`} 
+                      <div
+                        className={`h-full rounded-full ${idx % 2 === 0 ? 'bg-secondary' : 'bg-primary'}`}
                         style={{ width: `${project.progress}%` }}
                       />
                     </div>
@@ -580,8 +576,8 @@ const Dashboard = () => {
                   <p className="text-xs text-on-surface-variant mt-0.5">Tantangan kompetitif yang sedang dikejar</p>
                 </div>
               </div>
-              <button 
-                onClick={() => setShowCompModal(true)} 
+              <button
+                onClick={() => setShowCompModal(true)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-neutral-800/50 text-xs font-medium transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[14px]">add</span>
@@ -595,9 +591,8 @@ const Dashboard = () => {
                   <div key={comp.id} className="p-3.5 rounded-lg bg-surface-container flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div className="space-y-1 w-full min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider ${
-                          idx === 0 ? 'bg-tertiary text-on-tertiary' : 'bg-surface-container-highest text-on-surface'
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider ${idx === 0 ? 'bg-tertiary text-on-tertiary' : 'bg-surface-container-highest text-on-surface'
+                          }`}>
                           {comp.deadline ? `DEADLINE: ${new Date(comp.deadline).toLocaleDateString('id-ID')}` : 'NO DEADLINE'}
                         </span>
                         <span className={`text-[11px] font-mono ${idx === 0 ? 'text-secondary' : 'text-outline'}`}>{comp.status}</span>
@@ -606,8 +601,8 @@ const Dashboard = () => {
                       <p className="text-xs text-on-surface-variant line-clamp-1">{comp.description || 'Target kompetisi aktif'}</p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <button 
-                        onClick={() => navigate('/competitions')} 
+                      <button
+                        onClick={() => navigate('/competitions')}
                         className="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-secondary hover:text-on-secondary text-on-surface text-xs font-semibold transition-colors cursor-pointer"
                       >
                         Buka Workspace
@@ -640,7 +635,7 @@ const Dashboard = () => {
                   <p className="text-xs text-on-surface-variant mt-0.5">Binaural Beats & Ambience</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setIsAudioModalOpen(true)}
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container border border-neutral-800/50 text-xs font-mono text-secondary hover:text-secondary-fixed transition-colors cursor-pointer"
               >
@@ -667,15 +662,15 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <button 
+                <button
                   onClick={() => setIsAudioModalOpen(true)}
                   className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant flex items-center justify-center transition-colors cursor-pointer"
                   title="Pengaturan Audio"
                 >
                   <span className="material-symbols-outlined text-[16px]">tune</span>
                 </button>
-                <button 
-                  onClick={toggleBinaural} 
+                <button
+                  onClick={toggleBinaural}
                   className="w-9 h-9 rounded-lg bg-secondary text-on-secondary flex items-center justify-center hover:bg-secondary-fixed transition-colors cursor-pointer font-bold shadow-sm"
                   title={isPlayingBinaural ? "Pause Audio" : "Play Audio"}
                 >
@@ -697,8 +692,8 @@ const Dashboard = () => {
                   <p className="text-xs text-on-surface-variant mt-0.5">North-star arah pembelajaran</p>
                 </div>
               </div>
-              <button 
-                onClick={() => navigate('/goals')} 
+              <button
+                onClick={() => navigate('/goals')}
                 className="text-xs font-medium text-primary hover:text-primary-fixed transition-colors flex items-center gap-0.5 cursor-pointer"
               >
                 Semua Target <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
@@ -708,8 +703,8 @@ const Dashboard = () => {
             <div className="space-y-2.5">
               {goals.length > 0 ? (
                 goals.slice(0, 5).map(goal => (
-                  <div 
-                    key={goal.id} 
+                  <div
+                    key={goal.id}
                     onClick={() => navigate('/goals')}
                     className="p-3.5 rounded-lg bg-surface-container space-y-2 hover:bg-surface-container-high transition-colors cursor-pointer"
                   >
@@ -754,15 +749,15 @@ const Dashboard = () => {
             <p className="text-xs sm:text-sm text-on-surface-variant">Akses bimbingan belajar terbaik untuk mempercepat pencapaian target ambisimu.</p>
           </div>
           <div className="hidden sm:flex items-center gap-1.5">
-            <button 
-              onClick={handlePrevCarousel} 
+            <button
+              onClick={handlePrevCarousel}
               className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors cursor-pointer border border-white/5"
               title="Sebelumnya"
             >
               <span className="material-symbols-outlined text-[18px]">chevron_left</span>
             </button>
-            <button 
-              onClick={handleNextCarousel} 
+            <button
+              onClick={handleNextCarousel}
               className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors cursor-pointer border border-white/5"
               title="Selanjutnya"
             >
@@ -776,22 +771,22 @@ const Dashboard = () => {
             const idx = (carouselIndex + offset) % GALLERY.length;
             const item = GALLERY[idx];
             return (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="relative group overflow-hidden rounded-xl bg-surface-container-low border border-white/5 hover:border-white/10 flex flex-col h-72 transition-all duration-200"
               >
-                <div 
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
                   style={{ backgroundImage: `url('${item.img}')` }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/80 to-transparent"></div>
-                
+
                 {/* Header Tag */}
                 <div className="relative z-10 flex items-center justify-between p-4">
                   <span className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold uppercase tracking-wider bg-surface-container-lowest/80 backdrop-blur-md ${item.badgeColor} border border-white/10`}>
                     {item.badge}
                   </span>
-                  <button 
+                  <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -831,8 +826,8 @@ const Dashboard = () => {
       </section>
 
       {/* Footer Banner */}
-      <div 
-        onClick={() => navigate('/progress')} 
+      <div
+        onClick={() => navigate('/progress')}
         className="p-5 rounded-xl bg-surface-container-low border border-white/5 hover:bg-surface-container-low/90 flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer transition-colors"
       >
         <div className="flex items-center gap-3.5">
@@ -864,25 +859,25 @@ const Dashboard = () => {
               Quick Add Task
             </h2>
             <form onSubmit={handleCreateTask} className="space-y-4">
-              <input 
-                required 
-                value={newTaskTitle} 
-                onChange={e => setNewTaskTitle(e.target.value)} 
-                type="text" 
-                className="w-full bg-surface-container border border-white/5 focus:border-secondary/50 text-on-surface placeholder:text-outline p-3 rounded-xl focus:outline-none text-xs" 
-                placeholder="Deskripsi tugas cepat..." 
-                autoFocus 
+              <input
+                required
+                value={newTaskTitle}
+                onChange={e => setNewTaskTitle(e.target.value)}
+                type="text"
+                className="w-full bg-surface-container border border-white/5 focus:border-secondary/50 text-on-surface placeholder:text-outline p-3 rounded-xl focus:outline-none text-xs"
+                placeholder="Deskripsi tugas cepat..."
+                autoFocus
               />
               <div className="flex justify-end gap-2.5">
-                <button 
-                  type="button" 
-                  onClick={() => setShowTaskModal(false)} 
+                <button
+                  type="button"
+                  onClick={() => setShowTaskModal(false)}
                   className="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-white/5 text-xs font-medium transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="px-4 py-2 rounded-lg bg-secondary text-on-secondary text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Simpan
@@ -902,25 +897,25 @@ const Dashboard = () => {
               Tambah Target Kompetisi
             </h2>
             <form onSubmit={handleCreateComp} className="space-y-4">
-              <input 
-                required 
-                value={newCompTitle} 
-                onChange={e => setNewCompTitle(e.target.value)} 
-                type="text" 
-                className="w-full bg-surface-container border border-white/5 focus:border-tertiary/50 text-on-surface placeholder:text-outline p-3 rounded-xl focus:outline-none text-xs" 
-                placeholder="Nama Hackathon / Lomba..." 
-                autoFocus 
+              <input
+                required
+                value={newCompTitle}
+                onChange={e => setNewCompTitle(e.target.value)}
+                type="text"
+                className="w-full bg-surface-container border border-white/5 focus:border-tertiary/50 text-on-surface placeholder:text-outline p-3 rounded-xl focus:outline-none text-xs"
+                placeholder="Nama Hackathon / Lomba..."
+                autoFocus
               />
               <div className="flex justify-end gap-2.5">
-                <button 
-                  type="button" 
-                  onClick={() => setShowCompModal(false)} 
+                <button
+                  type="button"
+                  onClick={() => setShowCompModal(false)}
                   className="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-white/5 text-xs font-medium transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="px-4 py-2 rounded-lg bg-tertiary text-on-tertiary text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Simpan
