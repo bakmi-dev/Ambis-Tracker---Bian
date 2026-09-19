@@ -187,18 +187,18 @@ const Dashboard = () => {
       </div>
 
       {/* TOP HERO & COGNITIVE TELEMETRY STATUS */}
-      <section className="relative overflow-hidden rounded-xl bg-surface-container-low border border-white/5 p-6">
+      <section className="relative overflow-hidden rounded-xl bg-surface-container-low border border-neutral-800/50 p-5 sm:p-6">
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           {/* Left Narrative */}
           <div className="max-w-2xl space-y-4">
             <div className="flex flex-wrap items-center gap-2 text-on-surface-variant">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container font-mono text-[11px] font-semibold text-secondary uppercase tracking-wider border border-white/5">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container font-mono text-[11px] font-semibold text-secondary uppercase tracking-wider border border-neutral-800/50">
                 <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
                 {user?.workspace_name || `${user?.name || 'My'}'s Command Deck`}
               </span>
               <span className="text-outline/40">•</span>
               <span className="font-mono text-xs text-on-surface-variant">{new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
-              <div className="hidden sm:flex items-center gap-1.5 ml-2 pl-2 border-l border-white/5 font-mono text-[11px]">
+              <div className="hidden sm:flex items-center gap-1.5 ml-2 pl-2 border-l border-neutral-800/50 font-mono text-[11px]">
                 <span className="text-on-surface-variant font-medium">PLAN</span>
                 <span className="text-outline/40">→</span>
                 <span className="text-primary font-semibold">LEARN</span>
@@ -221,20 +221,20 @@ const Dashboard = () => {
             {/* Hero Actions */}
             <div className="flex flex-wrap items-center gap-2.5 pt-1">
               <button 
-                onClick={() => navigate('/study-space')} 
-                className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer border border-purple-400/30"
+                onClick={() => navigate('/today')} 
+                className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer border border-purple-500/30"
               >
-                <span>Lihat Study Journey</span>
-                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                <span className="material-symbols-outlined text-[18px]">checklist</span>
+                <span>[ Buka Task Harian ]</span>
               </button>
               <button 
                 onClick={() => { isFocusActive ? (isFocusPaused ? resumeTimer() : pauseTimer()) : startTimer(45); }} 
-                className="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-white/5 font-medium text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-neutral-800/50 font-medium text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-secondary text-[18px]">{isFocusActive && !isFocusPaused ? 'pause' : 'play_arrow'}</span>
                 <span>{isFocusActive && !isFocusPaused ? 'Pause Fokus' : isFocusPaused ? 'Resume Fokus' : 'Mulai Fokus'}</span>
               </button>
-              <div className="hidden xl:flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container/60 font-mono text-xs text-on-surface-variant border border-white/5">
+              <div className="hidden xl:flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container/60 font-mono text-xs text-on-surface-variant border border-neutral-800/50">
                 <span className="material-symbols-outlined text-secondary text-[15px]">bolt</span>
                 <span>Target: 4j 00m (Selesai: {Math.floor((analytics?.today?.focusTimeMinutes || 0) / 60)}j {(analytics?.today?.focusTimeMinutes || 0) % 60}m)</span>
               </div>
@@ -244,7 +244,7 @@ const Dashboard = () => {
           {/* Right Gamified Gauge */}
           <div 
             onClick={() => navigate('/progress')} 
-            className="flex-shrink-0 self-start lg:self-center p-4 rounded-xl bg-surface-container/80 border border-white/5 flex items-center gap-4 min-w-[270px] cursor-pointer hover:bg-surface-container transition-colors"
+            className="flex-shrink-0 self-start lg:self-center p-4 rounded-xl bg-surface-container/80 border border-neutral-800/50 flex items-center gap-4 min-w-[270px] cursor-pointer hover:bg-surface-container transition-colors"
           >
             <div className="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -288,7 +288,7 @@ const Dashboard = () => {
       {/* QUICK STATS TELEMETRY GRID */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Stat 1: Tasks */}
-        <div className="p-5 rounded-xl bg-surface-container-low border border-white/5 hover:bg-surface-container-low/90 transition-colors flex flex-col justify-between">
+        <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 hover:bg-surface-container-low/90 transition-colors flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-mono font-semibold tracking-wider text-outline uppercase">TASK SELESAI</span>
@@ -318,7 +318,7 @@ const Dashboard = () => {
         </div>
 
         {/* Stat 2: Study Time */}
-        <div className="p-5 rounded-xl bg-surface-container-low border border-white/5 hover:bg-surface-container-low/90 transition-colors flex flex-col justify-between">
+        <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 hover:bg-surface-container-low/90 transition-colors flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-mono font-semibold tracking-wider text-outline uppercase">WAKTU FOKUS</span>
@@ -348,7 +348,7 @@ const Dashboard = () => {
         </div>
 
         {/* Stat 3: Streak */}
-        <div className="p-5 rounded-xl bg-surface-container-low border border-white/5 hover:bg-surface-container-low/90 transition-colors flex flex-col justify-between">
+        <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 hover:bg-surface-container-low/90 transition-colors flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-mono font-semibold tracking-wider text-outline uppercase">STREAK HARIAN</span>
@@ -376,7 +376,7 @@ const Dashboard = () => {
         </div>
 
         {/* Stat 4: Next Countdown */}
-        <div className="p-5 rounded-xl bg-surface-container-low border border-white/5 hover:bg-surface-container-low/90 transition-colors flex flex-col justify-between">
+        <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 hover:bg-surface-container-low/90 transition-colors flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-mono font-semibold tracking-wider text-outline uppercase">DEADLINE TERDEKAT</span>
@@ -409,18 +409,18 @@ const Dashboard = () => {
         <div className="lg:col-span-7 space-y-5">
 
           {/* TASKS */}
-          <div className="p-5 rounded-xl bg-surface-container-low border border-white/5 space-y-4">
+          <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
                   <span className="material-symbols-outlined text-[18px]">task_alt</span>
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-on-surface">Today's Mission</h2>
+                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Today's Mission</h2>
                   <p className="text-xs text-on-surface-variant mt-0.5">{tasks.filter(t => !t.is_completed).length} dari {tasks.length} target harian tersisa</p>
                 </div>
               </div>
-              <div className="flex items-center p-1 rounded-lg bg-surface-container border border-white/5 text-xs">
+              <div className="flex items-center p-1 rounded-lg bg-surface-container border border-neutral-800/50 text-xs">
                 <button 
                   onClick={() => setTaskFilter('all')} 
                   className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${taskFilter === 'all' ? 'bg-surface-container-high text-on-surface' : 'text-outline hover:text-on-surface'}`}
@@ -493,16 +493,16 @@ const Dashboard = () => {
                   </div>
                 ))
               ) : (
-                <div className="py-8 text-center bg-surface-container/30 rounded-lg">
-                  <span className="material-symbols-outlined text-outline text-[36px] mb-1">task</span>
-                  <p className="text-xs text-outline font-mono">Belum ada task aktif hari ini.</p>
+                <div className="py-8 text-center bg-surface-container/30 rounded-lg flex flex-col items-center justify-center">
+                  <span className="material-symbols-outlined text-outline/60 text-[32px] mb-1.5">task</span>
+                  <p className="text-xs text-outline font-medium">Belum ada task aktif hari ini.</p>
                 </div>
               )}
             </div>
 
             <button 
               onClick={() => setShowTaskModal(true)} 
-              className="w-full py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-white/5"
+              className="w-full py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-neutral-800/50"
             >
               <span className="material-symbols-outlined text-[16px]">add</span>
               <span>Tambah Task Baru</span>
@@ -510,14 +510,14 @@ const Dashboard = () => {
           </div>
 
           {/* ACTIVE PROJECTS */}
-          <div className="p-5 rounded-xl bg-surface-container-low border border-white/5 space-y-4">
+          <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
                   <span className="material-symbols-outlined text-[18px]">terminal</span>
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-on-surface">Active Projects & Builds</h2>
+                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Active Projects & Builds</h2>
                   <p className="text-xs text-on-surface-variant mt-0.5">{projects.length} artefak dalam jalur kompilasi</p>
                 </div>
               </div>
@@ -560,29 +560,29 @@ const Dashboard = () => {
                   </div>
                 ))
               ) : (
-                <div className="col-span-2 py-8 text-center bg-surface-container/30 rounded-lg">
-                  <span className="material-symbols-outlined text-outline text-[36px] mb-1">construction</span>
-                  <p className="text-xs text-outline font-mono">Belum ada project aktif.</p>
+                <div className="col-span-1 md:col-span-2 py-8 text-center bg-surface-container/30 rounded-lg flex flex-col items-center justify-center">
+                  <span className="material-symbols-outlined text-outline/60 text-[32px] mb-1.5">construction</span>
+                  <p className="text-xs text-outline font-medium">Belum ada project aktif.</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* ACTIVE COMPETITIONS */}
-          <div className="p-5 rounded-xl bg-surface-container-low border border-white/5 space-y-4">
+          <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
                   <span className="material-symbols-outlined text-[18px]">trophy</span>
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-on-surface">Active Competitions</h2>
+                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Active Competitions</h2>
                   <p className="text-xs text-on-surface-variant mt-0.5">Tantangan kompetitif yang sedang dikejar</p>
                 </div>
               </div>
               <button 
                 onClick={() => setShowCompModal(true)} 
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-white/5 text-xs font-medium transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-neutral-800/50 text-xs font-medium transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[14px]">add</span>
                 <span>Tambah Target</span>
@@ -616,9 +616,9 @@ const Dashboard = () => {
                   </div>
                 ))
               ) : (
-                <div className="py-8 text-center bg-surface-container/30 rounded-lg">
-                  <span className="material-symbols-outlined text-outline text-[36px] mb-1">emoji_events</span>
-                  <p className="text-xs text-outline font-mono">Belum ada kompetisi yang diikuti.</p>
+                <div className="py-8 text-center bg-surface-container/30 rounded-lg flex flex-col items-center justify-center">
+                  <span className="material-symbols-outlined text-outline/60 text-[32px] mb-1.5">emoji_events</span>
+                  <p className="text-xs text-outline font-medium">Belum ada kompetisi yang diikuti.</p>
                 </div>
               )}
             </div>
@@ -628,30 +628,91 @@ const Dashboard = () => {
         {/* RIGHT COLUMN */}
         <div className="lg:col-span-5 space-y-5">
 
-          {/* GOALS */}
-          <div 
-            onClick={() => navigate('/goals')} 
-            className="p-5 rounded-xl bg-surface-container-low border border-white/5 hover:bg-surface-container-low/90 cursor-pointer transition-colors space-y-4"
-          >
+          {/* AUDIO SANCTUARY (Raised up to replace Skills Telemetry area) */}
+          <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+                  <span className="material-symbols-outlined text-[18px]">graphic_eq</span>
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Audio Sanctuary</h2>
+                  <p className="text-xs text-on-surface-variant mt-0.5">Binaural Beats & Ambience</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsAudioModalOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container border border-neutral-800/50 text-xs font-mono text-secondary hover:text-secondary-fixed transition-colors cursor-pointer"
+              >
+                <span className={`w-2 h-2 rounded-full bg-secondary ${isPlayingBinaural ? 'animate-pulse' : ''}`}></span>
+                <span>432Hz Live</span>
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-lg bg-surface-container space-y-1">
+              <p className="text-xs italic text-on-surface leading-relaxed">
+                “Consistency is the silent architecture of true mastery.”
+              </p>
+              <span className="block text-[11px] font-mono text-outline">— Ambis Mindset Principle</span>
+            </div>
+
+            <div className="p-3.5 rounded-lg bg-surface-container/60 border border-neutral-800/40 flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isPlayingBinaural ? 'bg-secondary/20 text-secondary' : 'bg-surface-container-highest text-outline'}`}>
+                  <span className="material-symbols-outlined text-[18px]">{isPlayingBinaural ? 'volume_up' : 'headphones'}</span>
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-semibold text-on-surface truncate">Deep Alpha Waves (432Hz)</h4>
+                  <p className="text-[11px] font-mono text-on-surface-variant">Sirkuit Pemrograman Mendalam</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button 
+                  onClick={() => setIsAudioModalOpen(true)}
+                  className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant flex items-center justify-center transition-colors cursor-pointer"
+                  title="Pengaturan Audio"
+                >
+                  <span className="material-symbols-outlined text-[16px]">tune</span>
+                </button>
+                <button 
+                  onClick={toggleBinaural} 
+                  className="w-9 h-9 rounded-lg bg-secondary text-on-secondary flex items-center justify-center hover:bg-secondary-fixed transition-colors cursor-pointer font-bold shadow-sm"
+                  title={isPlayingBinaural ? "Pause Audio" : "Play Audio"}
+                >
+                  <span className="material-symbols-outlined text-[20px]">{isPlayingBinaural ? 'pause' : 'play_arrow'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* GOALS & VISION */}
+          <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
                   <span className="material-symbols-outlined text-[18px]">flag</span>
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-on-surface">Goals & Vision</h2>
+                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Goals & Vision</h2>
                   <p className="text-xs text-on-surface-variant mt-0.5">North-star arah pembelajaran</p>
                 </div>
               </div>
-              <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold bg-primary-container/20 text-primary border border-primary/20">
-                {goals.length} Aktif
-              </span>
+              <button 
+                onClick={() => navigate('/goals')} 
+                className="text-xs font-medium text-primary hover:text-primary-fixed transition-colors flex items-center gap-0.5 cursor-pointer"
+              >
+                Semua Target <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+              </button>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {goals.length > 0 ? (
-                goals.slice(0, 4).map(goal => (
-                  <div key={goal.id} className="p-3 rounded-lg bg-surface-container space-y-2 hover:bg-surface-container-high transition-colors">
+                goals.slice(0, 5).map(goal => (
+                  <div 
+                    key={goal.id} 
+                    onClick={() => navigate('/goals')}
+                    className="p-3.5 rounded-lg bg-surface-container space-y-2 hover:bg-surface-container-high transition-colors cursor-pointer"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 truncate mr-2">
                         <span className="material-symbols-outlined text-primary text-[16px]">flag</span>
@@ -666,113 +727,16 @@ const Dashboard = () => {
                       <span className="text-primary font-semibold">{goal.progress_percentage}% Selesai</span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
-                      <div className="h-full bg-primary rounded-full" style={{ width: `${goal.progress_percentage}%` }}></div>
+                      <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${goal.progress_percentage}%` }}></div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="py-8 text-center bg-surface-container/30 rounded-lg">
-                  <span className="material-symbols-outlined text-outline text-[36px] mb-1">golf_course</span>
-                  <p className="text-xs text-outline font-mono">Belum ada target jangka panjang.</p>
+                <div className="py-8 text-center bg-surface-container/30 rounded-lg flex flex-col items-center justify-center">
+                  <span className="material-symbols-outlined text-outline/60 text-[32px] mb-1.5">flag</span>
+                  <p className="text-xs text-outline font-medium">Belum ada target jangka panjang.</p>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* ACTIVE LEARNING PATHS (SKILLS TELEMETRY) */}
-          <div className="p-5 rounded-xl bg-surface-container-low border border-white/5 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
-                  <span className="material-symbols-outlined text-[18px]">school</span>
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold text-on-surface">Skills Telemetry</h2>
-                  <p className="text-xs text-on-surface-variant mt-0.5">Kompetensi teknis bertingkat</p>
-                </div>
-              </div>
-              <span className="material-symbols-outlined text-outline text-[18px]">insights</span>
-            </div>
-
-            <div className="space-y-3.5">
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-on-surface">Python & AI Engineering</span>
-                  <span className="font-mono font-semibold text-secondary">82%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-surface-container-highest overflow-hidden">
-                  <div className="h-full bg-secondary rounded-full transition-all duration-500" style={{ width: '82%' }}></div>
-                </div>
-                <span className="block text-[11px] font-mono text-outline">Distribusi dari 82 jam sprint</span>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-on-surface">Cloud & Systems Architecture</span>
-                  <span className="font-mono font-semibold text-primary">64%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-surface-container-highest overflow-hidden">
-                  <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: '64%' }}></div>
-                </div>
-                <span className="block text-[11px] font-mono text-outline">Distribusi dari 64 jam sprint</span>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-on-surface">Golang Microservices</span>
-                  <span className="font-mono font-semibold text-tertiary">50%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-surface-container-highest overflow-hidden">
-                  <div className="h-full bg-tertiary rounded-full transition-all duration-500" style={{ width: '50%' }}></div>
-                </div>
-                <span className="block text-[11px] font-mono text-outline">Distribusi dari 50 jam sprint</span>
-              </div>
-            </div>
-          </div>
-
-          {/* FOCUS SANCTUARY */}
-          <div className="p-5 rounded-xl bg-surface-container-low border border-white/5 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold uppercase tracking-wider bg-secondary-container/30 text-secondary border border-secondary/20">
-                AUDIO SANCTUARY
-              </span>
-              <button 
-                onClick={() => setIsAudioModalOpen(true)}
-                className="flex items-center gap-1.5 text-xs font-mono text-secondary hover:text-secondary-fixed transition-colors cursor-pointer"
-              >
-                <span className={`w-2 h-2 rounded-full bg-secondary ${isPlayingBinaural ? 'animate-pulse' : ''}`}></span>
-                <span>432Hz Live</span>
-              </button>
-            </div>
-
-            <div className="p-3.5 rounded-lg bg-surface-container space-y-1">
-              <p className="text-xs italic text-on-surface leading-relaxed">
-                “Consistency is the silent architecture of true mastery.”
-              </p>
-              <span className="block text-[11px] font-mono text-outline">— Ambis Mindset Principle</span>
-            </div>
-
-            <div className="flex items-center justify-between pt-1">
-              <div>
-                <h4 className="text-xs font-semibold text-on-surface">Deep Alpha Waves</h4>
-                <p className="text-[11px] font-mono text-on-surface-variant">Sirkuit Pemrograman Mendalam</p>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button 
-                  onClick={() => setIsAudioModalOpen(true)}
-                  className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant flex items-center justify-center transition-colors cursor-pointer"
-                  title="Audio Modal"
-                >
-                  <span className="material-symbols-outlined text-[16px]">tune</span>
-                </button>
-                <button 
-                  onClick={toggleBinaural} 
-                  className="w-9 h-9 rounded-lg bg-secondary text-on-secondary flex items-center justify-center hover:bg-secondary-fixed transition-colors cursor-pointer font-bold"
-                  title={isPlayingBinaural ? "Pause Audio" : "Play Audio"}
-                >
-                  <span className="material-symbols-outlined text-[20px]">{isPlayingBinaural ? 'pause' : 'play_arrow'}</span>
-                </button>
-              </div>
             </div>
           </div>
         </div>
