@@ -1,47 +1,27 @@
-import { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useGlobalState } from "../../context/GlobalContext";
 import Avatar from "../common/Avatar";
 
 const navClasses = ({ isActive }: { isActive: boolean }) =>
   isActive
-    ? "flex items-center gap-space-sm px-space-md py-space-sm transition-all bg-primary-container text-on-primary-container font-semibold rounded-lg shadow-[0_0_20px_rgba(160,120,255,0.35)]"
-    : "flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all";
+    ? "flex items-center gap-space-sm px-space-md py-space-sm transition-all bg-purple-600 text-white font-semibold rounded-lg border border-purple-500/40"
+    : "flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface border border-transparent transition-all";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const { 
     user,
-    activeWorkspace, 
-    setActiveWorkspace,
     audioMode,
     isPlayingBinaural,
     toggleBinaural,
     setIsAudioModalOpen,
-    setIsSettingsModalOpen
+    setIsSettingsModalOpen,
+    isAiChatOpen,
+    setIsAiChatOpen
   } = useGlobalState();
 
-  const WORKSPACES = [
-    user?.workspace_name || `${user?.name ? user.name + "'s" : "My"} Command Deck`,
-    "Academic & College Vault",
-    "Hackathon Prep Space"
-  ];
-
-  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
-  const workspaceRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (workspaceRef.current && !workspaceRef.current.contains(event.target as Node)) {
-        setIsWorkspaceOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   return (
-    <aside className="fixed left-0 top-0 h-screen w-72 bg-surface-container-lowest z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.5)]">
+    <aside className="fixed left-0 top-0 h-screen w-72 bg-surface-container-lowest z-50 flex flex-col justify-between border-r border-neutral-800">
       <div className="flex flex-col h-full overflow-hidden">
         <div className="p-space-lg pb-space-sm">
           <div className="flex items-center justify-between gap-space-xs">
@@ -53,46 +33,48 @@ const Sidebar = () => {
                 </span>
               </div>
             </div>
-            <span className="px-1.5 py-0.5 rounded bg-surface-container font-label-sm text-label-sm text-secondary font-semibold tracking-wider uppercase shadow-[0_0_8px_rgba(76,215,246,0.2)]">
+            <span className="px-1.5 py-0.5 rounded bg-surface-container font-mono text-[10px] text-secondary font-semibold tracking-wider uppercase border border-secondary/30">
               V3.2
             </span>
           </div>
 
-          <div className="relative mt-space-md" ref={workspaceRef}>
+          {/* AI Assistant Shortcut Button */}
+          <div className="mt-space-md">
             <button 
-              onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
-              className="w-full px-space-md py-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container-high hover:text-on-surface flex items-center justify-between text-left transition-colors group focus:outline-none focus:ring-2 focus:ring-primary/50"
+              onClick={() => setIsAiChatOpen(prev => !prev)}
+              className={`w-full px-space-md py-2.5 rounded-lg flex items-center justify-between text-left transition-all border group cursor-pointer ${
+                isAiChatOpen
+                  ? 'bg-purple-950/40 border-purple-500/60 text-white'
+                  : 'bg-surface-container-low hover:bg-surface-container-high border-neutral-800/80 hover:border-neutral-700 text-on-surface'
+              }`}
+              title="Buka / Tutup Ambis AI Assistant"
             >
               <div className="flex items-center gap-space-sm min-w-0">
-                <span className="flex-shrink-0 w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(76,215,246,0.6)]"></span>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors flex-shrink-0 ${
+                  isAiChatOpen 
+                    ? 'bg-purple-600 text-white border border-purple-400/50' 
+                    : 'bg-surface-container-high group-hover:bg-purple-600/20 text-purple-400 border border-neutral-700/60 group-hover:border-purple-500/40'
+                }`}>
+                  <span className="material-symbols-outlined text-[19px]">smart_toy</span>
+                </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="font-label-sm text-label-sm text-on-surface-variant group-hover:text-on-surface uppercase tracking-wider">
-                    Workspace
+                  <span className="font-mono text-[10px] font-bold text-purple-400 group-hover:text-purple-300 uppercase tracking-widest leading-tight">
+                    AI ASSISTANT
                   </span>
                   <span className="font-body-sm text-body-sm font-semibold text-on-surface truncate">
-                    {activeWorkspace}
+                    Ask Ambis AI
                   </span>
                 </div>
               </div>
-              <span className="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface text-[18px] flex-shrink-0">
-                unfold_more
-              </span>
-            </button>
-
-            {isWorkspaceOpen && (
-              <div className="absolute top-full left-0 w-full mt-2 bg-surface-container-low border border-surface-container-highest rounded-xl shadow-xl overflow-hidden py-1 z-50">
-                {WORKSPACES.map(ws => (
-                  <button 
-                    key={ws}
-                    onClick={() => { setActiveWorkspace(ws); setIsWorkspaceOpen(false); }}
-                    className="w-full px-4 py-2 text-left font-body-sm flex items-center justify-between transition-colors hover:bg-surface-container-high"
-                  >
-                    <span className={activeWorkspace === ws ? 'text-primary font-semibold' : 'text-on-surface'}>{ws}</span>
-                    {activeWorkspace === ws && <span className="material-symbols-outlined text-[16px] text-primary">check</span>}
-                  </button>
-                ))}
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-surface-container-low"></span>
+                <span className={`material-symbols-outlined text-[18px] transition-transform duration-200 ${
+                  isAiChatOpen ? 'rotate-90 text-purple-400' : 'text-on-surface-variant group-hover:text-on-surface'
+                }`}>
+                  chevron_right
+                </span>
               </div>
-            )}
+            </button>
           </div>
         </div>
 
@@ -159,7 +141,7 @@ const Sidebar = () => {
         </div>
 
         <div className="p-space-md space-y-space-sm bg-surface-container-lowest">
-          <div className="p-space-sm rounded-xl bg-surface-container-low shadow-[0_0_12px_rgba(76,215,246,0.06)] border border-transparent hover:border-surface-container-highest transition-colors">
+          <div className="p-space-sm rounded-xl bg-surface-container-low border border-neutral-800 hover:border-neutral-700 transition-colors">
             <div className="flex items-center justify-between mb-space-xs cursor-pointer" onClick={() => setIsAudioModalOpen(true)}>
               <div className="flex items-center gap-space-xs">
                 <span className={`material-symbols-outlined text-[16px] ${audioMode === 'spotify' ? 'text-primary' : 'text-secondary'}`}>
@@ -183,7 +165,7 @@ const Sidebar = () => {
               {audioMode === 'binaural' && (
                 <button
                   onClick={toggleBinaural}
-                  className="w-7 h-7 flex-shrink-0 rounded-full bg-secondary text-on-secondary flex items-center justify-center hover:bg-secondary-fixed hover:text-on-secondary-fixed transition-colors shadow-[0_0_10px_rgba(76,215,246,0.35)]"
+                  className="w-7 h-7 flex-shrink-0 rounded-full bg-secondary text-on-secondary flex items-center justify-center hover:bg-secondary-fixed hover:text-on-secondary-fixed transition-colors border border-secondary/40"
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     {isPlayingBinaural ? "pause" : "play_arrow"}

@@ -232,11 +232,11 @@ const Dashboard = () => {
 
             {/* Hero Actions */}
             <div className="flex flex-wrap items-center gap-space-sm pt-space-xs">
-              <button onClick={() => navigate('/study-space')} className="px-space-lg py-space-sm rounded-lg bg-primary text-on-primary font-label-lg text-label-lg font-bold flex items-center gap-space-xs hover:bg-primary-fixed hover:text-on-primary-fixed transition-all shadow-[0_0_24px_rgba(208,188,255,0.35)] active:scale-95">
+              <button onClick={() => navigate('/study-space')} className="px-space-lg py-space-sm rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-label-lg text-label-lg font-bold flex items-center gap-space-xs transition-all border border-purple-500/40 active:scale-95 cursor-pointer">
                 <span>Lihat Study Journey</span>
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </button>
-              <button onClick={() => { isFocusActive ? (isFocusPaused ? resumeTimer() : pauseTimer()) : startTimer(45); }} className="px-space-md py-space-sm rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-lg text-label-lg font-medium flex items-center gap-space-xs transition-colors group">
+              <button onClick={() => { isFocusActive ? (isFocusPaused ? resumeTimer() : pauseTimer()) : startTimer(45); }} className="px-space-md py-space-sm rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-lg text-label-lg font-medium flex items-center gap-space-xs transition-colors border border-neutral-700/60 group cursor-pointer">
                 <span className="material-symbols-outlined text-secondary text-[20px] group-hover:scale-110 transition-transform" style={{ fontVariationSettings: "'FILL' 1" }}>{isFocusActive && !isFocusPaused ? 'pause' : 'play_arrow'}</span>
                 <span>{isFocusActive && !isFocusPaused ? 'Pause Fokus' : isFocusPaused ? 'Resume Fokus' : 'Mulai Fokus'}</span>
               </button>
@@ -765,7 +765,7 @@ const Dashboard = () => {
             <span className="font-label-sm text-label-sm font-bold text-on-surface uppercase tracking-wider">Engine Status</span>
             <span className="block font-label-sm text-label-sm text-secondary">Session Optimized</span>
           </div>
-          <button className="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center hover:bg-primary-fixed transition-colors shadow-[0_0_12px_rgba(208,188,255,0.25)]">
+          <button className="w-10 h-10 rounded-lg bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center transition-colors border border-purple-500/40">
             <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
           </button>
         </div>

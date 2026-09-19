@@ -53,6 +53,8 @@ interface GlobalContextType {
   setIsCommandPaletteOpen: (val: boolean) => void;
   isSettingsModalOpen: boolean;
   setIsSettingsModalOpen: (val: boolean) => void;
+  isAiChatOpen: boolean;
+  setIsAiChatOpen: (val: boolean | ((prev: boolean) => boolean)) => void;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -108,6 +110,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   // Modals State
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isAiChatOpen, setIsAiChatOpen] = useState(false);
 
   // Global Keyboard Shortcuts
   useEffect(() => {
@@ -172,7 +175,9 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
         isCommandPaletteOpen,
         setIsCommandPaletteOpen,
         isSettingsModalOpen,
-        setIsSettingsModalOpen
+        setIsSettingsModalOpen,
+        isAiChatOpen,
+        setIsAiChatOpen
       }}
     >
       {children}

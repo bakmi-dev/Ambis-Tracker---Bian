@@ -5,6 +5,7 @@ import Header from './Header';
 import CommandPalette from '../modals/CommandPalette';
 import AudioModal from '../modals/AudioModal';
 import SettingsModal from '../modals/SettingsModal';
+import AiChatPanel from '../modals/AiChatPanel';
 
 interface LayoutProps {
   children: ReactNode;
@@ -29,6 +30,7 @@ const Layout = ({ children }: LayoutProps) => {
     <>
       <audio ref={audioRef} src="https://actions.google.com/sounds/v1/water/rain_on_roof.ogg" loop />
       <Sidebar />
+      <AiChatPanel />
       <div className="pl-72 flex flex-col min-h-screen">
         <Header />
         <main className="relative flex-1 pt-16 w-full px-space-lg py-space-lg bg-surface">
