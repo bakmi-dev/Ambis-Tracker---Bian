@@ -4,7 +4,7 @@ import Avatar from "../common/Avatar";
 
 const navClasses = ({ isActive }: { isActive: boolean }) =>
   isActive
-    ? "flex items-center gap-space-sm px-space-md py-space-sm transition-all bg-cyan-500/15 text-cyan-300 font-semibold rounded-lg border border-cyan-500/30"
+    ? "flex items-center gap-space-sm px-space-md py-space-sm transition-all bg-purple-600 text-white font-semibold rounded-lg border border-purple-500/40"
     : "flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface border border-transparent transition-all";
 
 const Sidebar = () => {
@@ -21,7 +21,7 @@ const Sidebar = () => {
   } = useGlobalState();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-72 bg-surface-container-lowest z-50 flex flex-col justify-between border-r border-neutral-800">
+    <aside className="fixed left-0 top-0 h-screen w-72 bg-surface-container-lowest z-50 flex flex-col justify-between border-r border-white/5">
       <div className="flex flex-col h-full overflow-hidden">
         <div className="p-space-lg pb-space-sm">
           <div className="flex items-center justify-between gap-space-xs">
@@ -33,7 +33,7 @@ const Sidebar = () => {
                 </span>
               </div>
             </div>
-            <span className="px-2 py-0.5 rounded bg-surface-container font-mono text-[10px] text-cyan-400 font-semibold tracking-wider uppercase border border-cyan-500/20">
+            <span className="px-2 py-0.5 rounded bg-surface-container font-mono text-[10px] text-secondary font-semibold tracking-wider uppercase border border-secondary/30">
               V3.2
             </span>
           </div>
@@ -44,21 +44,21 @@ const Sidebar = () => {
               onClick={() => setIsAiChatOpen(prev => !prev)}
               className={`w-full px-space-md py-2.5 rounded-lg flex items-center justify-between text-left transition-all border group cursor-pointer ${
                 isAiChatOpen
-                  ? 'bg-cyan-950/30 border-cyan-500/50 text-white'
-                  : 'bg-surface-container-low hover:bg-surface-container border-neutral-800 hover:border-neutral-700 text-on-surface'
+                  ? 'bg-purple-950/40 border-purple-500/50 text-white'
+                  : 'bg-surface-container-low hover:bg-surface-container border-white/5 hover:border-neutral-700/60 text-on-surface'
               }`}
               title="Buka / Tutup Ambis AI Assistant"
             >
               <div className="flex items-center gap-space-sm min-w-0">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors flex-shrink-0 ${
                   isAiChatOpen 
-                    ? 'bg-cyan-500 text-neutral-950 font-bold' 
-                    : 'bg-surface-container group-hover:bg-cyan-500/10 text-cyan-400 border border-neutral-700/60 group-hover:border-cyan-500/30'
+                    ? 'bg-purple-600 text-white font-bold' 
+                    : 'bg-surface-container group-hover:bg-purple-600/20 text-purple-400 border border-neutral-700/60 group-hover:border-purple-500/40'
                 }`}>
                   <span className="material-symbols-outlined text-[19px]">smart_toy</span>
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="font-mono text-[10px] font-bold text-cyan-400 group-hover:text-cyan-300 uppercase tracking-widest leading-tight">
+                  <span className="font-mono text-[10px] font-bold text-purple-400 group-hover:text-purple-300 uppercase tracking-widest leading-tight">
                     AI ASSISTANT
                   </span>
                   <span className="font-body-sm text-body-sm font-semibold text-on-surface truncate">
@@ -69,7 +69,7 @@ const Sidebar = () => {
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-surface-container-low"></span>
                 <span className={`material-symbols-outlined text-[18px] transition-transform duration-200 ${
-                  isAiChatOpen ? 'rotate-90 text-cyan-400' : 'text-on-surface-variant group-hover:text-on-surface'
+                  isAiChatOpen ? 'rotate-90 text-purple-400' : 'text-on-surface-variant group-hover:text-on-surface'
                 }`}>
                   chevron_right
                 </span>

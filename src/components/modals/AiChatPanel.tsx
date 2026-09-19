@@ -103,14 +103,14 @@ const AiChatPanel: React.FC = () => {
       )}
 
       <div
-        className={`fixed left-0 md:left-72 top-0 h-screen w-full md:w-96 bg-surface-container-lowest border-r border-neutral-800 z-40 flex flex-col shadow-2xl transition-all duration-300 transform ${
+        className={`fixed left-0 md:left-72 top-0 h-screen w-full md:w-96 bg-surface-container-lowest border-r border-white/5 z-40 flex flex-col shadow-2xl transition-all duration-300 transform ${
           isAiChatOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : '-translate-x-full opacity-0 pointer-events-none'
         }`}
       >
         {/* Terminal AI Header */}
-        <div className="p-4 border-b border-neutral-800 bg-surface-container-lowest flex items-center justify-between flex-shrink-0">
+        <div className="p-4 border-b border-white/5 bg-surface-container-lowest flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+            <div className="w-8 h-8 rounded-lg bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-purple-400">
               <span className="material-symbols-outlined text-[19px]">smart_toy</span>
             </div>
             <div>
@@ -129,7 +129,7 @@ const AiChatPanel: React.FC = () => {
 
           <button
             onClick={() => setIsAiChatOpen(false)}
-            className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors cursor-pointer border border-neutral-800"
+            className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors cursor-pointer border border-white/5"
             title="Tutup Panel AI"
           >
             <span className="material-symbols-outlined text-[18px]">close</span>
@@ -137,12 +137,12 @@ const AiChatPanel: React.FC = () => {
         </div>
 
         {/* Quick Suggestion Chips */}
-        <div className="px-4 py-2.5 bg-surface-container-low/40 border-b border-neutral-800/60 overflow-x-auto no-scrollbar flex items-center gap-2 flex-shrink-0">
+        <div className="px-4 py-2.5 bg-surface-container-low/40 border-b border-white/5 overflow-x-auto no-scrollbar flex items-center gap-2 flex-shrink-0">
           {QUICK_PROMPTS.map((prompt, idx) => (
             <button
               key={idx}
               onClick={() => handleSend(prompt)}
-              className="text-[11px] font-mono whitespace-nowrap px-2.5 py-1 rounded-md bg-surface-container border border-neutral-700/60 text-on-surface-variant hover:text-white hover:border-cyan-500/50 hover:bg-cyan-950/20 transition-colors cursor-pointer"
+              className="text-[11px] font-mono whitespace-nowrap px-2.5 py-1 rounded-md bg-surface-container border border-white/5 text-on-surface-variant hover:text-white hover:border-purple-500/50 hover:bg-purple-950/30 transition-colors cursor-pointer"
             >
               {prompt}
             </button>
@@ -194,8 +194,8 @@ const AiChatPanel: React.FC = () => {
         </div>
 
         {/* Input Footer */}
-        <div className="p-3 bg-surface-container-lowest border-t border-neutral-800 flex-shrink-0">
-          <div className="flex items-center gap-2 bg-surface-container-low border border-neutral-800 rounded-xl p-1.5 focus-within:border-cyan-500/50 transition-colors">
+        <div className="p-3 bg-surface-container-lowest border-t border-white/5 flex-shrink-0">
+          <div className="flex items-center gap-2 bg-surface-container-low border border-white/5 rounded-xl p-1.5 focus-within:border-primary/50 transition-colors">
             <input
               ref={inputRef}
               type="text"
@@ -208,7 +208,7 @@ const AiChatPanel: React.FC = () => {
             <button
               onClick={() => handleSend()}
               disabled={!inputValue.trim() || isTyping}
-              className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed text-neutral-950 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
             >
               <span>Kirim</span>
               <span className="material-symbols-outlined text-[14px]">send</span>
@@ -216,7 +216,7 @@ const AiChatPanel: React.FC = () => {
           </div>
           <div className="mt-1.5 flex items-center justify-between px-1">
             <span className="font-mono text-[9px] text-outline">Tekan [Enter] untuk mengirim</span>
-            <span className="font-mono text-[9px] text-cyan-400 font-medium">Ambis AI Engine</span>
+            <span className="font-mono text-[9px] text-primary font-medium">Ambis AI Engine</span>
           </div>
         </div>
       </div>

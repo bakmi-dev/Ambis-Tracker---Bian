@@ -51,21 +51,21 @@ const Header = () => {
   const hasActiveAudio = isPlayingBinaural || audioMode === 'spotify';
 
   return (
-    <header className="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl z-40 border-b border-neutral-800">
+    <header className="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl z-40 border-b border-white/5">
       <div className="h-16 w-full px-space-lg flex items-center justify-between gap-space-md">
         <div className="flex-1 max-w-xl">
           <div 
             className="relative flex items-center cursor-pointer group"
             onClick={() => setIsCommandPaletteOpen(true)}
           >
-            <span className="material-symbols-outlined absolute left-space-md text-outline group-hover:text-cyan-400 transition-colors text-[18px]">search</span>
+            <span className="material-symbols-outlined absolute left-space-md text-outline group-hover:text-primary transition-colors text-[18px]">search</span>
             <input 
-              className="w-full h-10 pl-10 pr-16 bg-surface-container-low border border-neutral-800 text-on-surface placeholder:text-outline font-body-sm text-body-sm rounded-xl focus:outline-none focus:border-cyan-500/50 transition-colors cursor-pointer group-hover:border-neutral-700" 
+              className="w-full h-10 pl-10 pr-16 bg-surface-container-low border border-white/5 text-on-surface placeholder:text-outline font-body-sm text-body-sm rounded-xl focus:outline-none focus:border-primary/50 transition-colors cursor-pointer group-hover:border-white/10" 
               placeholder="Search actions, tasks, notes..." 
               readOnly 
               type="text" 
             />
-            <kbd className="absolute right-space-md px-1.5 py-0.5 rounded bg-surface-container border border-neutral-700/60 text-on-surface-variant font-label-sm text-label-sm font-semibold pointer-events-none">⌘K</kbd>
+            <kbd className="absolute right-space-md px-1.5 py-0.5 rounded bg-surface-container border border-white/10 text-on-surface-variant font-label-sm text-label-sm font-semibold pointer-events-none">⌘K</kbd>
           </div>
         </div>
         
