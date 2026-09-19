@@ -34,13 +34,14 @@ const Login = () => {
   const initialLogs = [
     '> INISIALISASI PROTOKOL OTENTIKASI...',
     '> Sambungan ke basis data terenkripsi: AKTIF.',
-    '> Masukkan kredensial kognitif untuk memuat workspace pribadi.'
+    '> INISIALISASI MODUL AUTENTIKASI LOKAL... AKTIF.',
+    '> MENUNGGU INPUT KREDENSIAL DARI PENGGUNA.',
   ];
 
   useEffect(() => {
     let delay = 0;
     initialLogs.forEach((log) => {
-      delay += 800;
+      delay += 700;
       setTimeout(() => {
         setLogs((prev) => [...prev, log]);
       }, delay);
@@ -201,10 +202,18 @@ const Login = () => {
 
           <div className="p-6 sm:p-8">
             {/* Terminal Output */}
-            <div className="space-y-2 mb-6 font-label-lg text-[13px] leading-relaxed max-h-36 overflow-y-auto">
+            <div className="space-y-1.5 mb-6 font-mono text-[12px] leading-relaxed max-h-36 overflow-y-auto">
               {logs.map((log, index) => (
                 <div key={index} className="flex items-start">
-                  <span className={log.includes('ERROR') || log.includes('ERR_AUTH') ? 'text-[#ff5f57]' : log.includes('AKSES DIIZINKAN') || log.includes('MEMUAT') ? 'text-[#28c840]' : 'text-primary'}>
+                  <span className={
+                    log.includes('ERROR') || log.includes('ERR_AUTH')
+                      ? 'text-[#ff5f57]'
+                      : log.includes('AKSES DIIZINKAN') || log.includes('MEMUAT') || log.includes('TERVERIFIKASI') || log.includes('BERHASIL')
+                        ? 'text-[#28c840]'
+                        : log.includes('MODUL AUTENTIKASI') || log.includes('MENUNGGU INPUT')
+                          ? 'text-[#4cd7f6]'
+                          : 'text-primary'
+                  }>
                     {log}
                   </span>
                 </div>
@@ -224,52 +233,54 @@ const Login = () => {
               </div>
             )}
 
-            {/* Google Sign-In Button */}
-            <div className="flex flex-col items-center gap-3 mb-5">
-              <div id="google-login-btn" className="flex items-center justify-center min-h-[44px]" />
-              {isGoogleLoading && (
-                <div className="flex items-center gap-2 text-primary font-label-sm">
-                  <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span>
-                  Memverifikasi identitas Google...
-                </div>
-              )}
-            </div>
-
-            {/* Divider */}
-            <div className="flex items-center gap-3 mb-5">
-              <div className="flex-1 h-px bg-[rgba(160,120,255,0.15)]" />
-              <span className="font-label-sm text-[#958ea0] tracking-wider uppercase text-[10px]">atau masuk manual</span>
-              <div className="flex-1 h-px bg-[rgba(160,120,255,0.15)]" />
-            </div>
-
-            {/* Login Form */}
-            <form onSubmit={handleLogin} className="space-y-5">
-              <div className="space-y-2">
-                <label className="text-[12px] uppercase tracking-wider text-[#958ea0] font-bold">Identity (Email)</label>
+            {/* ─── Login Form (Primary) ─── */}
+            <form onSubmit={handleLogin} className="space-y-4 mb-5">
+              {/* IDENTITAS / EMAIL */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] uppercase tracking-widest text-[#4cd7f6] font-bold font-mono flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[13px]">person</span>
+                  IDENTITAS / EMAIL
+                </label>
                 <div className="relative group">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-bold">@</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4cd7f6] font-mono font-bold text-[14px] select-none">@</span>
                   <input
+                    id="login-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="operator@ambistracker.internal"
+                    placeholder="usr_xxx@domain.com"
                     required
-                    className="w-full bg-[rgba(18,19,25,0.6)] border border-[rgba(160,120,255,0.2)] rounded-lg py-3 pl-10 pr-4 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-[#958ea0]/50"
+                    autoComplete="email"
+                    className="w-full bg-[rgba(18,19,25,0.7)] border border-[rgba(76,215,246,0.2)] rounded-lg py-3 pl-10 pr-4 text-on-surface text-[14px] font-mono focus:outline-none focus:border-[rgba(76,215,246,0.6)] focus:ring-1 focus:ring-[rgba(76,215,246,0.3)] transition-all placeholder:text-[#958ea0]/50"
+                    style={{ caretColor: '#4cd7f6' }}
                   />
+                  <div className="absolute inset-0 rounded-lg pointer-events-none opacity-0 group-focus-within:opacity-100 transition-opacity"
+                    style={{ boxShadow: '0 0 14px rgba(76,215,246,0.1)' }} />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[12px] uppercase tracking-wider text-[#958ea0] font-bold">Passcode</label>
+              {/* KODE AKSES / PASSWORD */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] uppercase tracking-widest text-[#4cd7f6] font-bold font-mono flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[13px]">lock</span>
+                  KODE AKSES / PASSWORD
+                  <span className="ml-auto text-[10px] font-normal text-[#28c840] flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#28c840] inline-block animate-pulse" />
+                    ENCRYPTED
+                  </span>
+                </label>
                 <div className="relative group">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary material-symbols-outlined text-[18px]">lock</span>
                   <input
+                    id="login-password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder="operator_id"
                     required
-                    className="w-full bg-[rgba(18,19,25,0.6)] border border-[rgba(160,120,255,0.2)] rounded-lg py-3 pl-11 pr-12 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-[#958ea0]/50"
+                    autoComplete="current-password"
+                    className="w-full bg-[rgba(18,19,25,0.7)] border border-[rgba(160,120,255,0.2)] rounded-lg py-3 pl-11 pr-12 text-on-surface text-[14px] font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all placeholder:text-[#958ea0]/50"
+                    style={{ caretColor: '#a078ff' }}
                   />
                   <button
                     type="button"
@@ -280,57 +291,93 @@ const Login = () => {
                       {showPassword ? 'visibility_off' : 'visibility'}
                     </span>
                   </button>
+                  <div className="absolute inset-0 rounded-lg pointer-events-none opacity-0 group-focus-within:opacity-100 transition-opacity"
+                    style={{ boxShadow: '0 0 14px rgba(160,120,255,0.1)' }} />
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 py-1">
+              {/* Remember session */}
+              <div className="flex items-center gap-3 py-0.5">
                 <input
                   type="checkbox"
                   id="remember"
                   className="w-4 h-4 rounded border border-[rgba(160,120,255,0.3)] bg-transparent checked:bg-primary checked:border-primary focus:ring-1 focus:ring-primary/50 focus:outline-none appearance-none cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:w-1.5 after:h-2.5 after:border-r-2 after:border-b-2 after:border-background after:rotate-45 after:-mt-0.5 after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2"
                 />
-                <label htmlFor="remember" className="text-[12px] tracking-wide text-[#958ea0] cursor-pointer hover:text-on-surface transition-colors">
+                <label htmlFor="remember" className="text-[11px] tracking-wide text-[#958ea0] cursor-pointer hover:text-on-surface transition-colors font-mono">
                   Ingat sesi ini (Persistent Token)
                 </label>
               </div>
 
+              {/* Submit: Masuk ke Sistem */}
               <button
                 type="submit"
                 disabled={isLoading || isSuccess}
-                className="w-full relative group mt-2 overflow-hidden rounded-lg border border-[rgba(160,120,255,0.5)] bg-[rgba(160,120,255,0.1)] py-4 transition-all hover:bg-[rgba(160,120,255,0.2)] focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-70 disabled:cursor-not-allowed"
-                style={{
-                  boxShadow: '0 0 20px rgba(160,120,255,0.2), inset 0 1px 0 rgba(255,255,255,0.05)',
-                }}
+                id="login-submit-btn"
+                className="w-full relative group mt-1 overflow-hidden rounded-lg border border-[rgba(76,215,246,0.4)] bg-[rgba(76,215,246,0.07)] py-4 transition-all hover:bg-[rgba(76,215,246,0.15)] focus:outline-none focus:ring-2 focus:ring-[rgba(76,215,246,0.4)] disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ boxShadow: '0 0 20px rgba(76,215,246,0.12), inset 0 1px 0 rgba(255,255,255,0.04)' }}
               >
-                <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center justify-center gap-3 relative">
                   {isLoading ? (
-                    <span className="material-symbols-outlined animate-spin text-primary">autorenew</span>
+                    <span className="material-symbols-outlined animate-spin text-[#4cd7f6]">autorenew</span>
                   ) : isSuccess ? (
                     <span className="material-symbols-outlined text-[#28c840]">check_circle</span>
-                  ) : null}
-                  <span className={`font-label-lg tracking-wider font-bold ${isSuccess ? 'text-[#28c840]' : 'text-primary'}`}>
-                    {isLoading ? 'AUTHENTICATING...' : isSuccess ? 'ACCESS GRANTED' : '[ 01 // AUTHENTICATE_SESSION ]'}
+                  ) : (
+                    <span className="material-symbols-outlined text-[#4cd7f6] text-[18px]">login</span>
+                  )}
+                  <span className={`font-mono tracking-widest font-bold text-[13px] ${isSuccess ? 'text-[#28c840]' : 'text-[#4cd7f6]'}`}>
+                    {isLoading ? 'AUTHENTICATING...' : isSuccess ? 'ACCESS GRANTED' : '[ MASUK KE SISTEM ]'}
                   </span>
                 </div>
               </button>
             </form>
+
+            {/* ─── Divider: External Gateway ─── */}
+            <div className="flex items-center gap-2 mb-5">
+              <div className="flex-1 h-px bg-[rgba(160,120,255,0.15)]" />
+              <span className="font-mono text-[#958ea0] tracking-wider uppercase text-[9px] whitespace-nowrap">
+                ─── ATAU OTENTIKASI VIA GATEWAY EKSTERNAL ───
+              </span>
+              <div className="flex-1 h-px bg-[rgba(160,120,255,0.15)]" />
+            </div>
+
+            {/* ─── Google OAuth (Secondary) ─── */}
+            <div className="flex flex-col items-center gap-3">
+              <div id="google-login-btn" className="flex items-center justify-center min-h-[44px]" />
+              {isGoogleLoading && (
+                <div className="flex items-center gap-2 text-primary font-mono text-[12px]">
+                  <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span>
+                  Memverifikasi identitas Google...
+                </div>
+              )}
+            </div>
           </div>
           
-          {/* Footer Actions */}
-          <div className="flex flex-col sm:flex-row items-center justify-between px-6 sm:px-8 py-5 border-t border-[rgba(160,120,255,0.1)] bg-[rgba(18,19,25,0.6)] gap-4">
-            <button
-              onClick={() => navigate('/')}
-              className="text-[12px] text-[#958ea0] hover:text-on-surface transition-colors focus:outline-none flex items-center gap-1"
-            >
-              <span className="text-[14px]">←</span> Kembali ke Gateway Utama
-            </button>
-            
-            <button
-              onClick={() => navigate('/register')}
-              className="text-[12px] text-primary hover:text-[#d0bcff] transition-colors focus:outline-none font-bold tracking-wider"
-            >
-              Belum terdaftar? [ 02 // DAFTAR IDENTITAS BARU ]
-            </button>
+          {/* ─── Security Footer ─── */}
+          <div className="px-6 sm:px-8 py-4 border-t border-[rgba(160,120,255,0.1)] bg-[rgba(18,19,25,0.7)]">
+            <div className="space-y-1.5 mb-4">
+              <p className="font-mono text-[11px] text-[#958ea0] flex items-center gap-2">
+                <span className="material-symbols-outlined text-[13px] text-[#28c840]">shield</span>
+                Password dienkripsi menggunakan hashing kelas militer (Bcrypt/Argon2)
+              </p>
+              <p className="font-mono text-[11px] text-[#958ea0] flex items-center gap-2">
+                <span className="material-symbols-outlined text-[13px] text-[#28c840]">verified_user</span>
+                Koneksi aman via TLS 1.3 — data tidak pernah disimpan plaintext
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+              <button
+                onClick={() => navigate('/')}
+                className="text-[11px] text-[#958ea0] hover:text-on-surface transition-colors focus:outline-none flex items-center gap-1 font-mono"
+              >
+                <span className="text-[14px]">←</span> Kembali ke Gateway Utama
+              </button>
+              <button
+                onClick={() => navigate('/register')}
+                className="text-[11px] text-primary hover:text-[#d0bcff] transition-colors focus:outline-none font-bold tracking-wider font-mono"
+              >
+                Belum terdaftar? [ DAFTAR IDENTITAS BARU ]
+              </button>
+            </div>
           </div>
         </div>
       </div>

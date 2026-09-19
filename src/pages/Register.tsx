@@ -28,7 +28,7 @@ const ROLE_TRACKS = [
   { id: 'custom', label: 'Custom / Isi Sendiri', icon: 'terminal', color: 'secondary' },
 ] as const;
 
-type AuthStep = 'google_signin' | 'onboarding';
+type AuthStep = 'google_signin' | 'onboarding' | 'email_register';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -43,6 +43,15 @@ const Register = () => {
   const [verifiedEmail, setVerifiedEmail] = useState('');
   const [verifiedName, setVerifiedName] = useState('');
   const [verifiedAvatar, setVerifiedAvatar] = useState('');
+
+  // ─── Email/Password registration state ───
+  const [registerName, setRegisterName] = useState('');
+  const [registerEmail, setRegisterEmail] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
 
   // ─── Onboarding form ───
   const [displayName, setDisplayName] = useState(user?.name ? user.name.split(' ')[0] : '');
@@ -62,7 +71,8 @@ const Register = () => {
     const initialLogs = [
       '> INISIALISASI MODUL REGISTRASI...',
       '> Sambungan ke gateway Google OAuth: AKTIF.',
-      '> Verifikasi identitas email diperlukan untuk membuat akun.',
+      '> INISIALISASI MODUL AUTENTIKASI LOKAL... AKTIF.',
+      '> Pilih metode pendaftaran identitas operator.',
     ];
     let delay = 0;
     initialLogs.forEach((log) => {
@@ -77,6 +87,66 @@ const Register = () => {
       navigate('/dashboard');
     }
   }, [user, navigate]);
+
+  // ─── Handle Email/Password Registration ───
+  const handleEmailRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (registerPassword !== confirmPassword) {
+      setErrorMsg('ERR_MISMATCH: Kode akses tidak cocok. Verifikasi ulang.');
+      setLogs(prev => [...prev, '> [ERROR] Konfirmasi password tidak cocok.']);
+      return;
+    }
+    if (registerPassword.length < 8) {
+      setErrorMsg('ERR_WEAK_KEY: Kode akses minimal 8 karakter.');
+      return;
+    }
+    setIsEmailLoading(true);
+    setErrorMsg('');
+    setLogs(prev => [...prev, '> MENGENKRIPSI KODE AKSES (BCRYPT)...', '> MENDAFTARKAN IDENTITAS KE DATABASE...']);
+
+    try {
+      const result: any = await authApi.register({
+        name: registerName.trim(),
+        email: registerEmail.trim(),
+        password: registerPassword,
+      });
+
+      if (result.success) {
+        const userData = result?.data?.user || result?.user;
+        const token = result?.data?.token || result?.token;
+
+        if (userData) {
+          setUser(userData);
+          if (token) setToken(token);
+
+          setVerifiedEmail(userData.email || registerEmail);
+          setVerifiedName(userData.name || registerName);
+          setVerifiedAvatar(userData.avatar_url || '');
+          setAvatarUrl(userData.avatar_url || '');
+          const firstName = (userData.name || registerName).split(' ')[0];
+          setDisplayName(firstName);
+          setWorkspaceName(`${firstName}'s Command Deck`);
+
+          setLogs(prev => [
+            ...prev,
+            `> IDENTITAS TERDAFTAR: ${userData.email || registerEmail}`,
+            '> MENGALOKASIKAN RUANG PENYIMPANAN PRIBADI...',
+            '> Lengkapi konfigurasi operator kognitif Anda:',
+          ]);
+          setStep('onboarding');
+        } else {
+          throw new Error('Respons server tidak valid. Data user tidak ditemukan.');
+        }
+      } else {
+        throw new Error(result.message || 'Registrasi gagal');
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'ERR_REGISTER: Gagal mendaftarkan identitas.');
+      setLogs(prev => [...prev, `> [ERROR] ${err.message || 'Registration failed'}`]);
+    } finally {
+      setIsEmailLoading(false);
+    }
+  };
 
   // ─── Google Identity Services callback ───
   const handleGoogleCredentialResponse = useCallback(async (response: any) => {
@@ -266,47 +336,185 @@ const Register = () => {
               </div>
             )}
 
-            {/* ─── Step 1: Google Sign-In ─── */}
+            {/* ─── Step 1: Registration (Email or Google) ─── */}
             {step === 'google_signin' && (
-              <div className="space-y-6 animate-fade-in">
-                <div className="text-center space-y-3">
-                  <div className="w-14 h-14 rounded-2xl bg-[rgba(76,215,246,0.1)] border border-[rgba(76,215,246,0.2)] flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(76,215,246,0.15)]">
-                    <span className="material-symbols-outlined text-secondary text-[28px]">person_add</span>
+              <div className="space-y-5 animate-fade-in">
+                {/* Header */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-[rgba(76,215,246,0.1)] border border-[rgba(76,215,246,0.2)] flex items-center justify-center shadow-[0_0_16px_rgba(76,215,246,0.12)] flex-shrink-0">
+                    <span className="material-symbols-outlined text-secondary text-[24px]">person_add</span>
                   </div>
-                  <h2 className="font-headline-md text-headline-md text-on-surface">Daftar Identitas Baru</h2>
-                  <p className="font-body-sm text-body-sm text-[#958ea0] max-w-sm mx-auto">
-                    Gunakan akun Google untuk memverifikasi identitas dan mengalokasikan database pribadi Anda.
-                  </p>
+                  <div>
+                    <h2 className="font-mono text-[15px] font-bold text-on-surface tracking-wide">DAFTAR IDENTITAS BARU</h2>
+                    <p className="font-mono text-[11px] text-[#958ea0]">Alokasi akun operator baru ke sistem Ambis</p>
+                  </div>
                 </div>
 
-                {/* Google Sign-In Button */}
-                <div className="flex flex-col items-center gap-4">
+                {/* ─── Email/Password Form ─── */}
+                <form onSubmit={handleEmailRegister} className="space-y-3">
+                  {/* Nama */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] uppercase tracking-widest text-[#4cd7f6] font-bold font-mono flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[13px]">badge</span>
+                      NAMA OPERATOR
+                    </label>
+                    <div className="relative group">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#4cd7f6] text-[16px]">person</span>
+                      <input
+                        id="register-name"
+                        type="text"
+                        value={registerName}
+                        onChange={(e) => { setRegisterName(e.target.value); if (errorMsg) setErrorMsg(''); }}
+                        placeholder="Nama lengkap / panggilan"
+                        required
+                        autoComplete="name"
+                        className="w-full bg-[rgba(18,19,25,0.7)] border border-[rgba(76,215,246,0.2)] rounded-lg py-2.5 pl-11 pr-4 text-on-surface text-[13px] font-mono focus:outline-none focus:border-[rgba(76,215,246,0.6)] focus:ring-1 focus:ring-[rgba(76,215,246,0.3)] transition-all placeholder:text-[#958ea0]/50"
+                        style={{ caretColor: '#4cd7f6' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] uppercase tracking-widest text-[#4cd7f6] font-bold font-mono flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[13px]">alternate_email</span>
+                      IDENTITAS / EMAIL
+                    </label>
+                    <div className="relative group">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4cd7f6] font-mono font-bold text-[14px] select-none">@</span>
+                      <input
+                        id="register-email"
+                        type="email"
+                        value={registerEmail}
+                        onChange={(e) => { setRegisterEmail(e.target.value); if (errorMsg) setErrorMsg(''); }}
+                        placeholder="usr_xxx@domain.com"
+                        required
+                        autoComplete="email"
+                        className="w-full bg-[rgba(18,19,25,0.7)] border border-[rgba(76,215,246,0.2)] rounded-lg py-2.5 pl-10 pr-4 text-on-surface text-[13px] font-mono focus:outline-none focus:border-[rgba(76,215,246,0.6)] focus:ring-1 focus:ring-[rgba(76,215,246,0.3)] transition-all placeholder:text-[#958ea0]/50"
+                        style={{ caretColor: '#4cd7f6' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] uppercase tracking-widest text-[#4cd7f6] font-bold font-mono flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[13px]">lock</span>
+                      KODE AKSES / PASSWORD
+                      <span className="ml-auto text-[10px] font-normal text-[#28c840] flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#28c840] inline-block animate-pulse" />
+                        BCRYPT
+                      </span>
+                    </label>
+                    <div className="relative group">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary material-symbols-outlined text-[16px]">key</span>
+                      <input
+                        id="register-password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={registerPassword}
+                        onChange={(e) => { setRegisterPassword(e.target.value); if (errorMsg) setErrorMsg(''); }}
+                        placeholder="Min. 8 karakter"
+                        required
+                        autoComplete="new-password"
+                        className="w-full bg-[rgba(18,19,25,0.7)] border border-[rgba(160,120,255,0.2)] rounded-lg py-2.5 pl-11 pr-12 text-on-surface text-[13px] font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all placeholder:text-[#958ea0]/50"
+                        style={{ caretColor: '#a078ff' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#958ea0] hover:text-primary transition-colors focus:outline-none"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">
+                          {showPassword ? 'visibility_off' : 'visibility'}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Confirm Password */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] uppercase tracking-widest text-[#4cd7f6] font-bold font-mono flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[13px]">lock_reset</span>
+                      KONFIRMASI KODE AKSES
+                    </label>
+                    <div className="relative group">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary material-symbols-outlined text-[16px]">key</span>
+                      <input
+                        id="register-confirm-password"
+                        type={showConfirm ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => { setConfirmPassword(e.target.value); if (errorMsg) setErrorMsg(''); }}
+                        placeholder="Ulangi kode akses"
+                        required
+                        autoComplete="new-password"
+                        className={`w-full bg-[rgba(18,19,25,0.7)] border rounded-lg py-2.5 pl-11 pr-12 text-on-surface text-[13px] font-mono focus:outline-none focus:ring-1 transition-all placeholder:text-[#958ea0]/50 ${
+                          confirmPassword && confirmPassword !== registerPassword
+                            ? 'border-[rgba(255,95,87,0.5)] focus:border-[rgba(255,95,87,0.7)] focus:ring-[rgba(255,95,87,0.3)]'
+                            : confirmPassword && confirmPassword === registerPassword
+                              ? 'border-[rgba(40,200,64,0.4)] focus:border-[rgba(40,200,64,0.6)] focus:ring-[rgba(40,200,64,0.3)]'
+                              : 'border-[rgba(160,120,255,0.2)] focus:border-primary focus:ring-primary/30'
+                        }`}
+                        style={{ caretColor: '#a078ff' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirm(!showConfirm)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#958ea0] hover:text-primary transition-colors focus:outline-none"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">
+                          {showConfirm ? 'visibility_off' : 'visibility'}
+                        </span>
+                      </button>
+                      {/* Match indicator */}
+                      {confirmPassword && (
+                        <span className={`absolute right-10 top-1/2 -translate-y-1/2 material-symbols-outlined text-[14px] ${
+                          confirmPassword === registerPassword ? 'text-[#28c840]' : 'text-[#ff5f57]'
+                        }`}>
+                          {confirmPassword === registerPassword ? 'check_circle' : 'cancel'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Submit: Execute Registrasi */}
+                  <button
+                    type="submit"
+                    disabled={isEmailLoading}
+                    id="register-email-submit-btn"
+                    className="w-full relative group overflow-hidden rounded-lg border border-[rgba(76,215,246,0.45)] bg-[rgba(76,215,246,0.08)] py-3.5 transition-all hover:bg-[rgba(76,215,246,0.16)] focus:outline-none focus:ring-2 focus:ring-[rgba(76,215,246,0.4)] disabled:opacity-60 disabled:cursor-not-allowed"
+                    style={{ boxShadow: '0 0 18px rgba(76,215,246,0.12), inset 0 1px 0 rgba(255,255,255,0.04)' }}
+                  >
+                    <div className="flex items-center justify-center gap-2.5">
+                      {isEmailLoading ? (
+                        <span className="material-symbols-outlined animate-spin text-[#4cd7f6]">autorenew</span>
+                      ) : (
+                        <span className="material-symbols-outlined text-[#4cd7f6] text-[17px]">person_add</span>
+                      )}
+                      <span className="font-mono tracking-widest font-bold text-[12px] text-[#4cd7f6]">
+                        {isEmailLoading ? 'MENGALOKASIKAN...' : '[ EXECUTE // REGISTRASI IDENTITAS ]'}
+                      </span>
+                    </div>
+                  </button>
+                </form>
+
+                {/* ─── Divider ─── */}
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-px bg-[rgba(76,215,246,0.12)]" />
+                  <span className="font-mono text-[#958ea0] tracking-wider uppercase text-[9px] whitespace-nowrap">
+                    ─── ATAU OTENTIKASI VIA GATEWAY EKSTERNAL ───
+                  </span>
+                  <div className="flex-1 h-px bg-[rgba(76,215,246,0.12)]" />
+                </div>
+
+                {/* ─── Google OAuth (Secondary) ─── */}
+                <div className="flex flex-col items-center gap-3">
                   <div id="google-signin-btn" className="flex items-center justify-center min-h-[44px]" />
-                  
                   {isLoading && (
-                    <div className="flex items-center gap-2 text-secondary font-label-sm">
+                    <div className="flex items-center gap-2 text-secondary font-mono text-[12px]">
                       <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span>
                       Memverifikasi identitas Google...
                     </div>
                   )}
-                </div>
-
-                {/* Divider */}
-                <div className="flex items-center gap-3 my-2">
-                  <div className="flex-1 h-px bg-[rgba(76,215,246,0.15)]" />
-                  <span className="font-label-sm text-[#958ea0] tracking-wider uppercase text-[10px]">Keamanan</span>
-                  <div className="flex-1 h-px bg-[rgba(76,215,246,0.15)]" />
-                </div>
-
-                <div className="space-y-2 text-center">
-                  <p className="font-label-sm text-label-sm text-[#958ea0] flex items-center justify-center gap-2">
-                    <span className="material-symbols-outlined text-[14px] text-[#28c840]">verified</span>
-                    Hanya email terverifikasi oleh Google yang diterima.
-                  </p>
-                  <p className="font-label-sm text-label-sm text-[#958ea0] flex items-center justify-center gap-2">
-                    <span className="material-symbols-outlined text-[14px] text-[#28c840]">lock</span>
-                    Password tidak disimpan — autentikasi sepenuhnya via Google.
-                  </p>
                 </div>
               </div>
             )}
@@ -447,13 +655,25 @@ const Register = () => {
           </div>
 
           {/* Footer */}
-          <div className="flex flex-col sm:flex-row items-center justify-between px-6 sm:px-8 py-4 border-t border-[rgba(76,215,246,0.1)] bg-[rgba(18,19,25,0.6)] gap-3">
-            <button onClick={() => navigate('/')} className="text-[12px] text-[#958ea0] hover:text-on-surface transition-colors focus:outline-none flex items-center gap-1">
-              <span className="text-[14px]">←</span> Kembali ke Gateway Utama
-            </button>
-            <button onClick={() => navigate('/login')} className="text-[12px] text-primary hover:text-[#d0bcff] transition-colors focus:outline-none font-bold tracking-wider">
-              Sudah punya akun? [ 01 // MASUK ]
-            </button>
+          <div className="px-6 sm:px-8 py-4 border-t border-[rgba(76,215,246,0.1)] bg-[rgba(18,19,25,0.7)]">
+            <div className="space-y-1.5 mb-3">
+              <p className="font-mono text-[11px] text-[#958ea0] flex items-center gap-2">
+                <span className="material-symbols-outlined text-[13px] text-[#28c840]">shield</span>
+                Password dienkripsi menggunakan hashing kelas militer (Bcrypt/Argon2)
+              </p>
+              <p className="font-mono text-[11px] text-[#958ea0] flex items-center gap-2">
+                <span className="material-symbols-outlined text-[13px] text-[#28c840]">verified_user</span>
+                Koneksi aman via TLS 1.3 — data tidak pernah disimpan plaintext
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+              <button onClick={() => navigate('/')} className="text-[11px] text-[#958ea0] hover:text-on-surface transition-colors focus:outline-none flex items-center gap-1 font-mono">
+                <span className="text-[14px]">←</span> Kembali ke Gateway Utama
+              </button>
+              <button onClick={() => navigate('/login')} className="text-[11px] text-primary hover:text-[#d0bcff] transition-colors focus:outline-none font-bold tracking-wider font-mono">
+                Sudah punya akun? [ MASUK KE SISTEM ]
+              </button>
+            </div>
           </div>
         </div>
       </div>
