@@ -46,11 +46,7 @@ const Sidebar = () => {
         <div className="p-space-lg pb-space-sm">
           <div className="flex items-center justify-between gap-space-xs">
             <div className="flex items-center gap-space-sm">
-              <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary shadow-[0_0_16px_rgba(208,188,255,0.25)]">
-                <span className="material-symbols-outlined text-[20px]">
-                  neurology
-                </span>
-              </div>
+              <img src="/logo.png" alt="Ambis Tracker Logo" className="w-8 h-8 object-contain rounded-lg" />
               <div>
                 <span className="font-headline-md text-headline-md tracking-tight font-bold text-on-surface leading-none block">
                   Ambis Tracker

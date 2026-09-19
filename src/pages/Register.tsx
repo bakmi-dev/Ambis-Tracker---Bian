@@ -286,7 +286,7 @@ const Register = () => {
 
       <div className="relative z-10 w-full max-w-xl mx-4 sm:mx-6 animate-terminal-appear">
         <div className="rounded-2xl border border-[rgba(76,215,246,0.3)] overflow-hidden bg-black/70 backdrop-blur-xl" style={{
-          boxShadow: '0 0 60px rgba(76,215,246,0.08), 0 25px 50px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)',
+          boxShadow: '0 25px 50px rgba(0,0,0,0.7)',
         }}>
           {/* Title Bar */}
           <div className="flex items-center justify-between px-5 py-3 border-b border-[rgba(76,215,246,0.2)] bg-[rgba(18,19,25,0.8)]">
@@ -295,9 +295,12 @@ const Register = () => {
               <div className="w-3 h-3 rounded-full bg-[#febc2e] shadow-[0_0_6px_rgba(254,188,46,0.4)]" />
               <div className="w-3 h-3 rounded-full bg-[#28c840] shadow-[0_0_6px_rgba(40,200,64,0.4)]" />
             </div>
-            <span className="font-label-md text-label-md text-[#958ea0] tracking-wider select-none">
-              auth@ambis-command-deck:~ {step === 'google_signin' ? 'register' : 'onboarding'}
-            </span>
+            <div className="flex items-center gap-2">
+              <img src="/logo.png" alt="Ambis Logo" className="w-4 h-4 object-contain" />
+              <span className="font-label-md text-label-md text-[#958ea0] tracking-wider select-none">
+                auth@ambis-command-deck:~ {step === 'google_signin' ? 'register' : 'onboarding'}
+              </span>
+            </div>
             <div className="w-[52px]" />
           </div>
 

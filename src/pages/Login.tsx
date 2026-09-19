@@ -178,13 +178,9 @@ const Login = () => {
       {/* Terminal Window */}
       <div className="relative z-10 w-full max-w-lg mx-4 sm:mx-6 animate-terminal-appear">
         <div
-          className="rounded-2xl border border-[rgba(160,120,255,0.3)] overflow-hidden bg-black/70 backdrop-blur-xl"
+          className="rounded-2xl border border-[rgba(160,120,255,0.2)] overflow-hidden bg-black/70 backdrop-blur-xl"
           style={{
-            boxShadow: `
-              0 0 60px rgba(160,120,255,0.1),
-              0 25px 50px rgba(0,0,0,0.7),
-              inset 0 1px 0 rgba(255,255,255,0.05)
-            `,
+            boxShadow: '0 25px 50px rgba(0,0,0,0.7)',
           }}
         >
           {/* Title Bar */}
@@ -194,9 +190,12 @@ const Login = () => {
               <div className="w-3 h-3 rounded-full bg-[#febc2e] shadow-[0_0_6px_rgba(254,188,46,0.4)]" />
               <div className="w-3 h-3 rounded-full bg-[#28c840] shadow-[0_0_6px_rgba(40,200,64,0.4)]" />
             </div>
-            <span className="font-label-md text-label-md text-[#958ea0] tracking-wider select-none">
-              auth@ambis-command-deck:~ login
-            </span>
+            <div className="flex items-center gap-2">
+              <img src="/logo.png" alt="Ambis Logo" className="w-4 h-4 object-contain" />
+              <span className="font-label-md text-label-md text-[#958ea0] tracking-wider select-none">
+                auth@ambis-command-deck:~ login
+              </span>
+            </div>
             <div className="w-[52px]" />
           </div>
 

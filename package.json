@@ -4,10 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -n \"FRONTEND,BACKEND\" -c \"cyan,magenta\" \"vite\" \"tsx backend/src/index.ts\"",
+    "dev:frontend": "vite",
+    "dev:backend": "tsx backend/src/index.ts",
+    "dev:all": "concurrently -n \"FRONTEND,BACKEND\" -c \"cyan,magenta\" \"vite\" \"tsx backend/src/index.ts\"",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prisma:generate": "prisma generate --schema=backend/prisma/schema.prisma"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
@@ -34,10 +38,12 @@
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
     "autoprefixer": "^10.5.6",
+    "concurrently": "^10.0.5",
     "oxlint": "^1.81.0",
     "postcss": "^8.5.28",
     "prisma": "^6.9.0",
     "tailwindcss": "^3.4.19",
+    "tsx": "^4.23.13",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
   }
