@@ -9,7 +9,7 @@ const navClasses = ({ isActive }: { isActive: boolean }) =>
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const { 
+  const {
     user,
     audioMode,
     isPlayingBinaural,
@@ -33,28 +33,23 @@ const Sidebar = () => {
                 </span>
               </div>
             </div>
-            <span className="px-2 py-0.5 rounded bg-surface-container font-mono text-[10px] text-secondary font-semibold tracking-wider uppercase border border-secondary/30">
-              V3.2
-            </span>
           </div>
 
           {/* AI Assistant Shortcut Button */}
           <div className="mt-space-md">
-            <button 
+            <button
               onClick={() => setIsAiChatOpen(prev => !prev)}
-              className={`w-full px-space-md py-2.5 rounded-lg flex items-center justify-between text-left transition-all border group cursor-pointer ${
-                isAiChatOpen
-                  ? 'bg-purple-950/40 border-purple-500/50 text-white'
-                  : 'bg-surface-container-low hover:bg-surface-container border-white/5 hover:border-neutral-700/60 text-on-surface'
-              }`}
+              className={`w-full px-space-md py-2.5 rounded-lg flex items-center justify-between text-left transition-all border group cursor-pointer ${isAiChatOpen
+                ? 'bg-purple-950/40 border-purple-500/50 text-white'
+                : 'bg-surface-container-low hover:bg-surface-container border-white/5 hover:border-neutral-700/60 text-on-surface'
+                }`}
               title="Buka / Tutup Ambis AI Assistant"
             >
               <div className="flex items-center gap-space-sm min-w-0">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors flex-shrink-0 ${
-                  isAiChatOpen 
-                    ? 'bg-purple-600 text-white font-bold' 
-                    : 'bg-surface-container group-hover:bg-purple-600/20 text-purple-400 border border-neutral-700/60 group-hover:border-purple-500/40'
-                }`}>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors flex-shrink-0 ${isAiChatOpen
+                  ? 'bg-purple-600 text-white font-bold'
+                  : 'bg-surface-container group-hover:bg-purple-600/20 text-purple-400 border border-neutral-700/60 group-hover:border-purple-500/40'
+                  }`}>
                   <span className="material-symbols-outlined text-[19px]">smart_toy</span>
                 </div>
                 <div className="flex flex-col min-w-0">
@@ -67,10 +62,8 @@ const Sidebar = () => {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-surface-container-low"></span>
-                <span className={`material-symbols-outlined text-[18px] transition-transform duration-200 ${
-                  isAiChatOpen ? 'rotate-90 text-purple-400' : 'text-on-surface-variant group-hover:text-on-surface'
-                }`}>
+                <span className={`material-symbols-outlined text-[18px] transition-transform duration-200 ${isAiChatOpen ? 'rotate-90 text-purple-400' : 'text-on-surface-variant group-hover:text-on-surface'
+                  }`}>
                   chevron_right
                 </span>
               </div>
@@ -192,7 +185,7 @@ const Sidebar = () => {
                 </span>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => setIsSettingsModalOpen(true)}
               className="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors flex-shrink-0"
             >
