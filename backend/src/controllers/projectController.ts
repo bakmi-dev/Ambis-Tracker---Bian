@@ -68,7 +68,7 @@ export const updateProject = asyncHandler(async (req: Request, res: Response) =>
 
   // Recalculate progress based on tasks
   if (updated.tasks.length > 0) {
-    const doneTasks = updated.tasks.filter(t => t.status === 'done').length;
+    const doneTasks = updated.tasks.filter((t: any) => t.status === 'done').length;
     const progress = Math.round((doneTasks / updated.tasks.length) * 100);
     await prisma.project.update({ where: { id }, data: { progress } });
     updated.progress = progress;
@@ -172,7 +172,7 @@ export const deleteProjectTask = asyncHandler(async (req: Request, res: Response
 async function recalcProjectProgress(projectId: string) {
   const tasks = await prisma.projectTask.findMany({ where: { project_id: projectId } });
   const progress = tasks.length > 0
-    ? Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100)
+    ? Math.round((tasks.filter((t: any) => t.status === 'done').length / tasks.length) * 100)
     : 0;
   await prisma.project.update({ where: { id: projectId }, data: { progress } });
 }

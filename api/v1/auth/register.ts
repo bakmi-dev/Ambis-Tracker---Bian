@@ -1,6 +1,7 @@
 import { Pool } from '@neondatabase/serverless';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { randomUUID } from 'crypto';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -35,12 +36,13 @@ export default async function handler(req: any, res: any) {
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
+    const userId = randomUUID();
 
     const result = await pool.query(
-      `INSERT INTO users (name, email, password_hash, is_onboarded)
-       VALUES ($1, $2, $3, FALSE)
+      `INSERT INTO users (id, name, email, password_hash, is_onboarded)
+       VALUES ($1, $2, $3, $4, FALSE)
        RETURNING id, email, name, role_track, workspace_name, focus_target_hours, is_onboarded, created_at`,
-      [name, email, passwordHash]
+      [userId, name, email, passwordHash]
     );
 
     const newUser = result.rows[0];

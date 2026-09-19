@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
+import { randomUUID } from 'crypto';
 import { query } from '../config/db';
 import { AuthRequest } from '../middlewares/auth';
 
@@ -66,11 +67,12 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
       });
     } else {
       // ── New user: create with is_onboarded = false ──
+      const userId = randomUUID();
       const insertResult = await query(
-        `INSERT INTO users (google_id, email, name, avatar_url, is_onboarded)
-         VALUES ($1, $2, $3, $4, FALSE)
+        `INSERT INTO users (id, google_id, email, name, avatar_url, is_onboarded)
+         VALUES ($1, $2, $3, $4, $5, FALSE)
          RETURNING id, google_id, email, name, avatar_url, role_track, workspace_name, focus_target_hours, is_onboarded, xp, current_streak, created_at`,
-        [googleId, email, name || 'User', picture || null]
+        [userId, googleId, email, name || 'User', picture || null]
       );
 
       const newUser = insertResult.rows[0];
@@ -152,12 +154,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
+    const userId = randomUUID();
 
     const result = await query(
-      `INSERT INTO users (name, email, password_hash, is_onboarded)
-       VALUES ($1, $2, $3, FALSE)
+      `INSERT INTO users (id, name, email, password_hash, is_onboarded)
+       VALUES ($1, $2, $3, $4, FALSE)
        RETURNING id, email, name, role_track, workspace_name, focus_target_hours, is_onboarded, created_at`,
-      [name, email, passwordHash]
+      [userId, name, email, passwordHash]
     );
 
     const newUser = result.rows[0];

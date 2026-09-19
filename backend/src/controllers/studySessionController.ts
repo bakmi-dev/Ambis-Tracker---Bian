@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import prisma, { query } from '../db';
+import prisma from '../db';
+import { query } from '../config/db';
 import { asyncHandler } from '../middlewares/errorMiddleware';
 import { AuthRequest } from '../middlewares/auth';
 

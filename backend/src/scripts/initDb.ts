@@ -40,6 +40,13 @@ export const initDb = async () => {
     // Make password_hash nullable for Google OAuth users
     await query("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL");
 
+    // Ensure users.id has a default uuid generator if not already set
+    try {
+      await query("ALTER TABLE users ALTER COLUMN id SET DEFAULT gen_random_uuid()");
+    } catch (e) {
+      // Non-fatal if DB uses text id or extension differs
+    }
+
     // 2. Create Tasks Table (with foreign key to users)
     await query(`
       CREATE TABLE IF NOT EXISTS tasks (

@@ -1,6 +1,7 @@
 import { Pool } from '@neondatabase/serverless';
 import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
 
 const client = new OAuth2Client(process.env.VITE_GOOGLE_CLIENT_ID);
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -45,9 +46,10 @@ export default async function handler(req: any, res: any) {
     let user;
 
     if (userResult.rows.length === 0) {
+      const userId = randomUUID();
       const insertResult = await pool.query(
-        'INSERT INTO users (google_id, email, name, avatar_url, is_onboarded) VALUES ($1, $2, $3, $4, false) RETURNING *',
-        [google_id, email, name, picture]
+        'INSERT INTO users (id, google_id, email, name, avatar_url, is_onboarded) VALUES ($1, $2, $3, $4, $5, false) RETURNING *',
+        [userId, google_id, email, name, picture]
       );
       user = insertResult.rows[0];
     } else {
