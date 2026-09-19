@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { taskApi, analyticsApi, studySessionApi, ritualApi, competitionApi } from "../api";
-import { useGlobalState } from "../context/GlobalContext";
 import { useFocusTimer } from "../context/FocusTimerContext";
 
 // Types for Mock Data
@@ -41,7 +40,6 @@ interface Deadline {
 
 
 const Today = () => {
-  const { user } = useGlobalState();
   // Time blocks, deadlines, and rituals remain as frontend-only UI state
   const [timeBlocks] = useState<TimeBlock[]>([]);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
@@ -363,16 +361,16 @@ const Today = () => {
   const focusMins = focusMinutes % 60;
 
   return (
-    <div className="flex flex-col w-full space-y-space-lg max-w-7xl mx-auto pb-space-xl">
+    <div className="flex flex-col w-full space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-12">
       {/* Top Command Status & Priming Header */}
-      <div className="relative overflow-hidden rounded-xl bg-surface-container-low p-space-lg shadow-lg">
+      <div className="relative overflow-hidden rounded-2xl bg-surface-container-low p-6 sm:p-8 border border-white/5 shadow-sm">
         <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-gradient-to-br from-primary-container/20 to-secondary/10 blur-3xl pointer-events-none"></div>
         <div className="absolute -left-12 -bottom-12 w-64 h-64 rounded-full bg-secondary-container/10 blur-2xl pointer-events-none"></div>
 
-        <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-space-lg">
-          <div className="space-y-space-xs max-w-2xl">
-            <div className="flex items-center gap-space-sm flex-wrap">
-              <span className="inline-flex items-center gap-space-xs px-2.5 py-1 rounded-full bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase tracking-widest">
+        <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+          <div className="space-y-3 max-w-2xl">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-secondary text-xs font-semibold uppercase tracking-widest">
                 <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
                 {new Date().toLocaleDateString("id-ID", {
                   weekday: "long",
@@ -381,33 +379,32 @@ const Today = () => {
                   year: "numeric",
                 })}
               </span>
-              <span className="inline-flex items-center gap-space-xs px-2.5 py-1 rounded-full bg-primary-container/25 text-primary font-label-sm text-label-sm font-semibold tracking-wide">
-                <span className="material-symbols-outlined text-[14px]">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container/25 text-primary text-xs font-bold tracking-wide">
+                <span className="material-symbols-outlined text-[15px]">
                   bolt
                 </span>
                 COGNITIVE RESONANCE: 94%
               </span>
             </div>
-            <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight font-bold">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-on-surface tracking-tight leading-tight">
               Today's Command: High Resonance & Deep Work
             </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant flex items-center gap-space-xs">
-              <span className="material-symbols-outlined text-primary text-[18px] flex-shrink-0">
+            <p className="text-sm sm:text-base text-on-surface-variant flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[20px] flex-shrink-0">
                 format_quote
               </span>
               <span className="italic text-on-surface">
-                "Fokus pada proses, bukan kebisingan. 1 target besar bernilai 10
-                target kecil."
+                "Fokus pada proses, bukan kebisingan. 1 target besar bernilai 10 target kecil."
               </span>
             </p>
           </div>
 
-          <div className="flex items-center gap-space-sm flex-wrap self-start xl:self-center">
+          <div className="flex items-center gap-3 flex-wrap self-start xl:self-center">
             <button
               onClick={() => {
                 startTimer(45);
               }}
-              className="flex items-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-md text-label-md tracking-wider uppercase transition-all shadow-sm"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-secondary text-xs font-bold tracking-wider uppercase transition-all shadow-sm"
             >
               <span className="material-symbols-outlined text-secondary text-[18px]">
                 graphic_eq
@@ -416,7 +413,7 @@ const Today = () => {
             </button>
             <button
               onClick={() => setIsStudyModalOpen(true)}
-              className="flex items-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-highest text-secondary font-label-md text-label-md tracking-wider uppercase transition-all shadow-sm"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-highest text-secondary text-xs font-bold tracking-wider uppercase transition-all shadow-sm"
             >
               <span className="material-symbols-outlined text-secondary text-[18px]">
                 menu_book
@@ -425,7 +422,7 @@ const Today = () => {
             </button>
             <button
               onClick={() => setIsTaskModalOpen(true)}
-              className="flex items-center gap-space-xs px-space-lg py-2.5 rounded-xl bg-primary-container hover:bg-inverse-primary text-on-primary font-label-md text-label-md font-semibold tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(160,120,255,0.35)] active:scale-95"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary text-xs font-bold tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(160,120,255,0.35)] active:scale-95"
             >
               <span className="material-symbols-outlined text-[18px]">
                 add_task
@@ -437,200 +434,216 @@ const Today = () => {
       </div>
 
       {/* Compact Daily Telemetry Strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-space-md">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Stat 1: Focus Time */}
-        <div className="relative p-space-md rounded-xl bg-surface-container-low flex flex-col justify-between shadow-sm overflow-hidden group">
+        <div className="relative p-6 rounded-2xl bg-surface-container-low border border-white/5 flex flex-col justify-between shadow-sm overflow-hidden group min-h-[140px]">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold">
               Focus Time Today
             </span>
-            <span className="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
-              <span className="material-symbols-outlined text-[16px]">
+            <span className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+              <span className="material-symbols-outlined text-[18px]">
                 schedule
               </span>
             </span>
           </div>
-          <div className="mt-space-sm flex items-baseline justify-between">
-            <span className="font-metric-display text-metric-display text-on-surface tracking-tight">
+          <div className="mt-4 flex items-baseline justify-between">
+            <span className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight">
               {focusHours}j {focusMins}m
             </span>
-            <span className="font-label-sm text-label-sm text-secondary font-semibold">
+            <span className="text-xs text-secondary font-bold">
               {focusMinutes > 0
                 ? `${Math.min(Math.round((focusMinutes / 480) * 100), 100)}%`
                 : "0%"}
             </span>
           </div>
-          <div className="mt-space-xs w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+          <div className="mt-3 w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
             <div
               className="bg-secondary h-1.5 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(76,215,246,0.6)]"
               style={{ width: `${Math.min((focusMinutes / 480) * 100, 100)}%` }}
             ></div>
           </div>
-          <span className="mt-1 font-label-sm text-label-sm text-on-surface-variant">
+          <span className="mt-2 text-xs text-on-surface-variant font-normal">
             {focusMinutes > 0
               ? `${focusMinutes} menit fokus hari ini`
-              : "Belum ada fokus hari ini"}
+              : "Target 8 jam fokus harian"}
           </span>
         </div>
 
         {/* Stat 2: Daily Tasks */}
-        <div className="relative p-space-md rounded-xl bg-surface-container-low flex flex-col justify-between shadow-sm overflow-hidden group">
+        <div className="relative p-6 rounded-2xl bg-surface-container-low border border-white/5 flex flex-col justify-between shadow-sm overflow-hidden group min-h-[140px]">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold">
               Daily Tasks
             </span>
-            <span className="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[16px]">
+            <span className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined text-[18px]">
                 task_alt
               </span>
             </span>
           </div>
-          <div className="mt-space-sm flex items-baseline justify-between">
-            <span className="font-metric-display text-metric-display text-on-surface tracking-tight">
+          <div className="mt-4 flex items-baseline justify-between">
+            <span className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight">
               {todayTasksCompleted}/{todayTasksTotal}
             </span>
-            <span className="font-label-sm text-label-sm text-primary font-semibold">
+            <span className="text-xs text-primary font-bold">
               {taskPercent}% Selesai
             </span>
           </div>
-          <div className="mt-space-xs w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+          <div className="mt-3 w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
             <div
-              className="bg-primary-container h-1.5 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(160,120,255,0.6)]"
+              className="bg-primary h-1.5 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(160,120,255,0.6)]"
               style={{ width: `${taskPercent}%` }}
             ></div>
           </div>
-          <span className="mt-1 font-label-sm text-label-sm text-on-surface-variant">
+          <span className="mt-2 text-xs text-on-surface-variant font-normal">
             {todayTasksTotal > 0
               ? `${todayTasksCompleted} dari ${todayTasksTotal} selesai`
-              : "Belum ada task"}
+              : "Target harian terdistribusi"}
           </span>
         </div>
 
         {/* Stat 3: Deep Work Blocks */}
-        <div className="relative p-space-md rounded-xl bg-surface-container-low flex flex-col justify-between shadow-sm overflow-hidden group">
+        <div className="relative p-6 rounded-2xl bg-surface-container-low border border-white/5 flex flex-col justify-between shadow-sm overflow-hidden group min-h-[140px]">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold">
               Deep Work Blocks
             </span>
-            <span className="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
-              <span className="material-symbols-outlined text-[16px]">
+            <span className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+              <span className="material-symbols-outlined text-[18px]">
                 psychology
               </span>
             </span>
           </div>
-          <div className="mt-space-sm flex items-baseline justify-between">
-            <span className="font-metric-display text-metric-display text-on-surface tracking-tight">
+          <div className="mt-4 flex items-baseline justify-between">
+            <span className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight">
               {analytics?.today?.sessionsCount || 0} Sesi
             </span>
-            <span className="font-label-sm text-label-sm text-tertiary font-semibold">
-              -
+            <span className="text-xs text-tertiary font-bold">
+              Active
             </span>
           </div>
-          <div className="mt-space-xs flex gap-1.5">
-            <span className="flex-1 h-1.5 rounded-full bg-surface-container-highest"></span>
-            <span className="flex-1 h-1.5 rounded-full bg-surface-container-highest"></span>
-            <span className="flex-1 h-1.5 rounded-full bg-surface-container-highest"></span>
-            <span className="flex-1 h-1.5 rounded-full bg-surface-container-highest"></span>
+          <div className="mt-3 flex gap-1.5">
+            <span className="flex-1 h-1.5 rounded-full bg-surface-container"></span>
+            <span className="flex-1 h-1.5 rounded-full bg-surface-container"></span>
+            <span className="flex-1 h-1.5 rounded-full bg-surface-container"></span>
+            <span className="flex-1 h-1.5 rounded-full bg-surface-container"></span>
           </div>
-          <span className="mt-1 font-label-sm text-label-sm text-on-surface-variant">
+          <span className="mt-2 text-xs text-on-surface-variant font-normal">
             {analytics?.today?.sessionsCount > 0
-              ? `${analytics.today.sessionsCount} sprint hari ini`
-              : "Belum ada sprint aktif"}
+              ? `${analytics.today.sessionsCount} sesi sprint tercatat`
+              : "Siklus deep work terencana"}
           </span>
         </div>
 
         {/* Stat 4: Growth Velocity */}
-        <div className="relative p-space-md rounded-xl bg-surface-container-low flex flex-col justify-between shadow-sm overflow-hidden group">
+        <div className="relative p-6 rounded-2xl bg-surface-container-low border border-white/5 flex flex-col justify-between shadow-sm overflow-hidden group min-h-[140px]">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold">
               Growth Velocity
             </span>
-            <span className="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
-              <span className="material-symbols-outlined text-[16px]">
+            <span className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+              <span className="material-symbols-outlined text-[18px]">
                 stars
               </span>
             </span>
           </div>
-          <div className="mt-space-sm flex items-baseline justify-between">
-            <span className="font-metric-display text-metric-display text-primary tracking-tight">
+          <div className="mt-4 flex items-baseline justify-between">
+            <span className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">
               +{xp} XP
             </span>
-            <span className="font-label-sm text-label-sm text-primary font-semibold">
+            <span className="text-xs text-primary font-bold">
               Streak: {streak}D
             </span>
           </div>
-          <div className="mt-space-xs w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+          <div className="mt-3 w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
             <div
               className="bg-gradient-to-r from-secondary to-primary h-1.5 rounded-full"
               style={{ width: `${Math.min(xp / 10, 100)}%` }}
             ></div>
           </div>
-          <span className="mt-1 font-label-sm text-label-sm text-on-surface-variant">
-            {xp > 0 ? `Total ${xp} XP terkumpul` : "Kumpulkan XP hari ini"}
+          <span className="mt-2 text-xs text-on-surface-variant font-normal">
+            {xp > 0 ? `${xp} XP terkumpul hari ini` : "Akumulasi XP dan streak harian"}
           </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
         {/* LEFT COLUMN */}
-        <div className="lg:col-span-8 flex flex-col space-y-space-lg">
+        <div className="lg:col-span-8 flex flex-col space-y-6 sm:space-y-8">
           {/* Time-Block Schedule */}
-          <div className="rounded-xl bg-surface-container-low p-space-lg shadow-sm">
-            <div className="flex items-center justify-between mb-space-md">
-              <div className="flex items-center gap-space-xs">
-                <span className="material-symbols-outlined text-secondary text-[20px]">
+          <div className="rounded-2xl bg-surface-container-low p-6 sm:p-7 border border-white/5 shadow-sm space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-secondary text-[22px]">
                   view_timeline
                 </span>
-                <h2 className="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight">
+                <h2 className="text-xl font-bold text-on-surface tracking-tight">
                   Daily Time-Block Schedule
                 </h2>
               </div>
-              <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant uppercase">
+              <span className="text-xs px-2.5 py-1 rounded-md bg-surface-container text-on-surface-variant uppercase font-medium">
                 Local UTC+7
               </span>
             </div>
 
-            <div className="relative space-y-space-md before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-container-highest">
+            <div className="relative space-y-4 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-container-highest">
               {timeBlocks.length > 0 ? (
                 timeBlocks.map((block) => (
                   <div
                     key={block.id}
-                    className={`relative pl-8 flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs ${block.status === "Active" ? "p-space-md rounded-xl bg-surface-container shadow-[0_0_16px_rgba(76,215,246,0.1)] gap-space-md" : block.status === "Completed" ? "p-space-sm rounded-lg bg-surface-container/40 hover:bg-surface-container transition-colors" : "p-space-sm rounded-lg bg-surface-container/20 hover:bg-surface-container/40 transition-colors"}`}
+                    className={`relative pl-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                      block.status === "Active"
+                        ? "p-5 rounded-xl bg-surface-container shadow-[0_0_16px_rgba(76,215,246,0.1)] gap-4"
+                        : block.status === "Completed"
+                          ? "p-4 sm:p-5 rounded-xl bg-surface-container/60 hover:bg-surface-container transition-colors"
+                          : "p-4 sm:p-5 rounded-xl bg-surface-container/40 hover:bg-surface-container/70 transition-colors"
+                    }`}
                   >
                     {block.status === "Active" ? (
                       <>
-                        <span className="absolute left-1.5 top-5 w-3.5 h-3.5 rounded-full bg-secondary shadow-[0_0_10px_rgba(76,215,246,0.9)] animate-ping"></span>
-                        <span className="absolute left-2 top-5.5 w-2.5 h-2.5 rounded-full bg-secondary"></span>
+                        <span className="absolute left-1.5 top-6 w-3.5 h-3.5 rounded-full bg-secondary shadow-[0_0_10px_rgba(76,215,246,0.9)] animate-ping"></span>
+                        <span className="absolute left-2 top-6.5 w-2.5 h-2.5 rounded-full bg-secondary"></span>
                       </>
                     ) : (
                       <span
-                        className={`absolute left-2 top-3 w-2.5 h-2.5 rounded-full ring-4 ring-surface-container-low ${block.status === "Completed" ? "bg-outline" : "bg-surface-container-highest"}`}
+                        className={`absolute left-2 top-4 w-2.5 h-2.5 rounded-full ring-4 ring-surface-container-low ${
+                          block.status === "Completed" ? "bg-outline" : "bg-surface-container-highest"
+                        }`}
                       ></span>
                     )}
 
-                    <div
-                      className={
-                        block.status === "Active" ? "space-y-1" : "space-y-0.5"
-                      }
-                    >
-                      <div className="flex items-center gap-space-xs flex-wrap">
+                    <div className={block.status === "Active" ? "space-y-1.5" : "space-y-1"}>
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span
-                          className={`font-label-md text-label-md ${block.status === "Active" ? "text-secondary font-bold" : block.status === "Completed" ? "text-on-surface-variant line-through" : "text-outline"}`}
+                          className={`text-xs font-semibold ${
+                            block.status === "Active"
+                              ? "text-secondary font-bold"
+                              : block.status === "Completed"
+                                ? "text-on-surface-variant line-through"
+                                : "text-outline"
+                          }`}
                         >
                           {block.time}
                         </span>
                         {block.status === "Active" && (
-                          <span className="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary font-label-sm text-label-sm font-semibold uppercase tracking-wider">
+                          <span className="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary text-xs font-bold uppercase tracking-wider">
                             ● ACTIVE NOW
                           </span>
                         )}
                         <span
-                          className={`px-1.5 py-0.2 rounded font-label-sm text-label-sm ${block.status === "Active" ? "bg-surface-container-high text-primary px-2 py-0.5" : block.status === "Completed" ? "bg-surface-container-high text-outline" : "bg-surface-container text-outline"}`}
+                          className={`px-2 py-0.5 rounded text-xs ${
+                            block.status === "Active"
+                              ? "bg-surface-container-high text-primary font-semibold"
+                              : block.status === "Completed"
+                                ? "bg-surface-container-high text-outline"
+                                : "bg-surface-container text-outline"
+                          }`}
                         >
                           {block.category}
                         </span>
                         {block.status === "Completed" && block.duration && (
-                          <span className="flex items-center text-secondary font-label-sm text-label-sm">
+                          <span className="flex items-center gap-1 text-secondary text-xs font-medium">
                             <span className="material-symbols-outlined text-[14px]">
                               check_circle
                             </span>{" "}
@@ -638,7 +651,7 @@ const Today = () => {
                           </span>
                         )}
                         {block.status === "Upcoming" && (
-                          <span className="font-label-sm text-label-sm text-outline">
+                          <span className="text-xs text-outline font-normal">
                             Upcoming
                           </span>
                         )}
@@ -646,26 +659,30 @@ const Today = () => {
                       <div
                         className={
                           block.status === "Active"
-                            ? "font-body-lg text-body-lg font-semibold text-on-surface"
+                            ? "text-base font-semibold text-on-surface"
                             : block.status === "Completed"
-                              ? "font-body-md text-body-md font-medium text-on-surface-variant line-through"
-                              : "font-body-md text-body-md font-medium text-on-surface"
+                              ? "text-sm font-medium text-on-surface-variant line-through"
+                              : "text-sm font-medium text-on-surface"
                         }
                       >
                         {block.title}
                       </div>
                       {block.description && (
-                        <p className="font-body-sm text-body-sm text-on-surface-variant">
+                        <p className="text-xs text-on-surface-variant font-normal">
                           {block.description}
                         </p>
                       )}
                     </div>
 
                     <div
-                      className={`flex-shrink-0 self-start sm:self-auto ${block.status === "Active" ? "flex items-center gap-space-xs sm:self-center" : "font-label-sm text-label-sm text-outline px-2 py-1 rounded bg-surface-container-low"}`}
+                      className={`flex-shrink-0 self-start sm:self-auto ${
+                        block.status === "Active"
+                          ? "flex items-center gap-2 sm:self-center"
+                          : "text-xs text-outline px-2.5 py-1 rounded bg-surface-container"
+                      }`}
                     >
                       {block.status === "Active" ? (
-                        <button className="px-space-md py-1.5 rounded-lg bg-secondary text-on-secondary font-label-sm text-label-sm font-bold uppercase tracking-wider hover:bg-secondary-fixed transition-colors shadow-[0_0_12px_rgba(76,215,246,0.3)]">
+                        <button className="px-4 py-1.5 rounded-lg bg-secondary text-on-secondary text-xs font-bold uppercase tracking-wider hover:bg-secondary-fixed transition-colors shadow-[0_0_12px_rgba(76,215,246,0.3)]">
                           In Session
                         </button>
                       ) : block.xp ? (
@@ -677,11 +694,11 @@ const Today = () => {
                   </div>
                 ))
               ) : (
-                <div className="py-space-xl text-center pl-8">
+                <div className="py-12 text-center pl-8">
                   <span className="material-symbols-outlined text-outline text-[48px] mb-2">
                     event_busy
                   </span>
-                  <p className="font-body-md text-outline">
+                  <p className="text-sm text-outline">
                     Belum ada blok waktu yang dijadwalkan.
                   </p>
                 </div>
@@ -690,38 +707,38 @@ const Today = () => {
           </div>
 
           {/* Actionable Tasks Checklist */}
-          <div className="rounded-xl bg-surface-container-low p-space-lg shadow-sm space-y-space-md">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
-              <div className="flex items-center gap-space-xs">
-                <span className="material-symbols-outlined text-primary text-[20px]">
+          <div className="rounded-2xl bg-surface-container-low p-6 sm:p-7 border border-white/5 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-primary text-[22px]">
                   checklist
                 </span>
-                <h2 className="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight">
+                <h2 className="text-xl font-bold text-on-surface tracking-tight">
                   Core Execution Checklist
                 </h2>
               </div>
-              <span className="font-label-sm text-label-sm text-on-surface-variant font-medium">
-                Auto-synced with {user?.name || 'Operator'}'s Backlog
+              <span className="text-xs text-on-surface-variant font-medium px-3 py-1 rounded-full bg-surface-container self-start sm:self-auto">
+                {checklistTasks.filter((t) => t.completed).length} dari {checklistTasks.length} selesai
               </span>
             </div>
 
-            <div className="space-y-space-xs">
+            <div className="space-y-3">
               {loading ? (
-                <div className="py-space-xl text-center">
+                <div className="py-12 text-center">
                   <span className="material-symbols-outlined text-outline text-[48px] mb-2 animate-spin">
                     progress_activity
                   </span>
-                  <p className="font-body-md text-outline">Memuat tasks...</p>
+                  <p className="text-sm text-outline">Memuat tasks...</p>
                 </div>
               ) : error ? (
-                <div className="py-space-xl text-center">
+                <div className="py-12 text-center">
                   <span className="material-symbols-outlined text-error text-[48px] mb-2">
                     error
                   </span>
-                  <p className="font-body-md text-error">{error}</p>
+                  <p className="text-sm text-error">{error}</p>
                   <button
                     onClick={fetchTasks}
-                    className="mt-2 px-space-md py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm"
+                    className="mt-3 px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold"
                   >
                     Coba Lagi
                   </button>
@@ -730,27 +747,41 @@ const Today = () => {
                 checklistTasks.map((task) => (
                   <div
                     key={task.id}
-                    className={`p-space-md rounded-xl transition-all flex items-start justify-between gap-space-md group ${task.completed ? "bg-surface-container/50 hover:bg-surface-container" : "bg-surface-container hover:bg-surface-container-high"}`}
+                    className={`p-4 sm:p-5 rounded-xl transition-all flex items-start justify-between gap-4 group ${
+                      task.completed
+                        ? "bg-surface-container/50 hover:bg-surface-container"
+                        : "bg-surface-container hover:bg-surface-container-high"
+                    }`}
                   >
-                    <div className="flex items-start gap-space-sm">
+                    <div className="flex items-start gap-3.5 flex-1 min-w-0">
                       <button
                         onClick={() => toggleTask(task.id)}
-                        className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center transition-colors ${task.completed ? "bg-primary-container text-on-primary-container" : "bg-surface-container-lowest text-transparent hover:text-primary-fixed"}`}
+                        className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all border ${
+                          task.completed
+                            ? "bg-primary border-primary text-on-primary"
+                            : "border-outline/40 hover:border-primary text-transparent"
+                        }`}
                       >
-                        <span className="material-symbols-outlined text-[16px]">
+                        <span className="material-symbols-outlined text-[15px] font-bold">
                           check
                         </span>
                       </button>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-space-xs flex-wrap">
+                      <div className="space-y-1.5 flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span
-                            className={`px-2 py-0.5 rounded font-label-sm text-label-sm font-bold uppercase tracking-wider ${task.completed ? "bg-surface-container-highest text-outline" : task.priority === "HIGH" ? "bg-error-container text-on-error-container" : "bg-surface-container-highest text-outline"}`}
+                            className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
+                              task.completed
+                                ? "bg-surface-container-highest text-outline"
+                                : task.priority === "HIGH"
+                                  ? "bg-error-container text-on-error-container"
+                                  : "bg-surface-container-highest text-outline"
+                            }`}
                           >
                             {task.priority}
                           </span>
                           <button
                             onClick={() => startTimer(task.estimatedMinutes, task.title)}
-                            className="font-label-sm text-label-sm text-outline hover:text-secondary flex items-center gap-0.5 transition-colors cursor-pointer"
+                            className="text-xs text-outline hover:text-secondary flex items-center gap-1 transition-colors cursor-pointer"
                             title="Mulai Sprint untuk task ini"
                           >
                             <span className="material-symbols-outlined text-[14px]">
@@ -759,29 +790,37 @@ const Today = () => {
                             {task.duration}
                           </button>
                           <span
-                            className={`px-2 py-0.5 rounded font-label-sm text-label-sm ${task.completed ? "bg-surface-container-high text-outline" : "bg-surface-container-highest text-secondary"}`}
+                            className={`px-2 py-0.5 rounded text-xs ${
+                              task.completed
+                                ? "bg-surface-container-high text-outline"
+                                : "bg-surface-container-highest text-secondary font-medium"
+                            }`}
                           >
                             {task.category}
                           </span>
                         </div>
                         <div
-                          className={`font-body-md text-body-md ${task.completed ? "text-on-surface-variant line-through" : "text-on-surface font-medium"}`}
+                          className={`text-base ${
+                            task.completed
+                              ? "text-on-surface-variant line-through font-normal"
+                              : "text-on-surface font-semibold"
+                          }`}
                         >
                           {task.title}
                         </div>
                         {!task.completed && task.description && (
-                          <p className="font-body-sm text-body-sm text-on-surface-variant">
+                          <p className="text-xs sm:text-sm text-on-surface-variant font-normal leading-relaxed">
                             {task.description}
                           </p>
                         )}
                       </div>
                     </div>
                     {task.completed ? (
-                      <span className="font-label-sm text-label-sm text-secondary px-2 py-1 rounded bg-surface-container-low">
+                      <span className="text-xs font-semibold text-secondary px-2.5 py-1 rounded bg-surface-container-low flex-shrink-0">
                         +{task.xp} XP
                       </span>
                     ) : (
-                      <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity flex-shrink-0">
                         <button
                           className="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-lowest transition-colors"
                           title="Snooze to tomorrow"
@@ -803,14 +842,17 @@ const Today = () => {
                   </div>
                 ))
               ) : (
-                <div className="py-space-xl text-center">
+                <div className="py-12 text-center">
                   <span className="material-symbols-outlined text-outline text-[48px] mb-2">
                     task_alt
                   </span>
-                  <p className="font-body-md text-outline mb-4">
+                  <p className="text-sm text-outline mb-4">
                     Belum ada task harian yang dibuat.
                   </p>
-                  <button onClick={() => setIsTaskModalOpen(true)} className="px-space-md py-2 rounded-xl bg-primary text-on-primary font-label-md font-bold hover:brightness-110 flex items-center gap-2 mx-auto shadow-[0_0_15px_rgba(160,120,255,0.4)]">
+                  <button
+                    onClick={() => setIsTaskModalOpen(true)}
+                    className="px-5 py-2.5 rounded-xl bg-primary text-on-primary text-xs font-bold uppercase tracking-wider hover:brightness-110 flex items-center gap-2 mx-auto shadow-[0_0_15px_rgba(160,120,255,0.4)]"
+                  >
                     <span className="material-symbols-outlined text-[18px]">add</span>
                     Tambah Task Hari Ini
                   </button>
@@ -818,14 +860,14 @@ const Today = () => {
               )}
             </div>
 
-            <div className="pt-space-xs flex flex-col sm:flex-row items-center justify-between gap-space-sm p-space-sm rounded-xl bg-surface-container-lowest">
-              <div className="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-surface-container-lowest">
+              <div className="flex items-center gap-2 text-on-surface-variant text-xs">
                 <span className="material-symbols-outlined text-secondary text-[18px]">
                   forward
                 </span>
                 <span>Semua task terdistribusi sesuai prioritas hari ini.</span>
               </div>
-              <button className="px-space-md py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm tracking-wider uppercase transition-colors">
+              <button className="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold tracking-wider uppercase transition-colors">
                 Pindahkan Task Tertunda ke Esok Hari →
               </button>
             </div>
@@ -833,21 +875,23 @@ const Today = () => {
         </div>
 
         {/* RIGHT COLUMN */}
-        <div className="lg:col-span-4 flex flex-col space-y-space-lg">
+        <div className="lg:col-span-4 flex flex-col space-y-6 sm:space-y-8">
           {/* Current Sprint Module */}
-          <div className="relative rounded-xl bg-surface-container-low p-space-lg shadow-lg overflow-hidden">
+          <div className="relative rounded-2xl bg-surface-container-low p-6 sm:p-7 border border-white/5 shadow-sm overflow-hidden space-y-6">
             <div className="absolute top-0 right-0 w-36 h-36 bg-secondary/10 rounded-full blur-2xl pointer-events-none"></div>
-            <div className="flex items-center justify-between mb-space-md">
-              <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(76,215,246,0.8)]"></span>
-                Active Focus Sprint
-              </span>
-              <span className="font-label-sm text-label-sm text-outline">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(76,215,246,0.8)]"></span>
+                <h2 className="text-xl font-bold text-on-surface tracking-tight">
+                  Active Focus Sprint
+                </h2>
+              </div>
+              <span className="text-xs text-outline font-medium">
                 Sprint 3 of 4
               </span>
             </div>
 
-            <div className="flex flex-col items-center justify-center my-space-sm">
+            <div className="flex flex-col items-center justify-center my-2">
               <div className="relative w-44 h-44 flex items-center justify-center">
                 <svg
                   className="w-full h-full transform -rotate-90"
@@ -860,7 +904,7 @@ const Today = () => {
                     r="68"
                     stroke="currentColor"
                     strokeWidth="8"
-                    className="text-surface-container-highest"
+                    className="text-surface-container"
                   ></circle>
                   <circle
                     cx="76"
@@ -887,39 +931,39 @@ const Today = () => {
                   </defs>
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center text-center">
-                  <span className="font-headline-xl text-headline-xl text-on-surface font-bold tracking-tight">
+                  <span className="text-3xl font-extrabold text-on-surface tracking-tight">
                     {formatTimer()}
                   </span>
-                  <span className="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">
+                  <span className="text-xs uppercase tracking-widest text-secondary font-bold mt-0.5">
                     {isActive ? (isPaused ? "Paused" : "Running") : "Idle"}
                   </span>
                 </div>
               </div>
-              <div className="mt-space-md text-center">
-                <div className="font-body-md text-body-md font-semibold text-on-surface">
+              <div className="mt-4 text-center">
+                <div className="text-base font-semibold text-on-surface">
                   {currentTopic || "Mulai Sesi Baru"}
                 </div>
-                <div className="font-body-sm text-body-sm text-on-surface-variant">
+                <div className="text-xs text-on-surface-variant font-normal mt-0.5">
                   {currentTopic ? "Fokus pada topik ini" : "Pilih task untuk memulai sprint"}
                 </div>
               </div>
             </div>
 
-            <div className="mt-space-sm p-space-sm rounded-xl bg-surface-container flex items-center justify-between">
-              <div className="flex items-center gap-space-xs text-on-surface-variant">
+            <div className="p-4 rounded-xl bg-surface-container flex items-center justify-between">
+              <div className="flex items-center gap-2 text-on-surface-variant">
                 <span className="material-symbols-outlined text-secondary text-[18px]">
                   shield
                 </span>
-                <span className="font-body-sm text-body-sm">
+                <span className="text-xs font-medium">
                   Distraction Blocker
                 </span>
               </div>
-              <span className="font-label-sm text-label-sm text-secondary font-semibold px-2 py-0.5 rounded bg-surface-container-highest">
+              <span className="text-xs text-secondary font-bold px-2.5 py-1 rounded bg-surface-container-high">
                 0 Blocked
               </span>
             </div>
 
-            <div className="mt-space-md grid grid-cols-2 gap-space-xs">
+            <div className="grid grid-cols-2 gap-3 pt-1">
               <button
                 onClick={() => {
                   if (isActive) {
@@ -929,7 +973,11 @@ const Today = () => {
                     startTimer(25);
                   }
                 }}
-                className={`py-2.5 rounded-xl font-label-md text-label-md uppercase tracking-wider font-semibold transition-colors flex items-center justify-center gap-1.5 ${!isActive || isPaused ? "bg-secondary text-on-secondary" : "bg-surface-container-high hover:bg-surface-bright text-on-surface"}`}
+                className={`py-3 rounded-xl text-xs uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  !isActive || isPaused
+                    ? "bg-secondary text-on-secondary hover:brightness-110 shadow-[0_0_12px_rgba(76,215,246,0.3)]"
+                    : "bg-surface-container-high hover:bg-surface-bright text-on-surface"
+                }`}
               >
                 <span className="material-symbols-outlined text-[18px]">
                   {!isActive ? "play_arrow" : isPaused ? "play_arrow" : "pause"}
@@ -938,7 +986,7 @@ const Today = () => {
               </button>
               <button
                 onClick={stopTimer}
-                className="py-2.5 rounded-xl bg-primary-container hover:bg-inverse-primary text-on-primary font-label-md text-label-md uppercase tracking-wider font-bold transition-all shadow-[0_0_16px_rgba(160,120,255,0.3)] flex items-center justify-center gap-1.5"
+                className="py-3 rounded-xl bg-primary hover:bg-primary-hover text-on-primary text-xs uppercase tracking-wider font-bold transition-all shadow-[0_0_16px_rgba(160,120,255,0.3)] flex items-center justify-center gap-1.5 active:scale-95"
               >
                 <span className="material-symbols-outlined text-[18px]">
                   stop
@@ -949,59 +997,59 @@ const Today = () => {
           </div>
 
           {/* Urgent Deadlines */}
-          <div className="rounded-xl bg-surface-container-low p-space-lg shadow-sm space-y-space-md">
+          <div className="rounded-2xl bg-surface-container-low p-6 sm:p-7 border border-white/5 shadow-sm space-y-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-space-xs">
-                <span className="material-symbols-outlined text-error text-[20px]">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-error text-[22px]">
                   crisis_alert
                 </span>
-                <h3 className="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight">
+                <h2 className="text-xl font-bold text-on-surface tracking-tight">
                   Crucial Deadlines
-                </h3>
+                </h2>
               </div>
-              <span className="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-error animate-pulse"></span>
             </div>
 
-            <div className="space-y-space-xs">
+            <div className="space-y-3">
               {deadlines.length > 0 ? (
                 deadlines.map((deadline) => (
                   <div
                     key={deadline.id}
-                    className="p-space-sm rounded-xl bg-surface-container flex items-start gap-space-sm"
+                    className="p-4 rounded-xl bg-surface-container flex items-start gap-3.5 transition-all hover:bg-surface-container-high"
                   >
                     <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${deadline.bgClass}`}
+                      className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${deadline.bgClass}`}
                     >
                       <span className="material-symbols-outlined text-[18px]">
                         {deadline.icon}
                       </span>
                     </div>
-                    <div className="space-y-0.5 min-w-0 flex-1">
+                    <div className="space-y-1 min-w-0 flex-1">
                       <div className="flex items-center justify-between">
                         <span
-                          className={`font-label-sm text-label-sm font-bold tracking-wider uppercase ${deadline.colorClass}`}
+                          className={`text-xs font-bold tracking-wider uppercase ${deadline.colorClass}`}
                         >
                           {deadline.time}
                         </span>
-                        <span className="font-label-sm text-label-sm text-outline">
+                        <span className="text-xs text-outline font-medium">
                           {deadline.timeRemaining}
                         </span>
                       </div>
-                      <div className="font-body-sm text-body-sm font-semibold text-on-surface truncate">
+                      <div className="text-sm font-semibold text-on-surface truncate">
                         {deadline.title}
                       </div>
-                      <div className="font-label-sm text-label-sm text-on-surface-variant">
+                      <div className="text-xs text-on-surface-variant font-normal">
                         {deadline.description}
                       </div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="py-space-md text-center">
-                  <span className="material-symbols-outlined text-outline text-[32px] mb-1">
+                <div className="py-8 text-center">
+                  <span className="material-symbols-outlined text-outline text-[36px] mb-1">
                     done_all
                   </span>
-                  <p className="font-body-sm text-outline">
+                  <p className="text-xs text-outline">
                     Tidak ada deadline krusial terdekat.
                   </p>
                 </div>
@@ -1010,18 +1058,18 @@ const Today = () => {
           </div>
 
           {/* Daily Rituals */}
-          <div className="rounded-xl bg-surface-container-low p-space-lg shadow-sm space-y-space-md">
+          <div className="rounded-2xl bg-surface-container-low p-6 sm:p-7 border border-white/5 shadow-sm space-y-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-space-xs">
-                <span className="material-symbols-outlined text-secondary text-[20px]">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-secondary text-[22px]">
                   vital_signs
                 </span>
-                <h3 className="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight">
+                <h2 className="text-xl font-bold text-on-surface tracking-tight">
                   Daily Rituals
-                </h3>
+                </h2>
               </div>
-              <div className="flex items-center gap-space-sm">
-                <span className="font-label-sm text-label-sm text-primary font-semibold">
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-primary font-bold">
                   {rituals.filter((r) => {
                     const todayStr = new Date().toISOString().split("T")[0];
                     return r.last_completed_date?.startsWith(todayStr);
@@ -1030,13 +1078,14 @@ const Today = () => {
                 <button
                   onClick={() => setIsRitualModalOpen(true)}
                   className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high hover:text-primary transition-colors"
+                  title="Tambah Daily Ritual"
                 >
                   <span className="material-symbols-outlined text-[18px]">add</span>
                 </button>
               </div>
             </div>
 
-            <div className="space-y-space-xs font-body-sm text-body-sm">
+            <div className="space-y-2.5 text-sm">
               {rituals.length > 0 ? (
                 rituals.map((ritual) => {
                   const todayStr = new Date().toISOString().split("T")[0];
@@ -1046,35 +1095,37 @@ const Today = () => {
                     <div
                       key={ritual.id}
                       onClick={() => toggleRitual(ritual.id)}
-                      className={`flex items-center justify-between p-space-xs px-space-sm rounded-lg transition-colors cursor-pointer group ${isDone ? "bg-surface-container/60" : "bg-surface-container hover:bg-surface-container-high"}`}
+                      className={`flex items-center justify-between p-3.5 px-4 rounded-xl transition-colors cursor-pointer group ${
+                        isDone ? "bg-surface-container/60" : "bg-surface-container hover:bg-surface-container-high"
+                      }`}
                     >
-                      <div className="flex items-center gap-space-sm">
+                      <div className="flex items-center gap-3">
                         <span
-                          className={`material-symbols-outlined text-[18px] ${isDone ? "text-secondary" : "text-outline group-hover:text-secondary"}`}
+                          className={`material-symbols-outlined text-[18px] ${
+                            isDone ? "text-secondary" : "text-outline group-hover:text-secondary"
+                          }`}
                         >
-                          {isDone
-                            ? "check_box"
-                            : "check_box_outline_blank"}
+                          {isDone ? "check_box" : "check_box_outline_blank"}
                         </span>
                         <span
                           className={
                             isDone
-                              ? "text-on-surface-variant line-through"
+                              ? "text-on-surface-variant line-through font-normal"
                               : "text-on-surface font-medium"
                           }
                         >
                           {ritual.title}
                         </span>
                       </div>
-                      <span className="font-label-sm text-label-sm text-outline">
+                      <span className="text-xs text-outline font-normal">
                         {ritual.target || "Daily"}
                       </span>
                     </div>
                   );
                 })
               ) : (
-                <div className="py-space-md text-center">
-                  <p className="font-body-sm text-outline">
+                <div className="py-8 text-center">
+                  <p className="text-xs text-outline">
                     Tidak ada ritual harian hari ini.
                   </p>
                 </div>
@@ -1087,13 +1138,13 @@ const Today = () => {
       {/* MODALS */}
       {isRitualModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface-container-low p-space-lg rounded-2xl max-w-md w-full shadow-2xl space-y-space-md border border-surface-container-highest">
-            <h2 className="font-headline-md text-on-surface font-bold">
+          <div className="bg-surface-container-low p-6 sm:p-7 rounded-2xl max-w-md w-full shadow-2xl space-y-5 border border-white/10">
+            <h2 className="text-xl font-bold text-on-surface">
               Tambah Daily Ritual
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
-                <label className="block font-label-sm text-outline mb-1">
+                <label className="block text-xs font-medium text-outline mb-1.5">
                   Nama Ritual
                 </label>
                 <input
@@ -1101,12 +1152,12 @@ const Today = () => {
                   onChange={(e) =>
                     setRitualForm({ ...ritualForm, title: e.target.value })
                   }
-                  className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full bg-surface-container text-on-surface px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="Contoh: Review Flashcard"
                 />
               </div>
               <div>
-                <label className="block font-label-sm text-outline mb-1">
+                <label className="block text-xs font-medium text-outline mb-1.5">
                   Target (Opsional)
                 </label>
                 <input
@@ -1114,7 +1165,7 @@ const Today = () => {
                   onChange={(e) =>
                     setRitualForm({ ...ritualForm, target: e.target.value })
                   }
-                  className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full bg-surface-container text-on-surface px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="Contoh: 15 Menit"
                 />
               </div>
@@ -1122,13 +1173,13 @@ const Today = () => {
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setIsRitualModalOpen(false)}
-                className="flex-1 py-2.5 rounded-xl font-label-md font-semibold bg-surface-container-high text-on-surface hover:bg-surface-container-highest"
+                className="flex-1 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold bg-surface-container-high text-on-surface hover:bg-surface-container-highest"
               >
                 Batal
               </button>
               <button
                 onClick={handleCreateRitual}
-                className="flex-1 py-2.5 rounded-xl font-label-md font-bold bg-primary text-on-primary hover:brightness-110"
+                className="flex-1 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold bg-primary text-on-primary hover:brightness-110 shadow-[0_0_12px_rgba(160,120,255,0.3)]"
               >
                 Simpan
               </button>
@@ -1139,13 +1190,13 @@ const Today = () => {
 
       {isTaskModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface-container-low p-space-lg rounded-2xl max-w-md w-full shadow-2xl space-y-space-md border border-surface-container-highest">
-            <h2 className="font-headline-md text-on-surface font-bold">
+          <div className="bg-surface-container-low p-6 sm:p-7 rounded-2xl max-w-md w-full shadow-2xl space-y-5 border border-white/10">
+            <h2 className="text-xl font-bold text-on-surface">
               Tambah Task Hari Ini
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
-                <label className="block font-label-sm text-outline mb-1">
+                <label className="block text-xs font-medium text-outline mb-1.5">
                   Judul Task
                 </label>
                 <input
@@ -1153,12 +1204,12 @@ const Today = () => {
                   onChange={(e) =>
                     setTaskForm({ ...taskForm, title: e.target.value })
                   }
-                  className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full bg-surface-container text-on-surface px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="Contoh: Implementasi gRPC API"
                 />
               </div>
               <div>
-                <label className="block font-label-sm text-outline mb-1">
+                <label className="block text-xs font-medium text-outline mb-1.5">
                   Kategori/Tag
                 </label>
                 <select
@@ -1166,7 +1217,7 @@ const Today = () => {
                   onChange={(e) =>
                     setTaskForm({ ...taskForm, category: e.target.value })
                   }
-                  className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full bg-surface-container text-on-surface px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="Study">Study</option>
                   <option value="Project">Project</option>
@@ -1175,7 +1226,7 @@ const Today = () => {
                 </select>
               </div>
               <div>
-                <label className="block font-label-sm text-outline mb-1">
+                <label className="block text-xs font-medium text-outline mb-1.5">
                   Prioritas
                 </label>
                 <select
@@ -1183,7 +1234,7 @@ const Today = () => {
                   onChange={(e) =>
                     setTaskForm({ ...taskForm, priority: e.target.value })
                   }
-                  className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full bg-surface-container text-on-surface px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="high">HIGH</option>
                   <option value="medium">MED</option>
@@ -1191,7 +1242,7 @@ const Today = () => {
                 </select>
               </div>
               <div>
-                <label className="block font-label-sm text-outline mb-1">
+                <label className="block text-xs font-medium text-outline mb-1.5">
                   Estimasi Waktu (Menit)
                 </label>
                 <input
@@ -1203,21 +1254,21 @@ const Today = () => {
                       estimatedMinutes: e.target.value,
                     })
                   }
-                  className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full bg-surface-container text-on-surface px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="30"
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={() => setIsTaskModalOpen(false)}
-                className="px-4 py-2 rounded-lg font-label-md text-on-surface-variant hover:bg-surface-container transition-colors"
+                className="px-4 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold text-on-surface-variant hover:bg-surface-container transition-colors"
               >
                 Batal
               </button>
               <button
                 onClick={handleCreateTask}
-                className="px-4 py-2 rounded-lg font-label-md bg-primary-container text-on-primary-container font-bold hover:bg-inverse-primary transition-colors shadow-sm"
+                className="px-5 py-2 rounded-xl text-xs uppercase tracking-wider font-bold bg-primary text-on-primary hover:brightness-110 transition-colors shadow-[0_0_12px_rgba(160,120,255,0.3)]"
               >
                 Simpan Task
               </button>
@@ -1228,13 +1279,13 @@ const Today = () => {
 
       {isStudyModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface-container-low p-space-lg rounded-2xl max-w-md w-full shadow-2xl space-y-space-md border border-surface-container-highest">
-            <h2 className="font-headline-md text-on-surface font-bold">
+          <div className="bg-surface-container-low p-6 sm:p-7 rounded-2xl max-w-md w-full shadow-2xl space-y-5 border border-white/10">
+            <h2 className="text-xl font-bold text-on-surface">
               Log Study Session
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
-                <label className="block font-label-sm text-outline mb-1">
+                <label className="block text-xs font-medium text-outline mb-1.5">
                   Subjek/Topik
                 </label>
                 <input
@@ -1242,12 +1293,12 @@ const Today = () => {
                   onChange={(e) =>
                     setStudyForm({ ...studyForm, subject: e.target.value })
                   }
-                  className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
+                  className="w-full bg-surface-container text-on-surface px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
                   placeholder="Contoh: React Query Mastery"
                 />
               </div>
               <div>
-                <label className="block font-label-sm text-outline mb-1">
+                <label className="block text-xs font-medium text-outline mb-1.5">
                   Durasi (Menit)
                 </label>
                 <input
@@ -1259,12 +1310,12 @@ const Today = () => {
                       duration: parseInt(e.target.value) || 0,
                     })
                   }
-                  className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
+                  className="w-full bg-surface-container text-on-surface px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
                   placeholder="45"
                 />
               </div>
               <div>
-                <label className="block font-label-sm text-outline mb-1">
+                <label className="block text-xs font-medium text-outline mb-1.5">
                   Catatan Singkat (Opsional)
                 </label>
                 <textarea
@@ -1272,22 +1323,22 @@ const Today = () => {
                   onChange={(e) =>
                     setStudyForm({ ...studyForm, notes: e.target.value })
                   }
-                  className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary resize-none"
+                  className="w-full bg-surface-container text-on-surface px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-secondary resize-none"
                   placeholder="Tadi sempat stuck di cache invalidation..."
                   rows={3}
                 ></textarea>
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={() => setIsStudyModalOpen(false)}
-                className="px-4 py-2 rounded-lg font-label-md text-on-surface-variant hover:bg-surface-container transition-colors"
+                className="px-4 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold text-on-surface-variant hover:bg-surface-container transition-colors"
               >
                 Batal
               </button>
               <button
                 onClick={handleLogStudy}
-                className="px-4 py-2 rounded-lg font-label-md bg-secondary text-on-secondary font-bold hover:bg-secondary-fixed transition-colors shadow-[0_0_12px_rgba(76,215,246,0.3)]"
+                className="px-5 py-2 rounded-xl text-xs uppercase tracking-wider font-bold bg-secondary text-on-secondary hover:brightness-110 transition-colors shadow-[0_0_12px_rgba(76,215,246,0.3)]"
               >
                 Simpan Sesi
               </button>
