@@ -4,38 +4,40 @@ import { taskApi, projectApi, competitionApi, goalApi, analyticsApi } from '../a
 import { useGlobalState } from '../context/GlobalContext';
 import { useFocusTimer } from '../context/FocusTimerContext';
 
-const GALLERY = [
+const BIMBEL_RECOMMENDATIONS = [
   {
-    title: "Deep Work Sanctuary",
-    desc: "“Consistency is the silent architecture of true mastery.”",
-    badge: "Mindset",
-    img: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=800&auto=format&fit=crop",
-    subleft: "● Aktif Hari Ini",
-    subright: "Ritual 45 Min Sprint",
+    title: "Akademi Belajar Quantum",
+    desc: "Materi ringkas, tutor inspiratif, dan fokus pada esensi ujian.",
+    badge: "BIMBEL",
+    img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop",
+    actionText: "Learn More →",
+    infoText: "Program 3 Bulan",
     color: "text-secondary",
     badgeColor: "text-secondary"
   },
   {
-    title: "Next: Fullstack Architect",
-    desc: "Membangun fondasi logika dan pemahaman arsitektur terdistribusi tanpa terburu-buru.",
-    badge: "Vision 2027",
-    img: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop",
-    subleft: "Target Milestone 1",
-    subright: "Q4 Execution",
+    title: "Pionir Logika: Olimpiade",
+    desc: "Mengasah kemampuan analitis dan logika untuk kompetisi nasional.",
+    badge: "PROGRAM UNGGULAN",
+    img: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=800&auto=format&fit=crop",
+    actionText: "Pelajari Detail →",
+    infoText: "Q2 Kurikulum",
     color: "text-primary",
     badgeColor: "text-primary"
   },
   {
-    title: "Cognitive Focus Sanctuary",
-    desc: "Ritual audio 432Hz dan 45 menit sprint belajar tanpa interupsi layar kedua.",
-    badge: "Habit Ritual",
-    img: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=800&auto=format&fit=crop",
-    subleft: "95% Target Ketenangan",
-    subright: "Daily Protocol",
+    title: "Guru Fokus: Tes Mandiri",
+    desc: "Bimbingan personal 1-on-1 dengan jadwal belajar yang fleksibel.",
+    badge: "KUSTOM",
+    img: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=800&auto=format&fit=crop",
+    actionText: "Daftar Sekarang →",
+    infoText: "Protokol Tes",
     color: "text-tertiary",
     badgeColor: "text-tertiary"
   }
 ];
+
+const GALLERY = BIMBEL_RECOMMENDATIONS;
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -668,22 +670,30 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* VISUAL REMINDERS */}
+      {/* REKOMENDASI BIMBEL */}
       <section className="space-y-space-md pt-space-md relative">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-space-xs text-secondary font-label-sm text-label-sm uppercase font-bold tracking-wider">
-              <span className="material-symbols-outlined text-[16px]">visibility</span>
-              <span>Visual Reminders</span>
+              <span className="material-symbols-outlined text-[16px]">school</span>
+              <span>PROGRAM REKOMENDASI</span>
             </div>
-            <h2 className="font-headline-lg text-headline-lg font-bold text-on-surface">Galeri Penyemangat</h2>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">Inspirasi visual penunjang fokus dan ketenangan belajar dalam sirkuit harianmu.</p>
+            <h2 className="font-headline-lg text-headline-lg font-bold text-on-surface">Rekomendasi Bimbel</h2>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">Akses bimbingan belajar terbaik untuk mempercepat pencapaian target ambisimu.</p>
           </div>
           <div className="hidden sm:flex items-center gap-space-xs">
-            <button onClick={handlePrevCarousel} className="w-9 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface flex items-center justify-center transition-colors">
+            <button 
+              onClick={handlePrevCarousel} 
+              className="w-9 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface flex items-center justify-center transition-colors cursor-pointer"
+              title="Sebelumnya"
+            >
               <span className="material-symbols-outlined text-[20px]">chevron_left</span>
             </button>
-            <button onClick={handleNextCarousel} className="w-9 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface flex items-center justify-center transition-colors">
+            <button 
+              onClick={handleNextCarousel} 
+              className="w-9 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface flex items-center justify-center transition-colors cursor-pointer"
+              title="Selanjutnya"
+            >
               <span className="material-symbols-outlined text-[20px]">chevron_right</span>
             </button>
           </div>
@@ -694,24 +704,43 @@ const Dashboard = () => {
             const idx = (carouselIndex + offset) % GALLERY.length;
             const item = GALLERY[idx];
             return (
-              <div key={idx} className="relative group overflow-hidden rounded-xl bg-surface-container-low shadow-md flex flex-col h-72">
+              <div key={idx} className="relative group overflow-hidden rounded-xl bg-surface-container-low shadow-md flex flex-col h-72 border border-surface-container-highest/20 hover:border-secondary/40 transition-all duration-300">
                 <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{ backgroundImage: `url('${item.img}')` }}>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/60 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/70 to-transparent"></div>
                 <div className="relative z-10 flex items-center justify-between p-space-md">
                   <span className={`px-2.5 py-1 rounded bg-surface-container-lowest/80 backdrop-blur-md font-label-sm text-label-sm font-bold ${item.badgeColor} uppercase tracking-wider`}>
                     {item.badge}
                   </span>
-                  <button className="w-8 h-8 rounded-full bg-surface-container-lowest/60 backdrop-blur-md text-on-surface flex items-center justify-center hover:bg-surface-container-high transition-colors">
+                  <button 
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      showToast(`Bimbel disimpan: ${item.title}`);
+                    }}
+                    className="w-8 h-8 rounded-full bg-surface-container-lowest/60 backdrop-blur-md text-on-surface flex items-center justify-center hover:bg-surface-container-high hover:text-secondary transition-colors cursor-pointer"
+                    title="Simpan Rekomendasi"
+                  >
                     <span className="material-symbols-outlined text-[16px]">bookmark</span>
                   </button>
                 </div>
                 <div className="relative z-10 mt-auto p-space-md space-y-1">
-                  <h3 className="font-body-lg text-body-lg font-bold text-on-surface">{item.title}</h3>
+                  <h3 className="font-body-lg text-body-lg font-bold text-on-surface group-hover:text-secondary transition-colors">{item.title}</h3>
                   <p className="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">{item.desc}</p>
                   <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm">
-                    <span className={`${item.color} font-semibold`}>{item.subleft}</span>
-                    <span className="text-outline">{item.subright}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        showToast(`Membuka: ${item.title}`);
+                      }}
+                      className="inline-flex items-center gap-1 font-semibold text-secondary hover:text-[#4cd7f6] hover:drop-shadow-[0_0_8px_rgba(76,215,246,0.6)] transition-all group-hover:translate-x-0.5 duration-200 cursor-pointer focus:outline-none"
+                    >
+                      {item.actionText}
+                    </button>
+                    <span className="text-outline text-xs px-2 py-0.5 rounded bg-surface-container/70 border border-outline/10">
+                      {item.infoText}
+                    </span>
                   </div>
                 </div>
               </div>
