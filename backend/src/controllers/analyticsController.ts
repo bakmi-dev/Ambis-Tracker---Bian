@@ -36,7 +36,7 @@ export const getDashboardSummary = asyncHandler(async (req: Request, res: Respon
   const sessionsToday = await prisma.studySession.findMany({
     where: { user_id: userId, start_time: { gte: startOfDay, lte: endOfDay } },
   });
-  const focusTimeMinutesToday = sessionsToday.reduce((sum, s) => sum + s.duration_minutes, 0);
+  const focusTimeMinutesToday = sessionsToday.reduce((sum: number, s: any) => sum + s.duration_minutes, 0);
 
   // Total focus time all time
   const allSessions = await prisma.studySession.aggregate({

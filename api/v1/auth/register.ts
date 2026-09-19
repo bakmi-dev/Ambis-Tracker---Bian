@@ -1,6 +1,7 @@
 import { Pool } from '@neondatabase/serverless';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { randomUUID } from 'crypto';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -35,12 +36,14 @@ export default async function handler(req: any, res: any) {
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
+    const userId = randomUUID();
+    const defaultWorkspace = `${name}'s Command Deck`;
 
     const result = await pool.query(
-      `INSERT INTO users (name, email, password_hash, is_onboarded)
-       VALUES ($1, $2, $3, FALSE)
-       RETURNING id, email, name, role_track, workspace_name, focus_target_hours, is_onboarded, created_at`,
-      [name, email, passwordHash]
+      `INSERT INTO users (id, name, email, password_hash, is_onboarded, workspace_name, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, TRUE, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       RETURNING id, email, name, role_track, workspace_name, focus_target_hours, is_onboarded, created_at, updated_at`,
+      [userId, name, email, passwordHash, defaultWorkspace]
     );
 
     const newUser = result.rows[0];
@@ -53,7 +56,11 @@ export default async function handler(req: any, res: any) {
     return res.status(201).json({
       success: true,
       token,
-      user: newUser
+      user: newUser,
+      data: {
+        token,
+        user: newUser
+      }
     });
   } catch (err: any) {
     console.error('SERVERLESS_REGISTER_ERROR:', err);

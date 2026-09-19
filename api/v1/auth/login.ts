@@ -53,18 +53,24 @@ export default async function handler(req: any, res: any) {
       { expiresIn: '7d' }
     );
 
+    const userPayload = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      avatar_url: user.avatar_url,
+      is_onboarded: user.is_onboarded,
+      role_track: user.role_track,
+      workspace_name: user.workspace_name,
+      focus_target_hours: user.focus_target_hours
+    };
+
     return res.status(200).json({
       success: true,
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        avatar_url: user.avatar_url,
-        is_onboarded: user.is_onboarded,
-        role_track: user.role_track,
-        workspace_name: user.workspace_name,
-        focus_target_hours: user.focus_target_hours
+      user: userPayload,
+      data: {
+        token,
+        user: userPayload
       }
     });
   } catch (err: any) {

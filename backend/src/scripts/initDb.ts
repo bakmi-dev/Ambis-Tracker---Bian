@@ -20,8 +20,8 @@ export const initDb = async () => {
         xp INT DEFAULT 0,
         current_streak INT DEFAULT 0,
         profile_metadata TEXT,
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
@@ -39,6 +39,24 @@ export const initDb = async () => {
     }
     // Make password_hash nullable for Google OAuth users
     await query("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL");
+
+    // Ensure users.id has a default uuid generator if not already set
+    try {
+      await query("ALTER TABLE users ALTER COLUMN id SET DEFAULT gen_random_uuid()");
+    } catch (e) {
+      // Non-fatal if DB uses text id or extension differs
+    }
+
+    // Ensure created_at and updated_at have DEFAULT CURRENT_TIMESTAMP
+    await query("ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+    try {
+      await query("ALTER TABLE users ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP");
+    } catch (e) {}
+
+    await query("ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+    try {
+      await query("ALTER TABLE users ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP");
+    } catch (e) {}
 
     // 2. Create Tasks Table (with foreign key to users)
     await query(`
