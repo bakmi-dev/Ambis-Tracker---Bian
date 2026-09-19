@@ -46,11 +46,7 @@ const Sidebar = () => {
         <div className="p-space-lg pb-space-sm">
           <div className="flex items-center justify-between gap-space-xs">
             <div className="flex items-center gap-space-sm">
-              <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary shadow-[0_0_16px_rgba(208,188,255,0.25)]">
-                <span className="material-symbols-outlined text-[20px]">
-                  neurology
-                </span>
-              </div>
+              <img src="/logo.png" alt="Ambis Tracker Logo" className="w-8 h-8 object-contain rounded-lg" />
               <div>
                 <span className="font-headline-md text-headline-md tracking-tight font-bold text-on-surface leading-none block">
                   Ambis Tracker
@@ -102,8 +98,8 @@ const Sidebar = () => {
 
         <div className="flex-1 overflow-y-auto px-space-md py-space-xs space-y-space-md custom-scrollbar">
           <nav>
-            <div className="px-space-sm py-space-xs font-label-sm text-label-sm font-bold tracking-wider text-outline uppercase">
-              Main
+            <div className="px-space-sm py-space-xs font-mono text-[11px] font-bold tracking-widest text-outline uppercase">
+              Overview
             </div>
             <div className="mt-space-xs space-y-0.5">
               <NavLink to="/dashboard" className={navClasses}>
@@ -122,14 +118,10 @@ const Sidebar = () => {
           </nav>
 
           <nav>
-            <div className="px-space-sm py-space-xs font-label-sm text-label-sm font-bold tracking-wider text-outline uppercase">
-              Development
+            <div className="px-space-sm py-space-xs font-mono text-[11px] font-bold tracking-widest text-outline uppercase">
+              Ambitions
             </div>
             <div className="mt-space-xs space-y-0.5">
-              <NavLink to="/study-space" className={navClasses}>
-                <span className="material-symbols-outlined text-[20px]">school</span>
-                <span>Study Space</span>
-              </NavLink>
               <NavLink to="/goals" className={navClasses}>
                 <span className="material-symbols-outlined text-[20px]">flag</span>
                 <span>Goals</span>
@@ -146,7 +138,7 @@ const Sidebar = () => {
           </nav>
 
           <nav>
-            <div className="px-space-sm py-space-xs font-label-sm text-label-sm font-bold tracking-wider text-outline uppercase">
+            <div className="px-space-sm py-space-xs font-mono text-[11px] font-bold tracking-widest text-outline uppercase">
               Knowledge
             </div>
             <div className="mt-space-xs space-y-0.5">

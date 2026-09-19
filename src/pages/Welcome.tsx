@@ -154,12 +154,7 @@ const Welcome = () => {
             background: 'rgba(13,14,20,0.85)',
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
-            boxShadow: `
-              0 0 60px rgba(160,120,255,0.08),
-              0 0 120px rgba(76,215,246,0.04),
-              0 25px 50px rgba(0,0,0,0.5),
-              inset 0 1px 0 rgba(255,255,255,0.03)
-            `,
+            boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
           }}
         >
           {/* Title Bar */}
@@ -179,11 +174,7 @@ const Welcome = () => {
           <div className="p-5 sm:p-7">
             {/* Logo & Title */}
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-[rgba(160,120,255,0.12)] border border-[rgba(160,120,255,0.2)] flex items-center justify-center shadow-[0_0_20px_rgba(160,120,255,0.15)]">
-                <span className="material-symbols-outlined text-primary text-[22px]">
-                  neurology
-                </span>
-              </div>
+              <img src="/logo.png" alt="Ambis Tracker Logo" className="w-10 h-10 object-contain rounded-xl" />
               <div>
                 <h1 className="font-headline-md text-headline-md text-on-surface tracking-tight leading-none">
                   Ambis Tracker
