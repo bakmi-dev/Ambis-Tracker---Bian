@@ -188,7 +188,7 @@ export const taskApi = {
     const query = new URLSearchParams(params as Record<string, string>).toString();
     return request<{ success: boolean; data: any[] }>(`/tasks${query ? `?${query}` : ''}`);
   },
-  create: (body: { title: string; description?: string; priority?: string; scheduled_date?: string; category?: string; tags?: string[] }) =>
+  create: (body: { title: string; description?: string; priority?: string; due_date?: string; estimated_minutes?: number; category?: string; tags?: string[] }) =>
     request<{ success: boolean; data: any }>('/tasks', { method: 'POST', body: JSON.stringify(body) }),
   update: (id: string, body: Record<string, any>) =>
     request<{ success: boolean; data: any }>(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
@@ -199,7 +199,7 @@ export const taskApi = {
 // ==================== STUDY SESSIONS ====================
 export const studySessionApi = {
   getAll: () => request<{ success: boolean; data: any[] }>('/study-sessions'),
-  create: (body: { title?: string; start_time: string; end_time: string; duration_minutes: number; session_type?: string }) =>
+  create: (body: { title?: string; start_time: string; end_time: string; duration_minutes: number; session_type?: string; takeaway?: string }) =>
     request<{ success: boolean; data: any }>('/study-sessions', { method: 'POST', body: JSON.stringify(body) }),
   delete: (id: string) =>
     request<{ success: boolean; message: string }>(`/study-sessions/${id}`, { method: 'DELETE' }),
@@ -293,7 +293,7 @@ export const analyticsApi = {
 // ==================== PROFILE / USER ====================
 export const profileApi = {
   getProfile: () => request<{ success: boolean; user: any }>('/profile'),
-  updateProfile: (body: { name?: string; avatar_url?: string; role_track?: string; bio?: string; github?: string; linkedin?: string; website?: string; workspace_name?: string }) =>
+  updateProfile: (body: { name?: string; avatar_url?: string; role_track?: string; bio?: string; github?: string; linkedin?: string; website?: string; workspace_name?: string; location?: string }) =>
     request<{ success: boolean; user: any }>('/profile', { method: 'PATCH', body: JSON.stringify(body) }),
 };
 
@@ -311,4 +311,15 @@ export const authApi = {
       body: JSON.stringify(body),
       headers: { 'Authorization': `Bearer ${localStorage.getItem('ambis_token') || ''}` }
     }),
+};
+
+// ==================== RITUALS ====================
+export const ritualApi = {
+  getAll: () => request<{ success: boolean; data: any[] }>('/rituals'),
+  create: (body: { title: string; target?: string }) =>
+    request<{ success: boolean; data: any }>('/rituals', { method: 'POST', body: JSON.stringify(body) }),
+  toggle: (id: string) =>
+    request<{ success: boolean; data: any }>(`/rituals/${id}/toggle`, { method: 'PATCH' }),
+  delete: (id: string) =>
+    request<{ success: boolean; message: string }>(`/rituals/${id}`, { method: 'DELETE' }),
 };

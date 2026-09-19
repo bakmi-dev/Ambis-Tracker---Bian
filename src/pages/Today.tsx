@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { taskApi, analyticsApi, studySessionApi } from "../api";
+import { taskApi, analyticsApi, studySessionApi, ritualApi, competitionApi } from "../api";
 import { useGlobalState } from "../context/GlobalContext";
+import { useFocusTimer } from "../context/FocusTimerContext";
 
 // Types for Mock Data
 interface TimeBlock {
@@ -18,6 +19,7 @@ interface ChecklistTask {
   id: string;
   priority: "HIGH" | "MED" | "LOW";
   duration: string;
+  estimatedMinutes: number;
   category: string;
   title: string;
   description?: string;
@@ -36,19 +38,14 @@ interface Deadline {
   description: string;
 }
 
-interface Ritual {
-  id: string;
-  title: string;
-  time: string;
-  status: "Done" | "In Progress" | "Pending";
-}
+
 
 const Today = () => {
   const { user } = useGlobalState();
   // Time blocks, deadlines, and rituals remain as frontend-only UI state
   const [timeBlocks] = useState<TimeBlock[]>([]);
-  const [deadlines] = useState<Deadline[]>([]);
-  const [rituals, setRituals] = useState<Ritual[]>([]);
+  const [deadlines, setDeadlines] = useState<Deadline[]>([]);
+  const [rituals, setRituals] = useState<any[]>([]);
 
   // Tasks from backend
   const [checklistTasks, setChecklistTasks] = useState<ChecklistTask[]>([]);
@@ -69,7 +66,8 @@ const Today = () => {
         id: t.id,
         priority: (t.priority || "medium").toUpperCase() as
           "HIGH" | "MED" | "LOW",
-        duration: "~25m",
+        duration: `~${t.estimated_minutes || 25}m`,
+        estimatedMinutes: t.estimated_minutes || 25,
         category: t.category || "General",
         title: t.title,
         description: t.description || undefined,
@@ -94,10 +92,98 @@ const Today = () => {
     }
   }, []);
 
+  // Fetch rituals
+  const fetchRituals = useCallback(async () => {
+    try {
+      const res = await ritualApi.getAll();
+      if (res.success) {
+        setRituals(res.data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  // Fetch deadlines (Tasks & Competitions H-1 to H-3)
+  const fetchDeadlines = useCallback(async () => {
+    try {
+      // Get all tasks and competitions
+      const [taskRes, compRes] = await Promise.all([
+        taskApi.getAll(), 
+        competitionApi.getAll() // Note: assuming this gets all upcoming
+      ]);
+      
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      const items: Deadline[] = [];
+
+      // Process Tasks
+      if (taskRes.success) {
+        taskRes.data.forEach((t: any) => {
+          if (!t.is_completed && t.due_date) {
+            const due = new Date(t.due_date);
+            due.setHours(0, 0, 0, 0);
+            const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays >= 1 && diffDays <= 3) {
+              items.push({
+                id: `task-${t.id}`,
+                icon: "task",
+                colorClass: "text-secondary",
+                bgClass: "bg-secondary-container",
+                time: due.toLocaleDateString(),
+                timeRemaining: diffDays === 1 ? "Besok" : `${diffDays} hari lagi`,
+                title: t.title,
+                description: `Tugas • Prioritas: ${t.priority || "MED"}`,
+              });
+            }
+          }
+        });
+      }
+
+      // Process Competitions
+      if (compRes.success) {
+        compRes.data.forEach((c: any) => {
+          if (c.date) {
+            const due = new Date(c.date);
+            due.setHours(0, 0, 0, 0);
+            const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays >= 1 && diffDays <= 3) {
+              items.push({
+                id: `comp-${c.id}`,
+                icon: "emoji_events",
+                colorClass: "text-primary",
+                bgClass: "bg-primary-container",
+                time: due.toLocaleDateString(),
+                timeRemaining: diffDays === 1 ? "Besok" : `${diffDays} hari lagi`,
+                title: c.title,
+                description: `Kompetisi • Tingkat: ${c.level || "Regional"}`,
+              });
+            }
+          }
+        });
+      }
+
+      // Sort by nearest deadline
+      items.sort((a, b) => {
+        const getDays = (str: string) => str === "Besok" ? 1 : parseInt(str.split(" ")[0]);
+        return getDays(a.timeRemaining) - getDays(b.timeRemaining);
+      });
+
+      setDeadlines(items.slice(0, 5)); // Limit to 5 items
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
   useEffect(() => {
     fetchTasks();
     fetchAnalytics();
-  }, [fetchTasks, fetchAnalytics]);
+    fetchRituals();
+    fetchDeadlines();
+  }, [fetchTasks, fetchAnalytics, fetchRituals, fetchDeadlines]);
 
   const toggleTask = async (id: string) => {
     const task = checklistTasks.find((t) => t.id === id);
@@ -105,7 +191,7 @@ const Today = () => {
 
     // Optimistic update
     setChecklistTasks((tasks) =>
-      tasks.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)),
+      tasks.map((t) => (t.id === id ? { ...t, completed: !task.completed } : t)),
     );
 
     try {
@@ -121,41 +207,68 @@ const Today = () => {
     }
   };
 
-  const toggleRitual = (id: string) => {
-    setRituals((rits) =>
-      rits.map((r) => {
+  const toggleRitual = async (id: string) => {
+    const ritual = rituals.find((r) => r.id === id);
+    if (!ritual) return;
+
+    const todayStr = new Date().toISOString().split("T")[0];
+    const isCompleted = ritual.last_completed_date?.startsWith(todayStr);
+
+    // Optimistic UI
+    setRituals((prev) => prev.map((r) => {
+      if (r.id === id) {
+        return {
+          ...r,
+          last_completed_date: isCompleted ? null : new Date().toISOString()
+        };
+      }
+      return r;
+    }));
+
+    try {
+      await ritualApi.toggle(id);
+      fetchAnalytics(); // Refresh XP
+    } catch {
+      // Revert
+      setRituals((prev) => prev.map((r) => {
         if (r.id === id) {
-          const nextStatus = r.status === "Done" ? "Pending" : "Done";
-          return { ...r, status: nextStatus };
+          return { ...r, last_completed_date: ritual.last_completed_date };
         }
         return r;
-      }),
-    );
-  };
-
-  const [isSprintRunning, setIsSprintRunning] = useState(false);
-  const [sprintSeconds, setSprintSeconds] = useState(0);
-
-  useEffect(() => {
-    let interval: any = null;
-    if (isSprintRunning && sprintSeconds > 0) {
-      interval = setInterval(() => {
-        setSprintSeconds((s) => s - 1);
-      }, 1000);
-    } else if (sprintSeconds === 0 && isSprintRunning) {
-      setIsSprintRunning(false);
-      clearInterval(interval);
+      }));
     }
-    return () => clearInterval(interval);
-  }, [isSprintRunning, sprintSeconds]);
-
-  const formatTime = (totalSeconds: number) => {
-    const m = Math.floor(totalSeconds / 60)
-      .toString()
-      .padStart(2, "0");
-    const s = (totalSeconds % 60).toString().padStart(2, "0");
-    return `${m}:${s}`;
   };
+
+  const { 
+    isActive, isPaused, timeLeft, initialDuration, currentTopic, 
+    startTimer, pauseTimer, resumeTimer, stopTimer, formatTimer,
+    pendingSession, clearPendingSession
+  } = useFocusTimer();
+
+  // If a session finishes, we could automatically log it if we wanted, or prompt the user.
+  // The user requested: "Saat sprint selesai ... Tambahkan akumulasi menit fokus ... Tambahkan 1 sesi ke metrik ... Simpan log sesi ke Neon Tech dan berikan perolehan XP."
+  // Since pendingSession will be populated when a session finishes, we can use a useEffect to auto-save it!
+  useEffect(() => {
+    if (pendingSession) {
+      const autoSave = async () => {
+        try {
+          await studySessionApi.create({
+            title: pendingSession.topic || "Sesi Fokus Selesai",
+            duration_minutes: pendingSession.duration,
+            takeaway: "Sesi selesai (Auto-logged)",
+            start_time: new Date(Date.now() - pendingSession.duration * 60000).toISOString(),
+            end_time: new Date().toISOString(),
+          });
+          fetchAnalytics();
+        } catch (e) {
+          console.error("Auto-save failed", e);
+        } finally {
+          clearPendingSession();
+        }
+      };
+      autoSave();
+    }
+  }, [pendingSession, fetchAnalytics, clearPendingSession]);
 
   // Modals
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -173,6 +286,12 @@ const Today = () => {
     notes: "",
   });
 
+  const [isRitualModalOpen, setIsRitualModalOpen] = useState(false);
+  const [ritualForm, setRitualForm] = useState({
+    title: "",
+    target: "",
+  });
+
   const handleCreateTask = async () => {
     if (!taskForm.title) return;
     try {
@@ -181,8 +300,8 @@ const Today = () => {
         title: taskForm.title,
         category: taskForm.category,
         priority: taskForm.priority,
-        description: `Estimasi Waktu: ${taskForm.estimatedMinutes} menit`,
-        scheduled_date: today,
+        estimated_minutes: parseInt(taskForm.estimatedMinutes) || 30,
+        due_date: today,
       });
       setIsTaskModalOpen(false);
       setTaskForm({
@@ -193,8 +312,21 @@ const Today = () => {
       });
       fetchTasks();
       fetchAnalytics();
-    } catch (err) {
-      console.error(err);
+      fetchDeadlines(); // deadlines might include tasks
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    }
+  };
+
+  const handleCreateRitual = async () => {
+    if (!ritualForm.title) return;
+    try {
+      await ritualApi.create(ritualForm);
+      setIsRitualModalOpen(false);
+      setRitualForm({ title: "", target: "" });
+      fetchRituals();
+    } catch (err: any) {
+      alert("Error: " + err.message);
     }
   };
 
@@ -273,8 +405,7 @@ const Today = () => {
           <div className="flex items-center gap-space-sm flex-wrap self-start xl:self-center">
             <button
               onClick={() => {
-                setSprintSeconds(45 * 60);
-                setIsSprintRunning(true);
+                startTimer(45);
               }}
               className="flex items-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-md text-label-md tracking-wider uppercase transition-all shadow-sm"
             >
@@ -617,12 +748,16 @@ const Today = () => {
                           >
                             {task.priority}
                           </span>
-                          <span className="font-label-sm text-label-sm text-outline flex items-center gap-0.5">
+                          <button
+                            onClick={() => startTimer(task.estimatedMinutes, task.title)}
+                            className="font-label-sm text-label-sm text-outline hover:text-secondary flex items-center gap-0.5 transition-colors cursor-pointer"
+                            title="Mulai Sprint untuk task ini"
+                          >
                             <span className="material-symbols-outlined text-[14px]">
                               timer
                             </span>{" "}
                             {task.duration}
-                          </span>
+                          </button>
                           <span
                             className={`px-2 py-0.5 rounded font-label-sm text-label-sm ${task.completed ? "bg-surface-container-high text-outline" : "bg-surface-container-highest text-secondary"}`}
                           >
@@ -714,25 +849,27 @@ const Today = () => {
 
             <div className="flex flex-col items-center justify-center my-space-sm">
               <div className="relative w-44 h-44 flex items-center justify-center">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
+                <svg
+                  className="w-full h-full transform -rotate-90"
+                  viewBox="0 0 152 152"
+                >
                   <circle
-                    className="text-surface-container-highest"
-                    cx="80"
-                    cy="80"
+                    cx="76"
+                    cy="76"
                     fill="none"
                     r="68"
                     stroke="currentColor"
                     strokeWidth="8"
+                    className="text-surface-container-highest"
                   ></circle>
                   <circle
-                    className="transition-all duration-1000"
-                    cx="80"
-                    cy="80"
+                    cx="76"
+                    cy="76"
                     fill="none"
                     r="68"
                     stroke="url(#cyberGradient)"
                     strokeDasharray="427.25"
-                    strokeDashoffset="142"
+                    strokeDashoffset={427.25 - (427.25 * (timeLeft / (initialDuration * 60)))}
                     strokeLinecap="round"
                     strokeWidth="8"
                   ></circle>
@@ -751,19 +888,19 @@ const Today = () => {
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center text-center">
                   <span className="font-headline-xl text-headline-xl text-on-surface font-bold tracking-tight">
-                    {formatTime(sprintSeconds)}
+                    {formatTimer()}
                   </span>
                   <span className="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">
-                    {sprintSeconds > 0 && isSprintRunning ? "Running" : "Idle"}
+                    {isActive ? (isPaused ? "Paused" : "Running") : "Idle"}
                   </span>
                 </div>
               </div>
               <div className="mt-space-md text-center">
                 <div className="font-body-md text-body-md font-semibold text-on-surface">
-                  Mulai Sesi Baru
+                  {currentTopic || "Mulai Sesi Baru"}
                 </div>
                 <div className="font-body-sm text-body-sm text-on-surface-variant">
-                  Pilih task untuk memulai sprint
+                  {currentTopic ? "Fokus pada topik ini" : "Pilih task untuk memulai sprint"}
                 </div>
               </div>
             </div>
@@ -784,25 +921,29 @@ const Today = () => {
 
             <div className="mt-space-md grid grid-cols-2 gap-space-xs">
               <button
-                onClick={() => setIsSprintRunning(!isSprintRunning)}
-                className={`py-2.5 rounded-xl font-label-md text-label-md uppercase tracking-wider font-semibold transition-colors flex items-center justify-center gap-1.5 ${!isSprintRunning ? "bg-secondary text-on-secondary" : "bg-surface-container-high hover:bg-surface-bright text-on-surface"}`}
+                onClick={() => {
+                  if (isActive) {
+                    if (isPaused) resumeTimer();
+                    else pauseTimer();
+                  } else {
+                    startTimer(25);
+                  }
+                }}
+                className={`py-2.5 rounded-xl font-label-md text-label-md uppercase tracking-wider font-semibold transition-colors flex items-center justify-center gap-1.5 ${!isActive || isPaused ? "bg-secondary text-on-secondary" : "bg-surface-container-high hover:bg-surface-bright text-on-surface"}`}
               >
                 <span className="material-symbols-outlined text-[18px]">
-                  {isSprintRunning ? "pause" : "play_arrow"}
+                  {!isActive ? "play_arrow" : isPaused ? "play_arrow" : "pause"}
                 </span>
-                <span>{isSprintRunning ? "Pause" : "Resume"}</span>
+                <span>{!isActive ? "Start" : isPaused ? "Resume" : "Pause"}</span>
               </button>
               <button
-                onClick={() => {
-                  setIsSprintRunning(false);
-                  setSprintSeconds(0);
-                }}
+                onClick={stopTimer}
                 className="py-2.5 rounded-xl bg-primary-container hover:bg-inverse-primary text-on-primary font-label-md text-label-md uppercase tracking-wider font-bold transition-all shadow-[0_0_16px_rgba(160,120,255,0.3)] flex items-center justify-center gap-1.5"
               >
                 <span className="material-symbols-outlined text-[18px]">
-                  check
+                  stop
                 </span>
-                <span>Complete</span>
+                <span>Selesai</span>
               </button>
             </div>
           </div>
@@ -879,49 +1020,58 @@ const Today = () => {
                   Daily Rituals
                 </h3>
               </div>
-              <span className="font-label-sm text-label-sm text-primary font-semibold">
-                {rituals.filter((r) => r.status === "Done").length} /{" "}
-                {rituals.length} Done
-              </span>
+              <div className="flex items-center gap-space-sm">
+                <span className="font-label-sm text-label-sm text-primary font-semibold">
+                  {rituals.filter((r) => {
+                    const todayStr = new Date().toISOString().split("T")[0];
+                    return r.last_completed_date?.startsWith(todayStr);
+                  }).length} / {rituals.length} Done
+                </span>
+                <button
+                  onClick={() => setIsRitualModalOpen(true)}
+                  className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high hover:text-primary transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]">add</span>
+                </button>
+              </div>
             </div>
 
             <div className="space-y-space-xs font-body-sm text-body-sm">
               {rituals.length > 0 ? (
-                rituals.map((ritual) => (
-                  <div
-                    key={ritual.id}
-                    onClick={() => toggleRitual(ritual.id)}
-                    className={`flex items-center justify-between p-space-xs px-space-sm rounded-lg transition-colors cursor-pointer group ${ritual.status === "Done" ? "bg-surface-container/60" : "bg-surface-container hover:bg-surface-container-high"}`}
-                  >
-                    <div className="flex items-center gap-space-sm">
-                      <span
-                        className={`material-symbols-outlined text-[18px] ${ritual.status === "Done" ? "text-secondary" : "text-outline group-hover:text-secondary"}`}
-                      >
-                        {ritual.status === "Done"
-                          ? "check_box"
-                          : "check_box_outline_blank"}
-                      </span>
-                      <span
-                        className={
-                          ritual.status === "Done"
-                            ? "text-on-surface-variant line-through"
-                            : "text-on-surface font-medium"
-                        }
-                      >
-                        {ritual.title}
+                rituals.map((ritual) => {
+                  const todayStr = new Date().toISOString().split("T")[0];
+                  const isDone = ritual.last_completed_date?.startsWith(todayStr);
+
+                  return (
+                    <div
+                      key={ritual.id}
+                      onClick={() => toggleRitual(ritual.id)}
+                      className={`flex items-center justify-between p-space-xs px-space-sm rounded-lg transition-colors cursor-pointer group ${isDone ? "bg-surface-container/60" : "bg-surface-container hover:bg-surface-container-high"}`}
+                    >
+                      <div className="flex items-center gap-space-sm">
+                        <span
+                          className={`material-symbols-outlined text-[18px] ${isDone ? "text-secondary" : "text-outline group-hover:text-secondary"}`}
+                        >
+                          {isDone
+                            ? "check_box"
+                            : "check_box_outline_blank"}
+                        </span>
+                        <span
+                          className={
+                            isDone
+                              ? "text-on-surface-variant line-through"
+                              : "text-on-surface font-medium"
+                          }
+                        >
+                          {ritual.title}
+                        </span>
+                      </div>
+                      <span className="font-label-sm text-label-sm text-outline">
+                        {ritual.target || "Daily"}
                       </span>
                     </div>
-                    {ritual.status === "In Progress" ? (
-                      <span className="font-label-sm text-label-sm text-secondary font-semibold">
-                        In Progress
-                      </span>
-                    ) : (
-                      <span className="font-label-sm text-label-sm text-outline">
-                        {ritual.time}
-                      </span>
-                    )}
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="py-space-md text-center">
                   <p className="font-body-sm text-outline">
@@ -935,6 +1085,58 @@ const Today = () => {
       </div>
 
       {/* MODALS */}
+      {isRitualModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface-container-low p-space-lg rounded-2xl max-w-md w-full shadow-2xl space-y-space-md border border-surface-container-highest">
+            <h2 className="font-headline-md text-on-surface font-bold">
+              Tambah Daily Ritual
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <label className="block font-label-sm text-outline mb-1">
+                  Nama Ritual
+                </label>
+                <input
+                  value={ritualForm.title}
+                  onChange={(e) =>
+                    setRitualForm({ ...ritualForm, title: e.target.value })
+                  }
+                  className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Contoh: Review Flashcard"
+                />
+              </div>
+              <div>
+                <label className="block font-label-sm text-outline mb-1">
+                  Target (Opsional)
+                </label>
+                <input
+                  value={ritualForm.target}
+                  onChange={(e) =>
+                    setRitualForm({ ...ritualForm, target: e.target.value })
+                  }
+                  className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Contoh: 15 Menit"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setIsRitualModalOpen(false)}
+                className="flex-1 py-2.5 rounded-xl font-label-md font-semibold bg-surface-container-high text-on-surface hover:bg-surface-container-highest"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleCreateRitual}
+                className="flex-1 py-2.5 rounded-xl font-label-md font-bold bg-primary text-on-primary hover:brightness-110"
+              >
+                Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isTaskModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-surface-container-low p-space-lg rounded-2xl max-w-md w-full shadow-2xl space-y-space-md border border-surface-container-highest">

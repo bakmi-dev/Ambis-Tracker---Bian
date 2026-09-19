@@ -19,7 +19,7 @@ const Tasks = () => {
     description: '',
     category: 'Study Space',
     priority: 'medium',
-    scheduled_date: '',
+    due_date: '',
     defaultStatus: 'todo' // 'todo' | 'in_progress'
   });
 
@@ -48,7 +48,7 @@ const Tasks = () => {
       description: task.description || '',
       category: task.category || 'Study Space',
       priority: task.priority || 'medium',
-      scheduled_date: task.scheduled_date ? task.scheduled_date.split('T')[0] : '',
+      due_date: task.due_date ? task.due_date.split('T')[0] : '',
       defaultStatus: task.is_completed ? 'completed' : (task.tags?.includes('in_progress') ? 'in_progress' : 'todo')
     });
     setIsTaskModalOpen(true);
@@ -66,7 +66,7 @@ const Tasks = () => {
           description: taskForm.description,
           category: taskForm.category,
           priority: taskForm.priority,
-          scheduled_date: taskForm.scheduled_date || undefined,
+          due_date: taskForm.due_date || undefined,
           tags
         });
       } else {
@@ -76,14 +76,14 @@ const Tasks = () => {
           description: taskForm.description,
           category: taskForm.category,
           priority: taskForm.priority,
-          scheduled_date: taskForm.scheduled_date || undefined,
+          due_date: taskForm.due_date || undefined,
           tags
         });
       }
       
       setIsTaskModalOpen(false);
       setEditingTaskId(null);
-      setTaskForm({ title: '', description: '', category: 'Study Space', priority: 'medium', scheduled_date: '', defaultStatus: 'todo' });
+      setTaskForm({ title: '', description: '', category: 'Study Space', priority: 'medium', due_date: '', defaultStatus: 'todo' });
       fetchTasks();
     } catch (err) {
       console.error(err);
@@ -197,10 +197,10 @@ const Tasks = () => {
             <span>+{task.xp || 10} XP</span>
           </div>
         </div>
-        {task.scheduled_date && (
+        {task.due_date && (
           <div className="flex items-center gap-1 text-on-surface-variant">
             <span className="material-symbols-outlined text-[16px]">event</span>
-            <span>{new Date(task.scheduled_date).toLocaleDateString()}</span>
+            <span>{new Date(task.due_date).toLocaleDateString()}</span>
           </div>
         )}
       </div>
@@ -241,7 +241,7 @@ const Tasks = () => {
           
           {/* Action Group */}
           <div className="flex items-center gap-space-sm flex-wrap">
-            <button onClick={() => { setEditingTaskId(null); setTaskForm({...taskForm, title: '', description: '', scheduled_date: '', defaultStatus: 'todo'}); setIsTaskModalOpen(true); }} className="flex items-center gap-space-xs px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-fixed text-on-primary font-body-md text-body-md font-semibold transition-all shadow-[0_0_20px_rgba(208,188,255,0.35)] active:scale-95">
+            <button onClick={() => { setEditingTaskId(null); setTaskForm({...taskForm, title: '', description: '', due_date: '', defaultStatus: 'todo'}); setIsTaskModalOpen(true); }} className="flex items-center gap-space-xs px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-fixed text-on-primary font-body-md text-body-md font-semibold transition-all shadow-[0_0_20px_rgba(208,188,255,0.35)] active:scale-95">
               <span className="material-symbols-outlined text-[20px]">add</span>
               <span>New Task</span>
             </button>
@@ -309,7 +309,7 @@ const Tasks = () => {
             </div>
             <div className="flex flex-col gap-space-md">
               {todoTasks.map(renderCard)}
-              <button onClick={() => { setEditingTaskId(null); setTaskForm({...taskForm, title: '', description: '', scheduled_date: '', defaultStatus: 'todo'}); setIsTaskModalOpen(true); }} className="w-full py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-space-xs font-body-sm text-body-sm font-medium transition-all group">
+              <button onClick={() => { setEditingTaskId(null); setTaskForm({...taskForm, title: '', description: '', due_date: '', defaultStatus: 'todo'}); setIsTaskModalOpen(true); }} className="w-full py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-space-xs font-body-sm text-body-sm font-medium transition-all group">
                 <span className="material-symbols-outlined text-[18px] text-primary group-hover:scale-110 transition-transform">add_circle</span>
                 <span>+ Tambah kartu ke To Do</span>
               </button>
@@ -327,7 +327,7 @@ const Tasks = () => {
             </div>
             <div className="flex flex-col gap-space-md">
               {inProgressTasks.map(renderCard)}
-              <button onClick={() => { setEditingTaskId(null); setTaskForm({...taskForm, title: '', description: '', scheduled_date: '', defaultStatus: 'in_progress'}); setIsTaskModalOpen(true); }} className="w-full py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-space-xs font-body-sm text-body-sm font-medium transition-all group">
+              <button onClick={() => { setEditingTaskId(null); setTaskForm({...taskForm, title: '', description: '', due_date: '', defaultStatus: 'in_progress'}); setIsTaskModalOpen(true); }} className="w-full py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-space-xs font-body-sm text-body-sm font-medium transition-all group">
                 <span className="material-symbols-outlined text-[18px] text-secondary group-hover:scale-110 transition-transform">add_circle</span>
                 <span>+ Tambah kartu ke In Progress</span>
               </button>
@@ -386,7 +386,7 @@ const Tasks = () => {
                   <td className="py-4 pr-4">
                     <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase ${task.priority === 'high' ? 'bg-error-container/30 text-error' : task.priority === 'medium' ? 'bg-tertiary-container/30 text-tertiary' : 'bg-surface-container-highest text-on-surface-variant'}`}>{task.priority}</span>
                   </td>
-                  <td className="py-4 pr-4 text-on-surface-variant text-sm">{task.scheduled_date ? new Date(task.scheduled_date).toLocaleDateString() : '-'}</td>
+                  <td className="py-4 pr-4 text-on-surface-variant text-sm">{task.due_date ? new Date(task.due_date).toLocaleDateString() : '-'}</td>
                   <td className="py-4">
                     <div className="flex items-center gap-2">
                       <button onClick={(e) => openEditModal(e, task)} className="text-outline hover:text-primary transition-colors p-2 rounded-md hover:bg-surface-container" title="Edit">
@@ -414,13 +414,13 @@ const Tasks = () => {
           <h2 className="font-headline-md font-bold text-on-surface mb-space-lg">Timeline Mendatang</h2>
           <div className="relative border-l-2 border-surface-container ml-4 pl-6 space-y-space-lg">
             {filteredTasks
-              .filter(t => t.scheduled_date)
-              .sort((a, b) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime())
+              .filter(t => t.due_date)
+              .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
               .map(task => (
               <div key={task.id} className="relative cursor-pointer" onClick={() => setActiveTaskId(task.id)}>
                 <div className={`absolute -left-[35px] w-4 h-4 rounded-full border-2 border-surface-container-lowest bg-primary`}></div>
                 <div className="flex flex-col">
-                  <span className="font-label-sm text-outline font-semibold mb-1">{new Date(task.scheduled_date).toLocaleDateString()}</span>
+                  <span className="font-label-sm text-outline font-semibold mb-1">{new Date(task.due_date).toLocaleDateString()}</span>
                   <div className="bg-surface-container hover:bg-surface-container-high transition-colors p-4 rounded-xl max-w-lg shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
                       <span className={`px-2 py-0.5 rounded font-label-sm text-xs font-bold uppercase ${task.priority === 'high' ? 'bg-error-container/30 text-error' : task.priority === 'medium' ? 'bg-tertiary-container/30 text-tertiary' : 'bg-surface-container-highest text-on-surface-variant'}`}>{task.priority}</span>
@@ -432,7 +432,7 @@ const Tasks = () => {
                 </div>
               </div>
             ))}
-            {filteredTasks.filter(t => t.scheduled_date).length === 0 && (
+            {filteredTasks.filter(t => t.due_date).length === 0 && (
                <div className="text-outline text-sm italic py-4">Tidak ada tugas dengan deadline.</div>
             )}
           </div>
@@ -505,7 +505,7 @@ const Tasks = () => {
               </div>
               <div>
                 <label className="block font-label-sm text-outline mb-1">Due Date</label>
-                <input type="date" value={taskForm.scheduled_date} onChange={e => setTaskForm({...taskForm, scheduled_date: e.target.value})} className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                <input type="date" value={taskForm.due_date} onChange={e => setTaskForm({...taskForm, due_date: e.target.value})} className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">

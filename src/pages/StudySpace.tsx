@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { learningApi, studySessionApi, analyticsApi } from '../api';
 import { useNavigate } from 'react-router-dom';
+import MaterialDetailModal from '../components/modals/MaterialDetailModal';
+import { useFocusTimer } from '../context/FocusTimerContext';
 
 // Define mock data types
-interface LearningPath {
+export interface LearningPath {
   id: string;
   category: string;
   categoryColorClass: string;
@@ -97,8 +99,19 @@ const mapLearningMaterialToPath = (lm: any, index: number): LearningPath | null 
     const c = colorClasses[index % colorClasses.length];
     
     let progressPercent = 0;
-    if (lm.status === 'completed') progressPercent = 100;
-    else if (lm.status === 'in_progress') progressPercent = 50;
+    let milestones = [];
+    if (parsed.milestones && Array.isArray(parsed.milestones) && parsed.milestones.length > 0) {
+      milestones = parsed.milestones;
+      const completedCount = milestones.filter((m: any) => m.status === 'DONE').length;
+      progressPercent = Math.round((completedCount / milestones.length) * 100);
+    } else {
+      if (lm.status === 'completed') progressPercent = 100;
+      else if (lm.status === 'in_progress') progressPercent = 50;
+      
+      milestones = [
+        { id: '1', title: parsed.description || 'Pahami Dasar', status: progressPercent === 100 ? 'DONE' : 'ACTIVE', statusText: parsed.deadline || 'Tanpa Target' }
+      ];
+    }
 
     return {
       id: lm.id,
@@ -107,9 +120,7 @@ const mapLearningMaterialToPath = (lm: any, index: number): LearningPath | null 
       title: lm.title,
       progressPercent,
       progressText: progressPercent === 100 ? 'Selesai' : (progressPercent > 0 ? 'Sedang Berjalan' : 'Belum Dimulai'),
-      milestones: [
-        { id: '1', title: parsed.description || 'Pahami Dasar', status: progressPercent === 100 ? 'DONE' : 'ACTIVE', statusText: parsed.deadline || 'Tanpa Target' }
-      ],
+      milestones,
       nextMaterial: progressPercent === 100 ? 'Selesai' : 'Lanjutkan Modul',
       progressColorClass: c.prog,
       bgGradientClass: c.bg
@@ -148,12 +159,23 @@ const StudySpace = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [analytics, setAnalytics] = useState<any>(null);
 
+  const { pendingSession, clearPendingSession } = useFocusTimer();
+
   // Form state
   const [logTitle, setLogTitle] = useState('');
   const [logCategory, setLogCategory] = useState('Systems');
   const [logDuration, setLogDuration] = useState('60');
   const [logTakeaway, setLogTakeaway] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Auto-fill from pending timer session
+  useEffect(() => {
+    if (pendingSession) {
+      setLogTitle(pendingSession.topic || 'Sesi Fokus');
+      setLogDuration(pendingSession.duration.toString());
+      scrollToLogger();
+    }
+  }, [pendingSession]);
 
   // Filter state
   const [resourceFilter, setResourceFilter] = useState('Semua');
@@ -162,10 +184,13 @@ const StudySpace = () => {
   const [isRoadmapModalOpen, setIsRoadmapModalOpen] = useState(false);
   const [roadmapForm, setRoadmapForm] = useState({
     title: '',
-    domain: 'Cloud',
+    domain: 'Tech & Engineering',
+    customDomain: '',
     deadline: '',
     description: ''
   });
+
+  const [selectedPath, setSelectedPath] = useState<LearningPath | null>(null);
 
   const fetchData = async () => {
     try {
@@ -219,22 +244,31 @@ const StudySpace = () => {
     try {
       const startTime = new Date();
       const durationMins = parseInt(logDuration.replace(/[^0-9]/g, '')) || 60;
+      
+      // If it's from a pending timer, the actual start time was earlier
+      if (pendingSession) {
+        startTime.setTime(startTime.getTime() - durationMins * 60000);
+      }
+      
       const endTime = new Date(startTime.getTime() + durationMins * 60000);
       
-      const fullTitle = logTakeaway ? `${logTitle} - ${logTakeaway}` : logTitle;
-
+      // We pass takeaway explicitly so backend creates a KnowledgeDoc
       await studySessionApi.create({
-        title: fullTitle,
+        title: logTitle,
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString(),
         duration_minutes: durationMins,
-        session_type: logCategory
+        session_type: logCategory,
+        takeaway: logTakeaway
       });
       
       setLogTitle('');
       setLogDuration('60');
       setLogTakeaway('');
-      alert('Sesi belajar berhasil dicatat!');
+      if (pendingSession) {
+        clearPendingSession();
+      }
+      alert('Sesi belajar berhasil dicatat & disinkronisasi ke Knowledge Base!');
       fetchData();
     } catch (error) {
       console.error('Error submitting log:', error);
@@ -257,12 +291,12 @@ const StudySpace = () => {
       };
       await learningApi.create({
         title: roadmapForm.title,
-        type: roadmapForm.domain,
+        type: roadmapForm.domain === 'Custom' ? roadmapForm.customDomain : roadmapForm.domain,
         url: JSON.stringify(payload),
         status: 'not_started'
       });
       setIsRoadmapModalOpen(false);
-      setRoadmapForm({ title: '', domain: 'Cloud', deadline: '', description: '' });
+      setRoadmapForm({ title: '', domain: 'Tech & Engineering', customDomain: '', deadline: '', description: '' });
       fetchData();
     } catch (err) {
       console.error(err);
@@ -271,10 +305,7 @@ const StudySpace = () => {
 
   const filteredResources = resources.filter(res => {
     if (resourceFilter === 'Semua') return true;
-    if (resourceFilter === 'Cloud & Systems' && (res.type === 'Cloud' || res.type === 'Systems')) return true;
-    if (resourceFilter === 'Artificial Intelligence' && res.type === 'AI') return true;
-    if (resourceFilter === 'Programming' && res.type === 'Programming') return true;
-    if (resourceFilter === 'Cybersecurity' && res.type === 'Security') return true;
+    if (resourceFilter === res.type) return true;
     return false;
   });
 
@@ -385,8 +416,13 @@ const StudySpace = () => {
               <span className="material-symbols-outlined text-[18px]">edit_calendar</span>
             </div>
             <div>
-              <h2 className="font-headline-md text-headline-md text-on-surface font-semibold leading-tight">
+              <h2 className="font-headline-md text-headline-md text-on-surface font-semibold leading-tight flex items-center gap-2">
                 Catat Sesi Belajar Baru
+                {pendingSession && (
+                  <span className="px-2 py-0.5 rounded bg-secondary-container text-secondary font-label-sm text-label-sm animate-pulse whitespace-nowrap">
+                    AUTO-FILLED
+                  </span>
+                )}
               </h2>
               <span className="font-label-sm text-label-sm text-outline">Selesaikan sprint dan sinkronisasikan perolehan XP kognitif</span>
             </div>
@@ -412,11 +448,11 @@ const StudySpace = () => {
               <div className="relative flex items-center">
                 <span className="material-symbols-outlined absolute left-3 text-outline text-[18px]">category</span>
                 <select value={logCategory} onChange={e => setLogCategory(e.target.value)} className="w-full h-11 pl-10 pr-8 rounded-xl bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none focus:bg-surface-container-high appearance-none transition-colors">
-                  <option value="Systems">Systems & Distributed</option>
-                  <option value="AI">AI & Deep Learning</option>
-                  <option value="Programming">Programming (Go/Rust)</option>
-                  <option value="Security">Cybersecurity</option>
-                  <option value="Cloud">Cloud Infrastructure</option>
+                  <option value="Tech & Engineering">Tech & Engineering</option>
+                  <option value="Academic & School">Academic & School</option>
+                  <option value="Language">Language</option>
+                  <option value="Business & Career">Business & Career</option>
+                  <option value="Creative / Lainnya">Creative / Lainnya</option>
                 </select>
                 <span className="material-symbols-outlined absolute right-3 text-outline text-[18px] pointer-events-none">expand_more</span>
               </div>
@@ -534,7 +570,7 @@ const StudySpace = () => {
                   <span className="font-label-sm text-label-sm text-outline uppercase block">Materi Berikutnya:</span>
                   <span className="font-body-sm text-body-sm font-semibold text-on-surface truncate block">{path.nextMaterial}</span>
                 </div>
-                <button className={`w-full py-2.5 px-space-md rounded-xl font-body-sm text-body-sm font-semibold hover:brightness-110 flex items-center justify-center gap-2 transition-all ${path.id === '1' ? 'bg-secondary-container text-on-secondary-container' : path.id === '2' ? 'bg-primary-container text-on-primary-container' : 'bg-tertiary text-on-tertiary'}`}>
+                <button onClick={() => setSelectedPath(path)} className={`w-full py-2.5 px-space-md rounded-xl font-body-sm text-body-sm font-semibold hover:brightness-110 flex items-center justify-center gap-2 transition-all ${path.id === '1' ? 'bg-secondary-container text-on-secondary-container' : path.id === '2' ? 'bg-primary-container text-on-primary-container' : 'bg-tertiary text-on-tertiary'}`}>
                   <span>Lanjutkan Belajar</span>
                   <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                 </button>
@@ -583,7 +619,7 @@ const StudySpace = () => {
             
             {/* Filter Pill Bar */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-space-sm mb-space-md no-scrollbar">
-              {['Semua', 'Cloud & Systems', 'Artificial Intelligence', 'Programming', 'Cybersecurity'].map(f => (
+              {['Semua', 'Tech & Engineering', 'Academic & School', 'Language', 'Business & Career', 'Creative / Lainnya'].map(f => (
                 <button 
                   key={f} 
                   onClick={() => setResourceFilter(f)}
@@ -776,12 +812,17 @@ const StudySpace = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-label-sm text-outline mb-1">Domain</label>
-                  <select value={roadmapForm.domain} onChange={e => setRoadmapForm({...roadmapForm, domain: e.target.value})} className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                    <option value="Cloud">Cloud & Systems</option>
-                    <option value="AI">AI & Deep Learning</option>
-                    <option value="Programming">Programming</option>
-                    <option value="Security">Cybersecurity</option>
+                  <select value={roadmapForm.domain} onChange={e => setRoadmapForm({...roadmapForm, domain: e.target.value})} className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mb-2">
+                    <option value="Tech & Engineering">Tech & Engineering</option>
+                    <option value="Academic & School">Academic & School</option>
+                    <option value="Language">Language</option>
+                    <option value="Business & Career">Business & Career</option>
+                    <option value="Creative / Lainnya">Creative / Lainnya</option>
+                    <option value="Custom">Custom...</option>
                   </select>
+                  {roadmapForm.domain === 'Custom' && (
+                    <input value={roadmapForm.customDomain} onChange={e => setRoadmapForm({...roadmapForm, customDomain: e.target.value})} placeholder="Ketik domain kustom..." className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                  )}
                 </div>
                 <div>
                   <label className="block font-label-sm text-outline mb-1">Target Selesai</label>
@@ -800,6 +841,14 @@ const StudySpace = () => {
           </div>
         </div>
       )}
+
+      {/* MATERIAL DETAIL MODAL */}
+      <MaterialDetailModal 
+        isOpen={!!selectedPath} 
+        onClose={() => setSelectedPath(null)} 
+        path={selectedPath} 
+        onUpdate={fetchData} 
+      />
     </div>
   );
 };

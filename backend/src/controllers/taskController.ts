@@ -14,13 +14,24 @@ export const getTasks = asyncHandler(async (req: Request, res: Response) => {
   const userId = await getDefaultUserId();
   const { date, completed, priority } = req.query;
 
-  const where: any = { user_id: userId };
+  let where: any = { user_id: userId };
 
   if (date && typeof date === 'string') {
     const d = new Date(date);
     const start = new Date(d); start.setUTCHours(0, 0, 0, 0);
     const end = new Date(d); end.setUTCHours(23, 59, 59, 999);
-    where.scheduled_date = { gte: start, lte: end };
+    
+    // Rollover logic: Tasks due today OR (not completed and due before today)
+    where = {
+      ...where,
+      OR: [
+        { due_date: { gte: start, lte: end } },
+        {
+          is_completed: false,
+          due_date: { lt: start }
+        }
+      ]
+    };
   }
 
   if (completed === 'true') where.is_completed = true;
@@ -38,7 +49,7 @@ export const getTasks = asyncHandler(async (req: Request, res: Response) => {
 // POST /api/v1/tasks
 export const createTask = asyncHandler(async (req: Request, res: Response) => {
   const userId = await getDefaultUserId();
-  const { title, description, priority, scheduled_date, category, tags, xp } = req.body;
+  const { title, description, priority, due_date, estimated_minutes, category, tags, xp } = req.body;
 
   if (!title || typeof title !== 'string' || title.trim() === '') {
     res.status(400).json({ success: false, error: 'Title is required' });
@@ -51,10 +62,11 @@ export const createTask = asyncHandler(async (req: Request, res: Response) => {
       title: title.trim(),
       description: description || null,
       priority: priority || 'medium',
-      scheduled_date: scheduled_date ? new Date(scheduled_date) : null,
+      due_date: due_date ? new Date(due_date) : null,
+      estimated_minutes: estimated_minutes || 25,
       category: category || null,
       tags: tags || [],
-      xp: xp || 10,
+      xp: xp || 15,
     },
   });
 
@@ -72,20 +84,29 @@ export const updateTask = asyncHandler(async (req: Request, res: Response) => {
     return;
   }
 
-  const { title, description, priority, scheduled_date, is_completed, category, tags, xp } = req.body;
+  const { title, description, priority, due_date, estimated_minutes, is_completed, category, tags, xp } = req.body;
+
+  const dataToUpdate: any = {
+    ...(title !== undefined && { title: title.trim() }),
+    ...(description !== undefined && { description }),
+    ...(priority !== undefined && { priority }),
+    ...(due_date !== undefined && { due_date: due_date ? new Date(due_date) : null }),
+    ...(estimated_minutes !== undefined && { estimated_minutes }),
+    ...(is_completed !== undefined && { is_completed }),
+    ...(category !== undefined && { category }),
+    ...(tags !== undefined && { tags }),
+    ...(xp !== undefined && { xp }),
+  };
+
+  if (is_completed === true && !existing.is_completed) {
+    dataToUpdate.completed_at = new Date();
+  } else if (is_completed === false && existing.is_completed) {
+    dataToUpdate.completed_at = null;
+  }
 
   const updated = await prisma.task.update({
     where: { id },
-    data: {
-      ...(title !== undefined && { title: title.trim() }),
-      ...(description !== undefined && { description }),
-      ...(priority !== undefined && { priority }),
-      ...(scheduled_date !== undefined && { scheduled_date: scheduled_date ? new Date(scheduled_date) : null }),
-      ...(is_completed !== undefined && { is_completed }),
-      ...(category !== undefined && { category }),
-      ...(tags !== undefined && { tags }),
-      ...(xp !== undefined && { xp }),
-    },
+    data: dataToUpdate,
   });
 
   // Award XP if task is completed for the first time
@@ -93,6 +114,12 @@ export const updateTask = asyncHandler(async (req: Request, res: Response) => {
     await prisma.user.update({
       where: { id: userId },
       data: { xp: { increment: updated.xp } },
+    });
+  } else if (is_completed === false && existing.is_completed) {
+    // Reverse XP if unchecked
+    await prisma.user.update({
+      where: { id: userId },
+      data: { xp: { decrement: updated.xp } },
     });
   }
 

@@ -22,7 +22,7 @@ const Sidebar = () => {
   } = useGlobalState();
 
   const WORKSPACES = [
-    user?.workspace_name || "My Command Deck",
+    user?.workspace_name || `${user?.name ? user.name + "'s" : "My"} Command Deck`,
     "Academic & College Vault",
     "Hackathon Prep Space"
   ];

@@ -1,16 +1,15 @@
 import { Request, Response } from 'express';
 import prisma from '../db';
 import { asyncHandler } from '../middlewares/errorMiddleware';
-
-const getDefaultUserId = async (): Promise<string> => {
-  const user = await prisma.user.findFirst();
-  if (!user) throw Object.assign(new Error('No default user found.'), { statusCode: 500 });
-  return user.id;
-};
+import { AuthRequest } from '../middlewares/auth';
 
 // GET /api/v1/learning
-export const getLearningMaterials = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const getLearningMaterials = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+    return;
+  }
   const { status } = req.query;
 
   const where: any = { user_id: userId };
@@ -24,8 +23,12 @@ export const getLearningMaterials = asyncHandler(async (req: Request, res: Respo
 });
 
 // POST /api/v1/learning
-export const createLearningMaterial = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const createLearningMaterial = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+    return;
+  }
   const { title, type, url, status } = req.body;
 
   if (!title || typeof title !== 'string' || title.trim() === '') {
@@ -47,9 +50,13 @@ export const createLearningMaterial = asyncHandler(async (req: Request, res: Res
 });
 
 // PATCH /api/v1/learning/:id
-export const updateLearningMaterial = asyncHandler(async (req: Request, res: Response) => {
+export const updateLearningMaterial = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+    return;
+  }
 
   const existing = await prisma.learningMaterial.findFirst({ where: { id, user_id: userId } });
   if (!existing) {
@@ -73,9 +80,13 @@ export const updateLearningMaterial = asyncHandler(async (req: Request, res: Res
 });
 
 // DELETE /api/v1/learning/:id
-export const deleteLearningMaterial = asyncHandler(async (req: Request, res: Response) => {
+export const deleteLearningMaterial = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+    return;
+  }
 
   const existing = await prisma.learningMaterial.findFirst({ where: { id, user_id: userId } });
   if (!existing) {

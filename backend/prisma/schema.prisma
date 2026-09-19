@@ -10,13 +10,19 @@ datasource db {
 model User {
   id              String           @id @default(uuid())
   email           String           @unique
+  google_id       String?          @unique
   name            String
   password_hash   String
   xp              Int              @default(0)
   current_streak  Int              @default(0)
   profile_metadata String?
-  created_at      DateTime         @default(now())
-  updated_at      DateTime         @updatedAt
+  avatar_url       String?
+  role_track       String?
+  workspace_name   String?
+  focus_target_hours Int           @default(4)
+  is_onboarded     Boolean         @default(false)
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @updatedAt
 
   tasks              Task[]
   study_sessions     StudySession[]
@@ -26,6 +32,7 @@ model User {
   journal_entries    JournalEntry[]
   knowledge_docs     KnowledgeDoc[]
   learning_materials LearningMaterial[]
+  daily_rituals      DailyRitual[]
 
   @@map("users")
 }
@@ -36,17 +43,20 @@ model Task {
   title          String
   description    String?
   priority       String    @default("medium") // high, medium, low
-  scheduled_date DateTime?
+  due_date       DateTime?
+  estimated_minutes Int      @default(25)
   is_completed   Boolean   @default(false)
+  completed_at   DateTime?
+  rolled_over    Boolean   @default(false)
   category       String?
   tags           String[]
-  xp             Int       @default(10)
+  xp             Int       @default(15)
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@index([user_id, scheduled_date])
+  @@index([user_id, due_date])
   @@index([user_id, is_completed])
   @@map("tasks")
 }
@@ -182,4 +192,19 @@ model LearningMaterial {
 
   @@index([user_id, status])
   @@map("learning_materials")
+}
+
+model DailyRitual {
+  id                  String    @id @default(uuid())
+  user_id             String
+  title               String
+  target              String?
+  last_completed_date DateTime?
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, last_completed_date])
+  @@map("daily_rituals")
 }

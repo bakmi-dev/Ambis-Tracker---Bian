@@ -16,6 +16,7 @@ import Journal from './pages/Journal';
 import KnowledgeBase from './pages/KnowledgeBase';
 import { useGlobalState } from './context/GlobalContext';
 import { GlobalProvider } from './context/GlobalContext';
+import { FocusTimerProvider } from './context/FocusTimerContext';
 
 // Fade transition wrapper for smooth page transitions
 const FadeTransition = ({ children }: { children: ReactNode }) => {
@@ -104,8 +105,10 @@ function App() {
   return (
     <BrowserRouter>
       <GlobalProvider>
-        <DocumentTitleUpdater />
-        <AppRoutes />
+        <FocusTimerProvider>
+          <DocumentTitleUpdater />
+          <AppRoutes />
+        </FocusTimerProvider>
       </GlobalProvider>
     </BrowserRouter>
   );

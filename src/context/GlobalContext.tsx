@@ -16,6 +16,9 @@ interface User {
   github?: string;
   linkedin?: string;
   website?: string;
+  location?: string;
+  xp?: number;
+  current_streak?: number;
 }
 
 interface GlobalContextType {
@@ -27,14 +30,7 @@ interface GlobalContextType {
   isAuthenticated: boolean;
   logout: () => void;
 
-  // Timer State
-  isFocusActive: boolean;
-  isFocusPaused: boolean;
-  focusSeconds: number;
-  toggleTimer: () => void;
-  stopTimer: () => void;
-  pauseTimer: () => void;
-  formatTimer: () => string;
+  // Timer State (Moved to FocusTimerContext)
   
   // Audio & Spotify State
   isAudioModalOpen: boolean;
@@ -95,11 +91,6 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
     setToken(null);
   };
 
-  // Timer State
-  const [isFocusActive, setIsFocusActive] = useState(false);
-  const [isFocusPaused, setIsFocusPaused] = useState(false);
-  const [focusSeconds, setFocusSeconds] = useState(45 * 60);
-
   // Audio State
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
   const [audioMode, setAudioMode] = useState<AudioMode>('binaural');
@@ -118,20 +109,6 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
-  // Timer Effect
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    if (isFocusActive && !isFocusPaused && focusSeconds > 0) {
-      interval = setInterval(() => {
-        setFocusSeconds((prev) => prev - 1);
-      }, 1000);
-    } else if (focusSeconds === 0 && isFocusActive) {
-      setIsFocusActive(false);
-      // Here you could add a toast/notification
-    }
-    return () => clearInterval(interval);
-  }, [isFocusActive, isFocusPaused, focusSeconds]);
-
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -143,32 +120,6 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
-
-  const toggleTimer = () => {
-    if (!isFocusActive) {
-      setIsFocusActive(true);
-      setIsFocusPaused(false);
-      if (focusSeconds === 0) setFocusSeconds(45 * 60);
-    } else {
-      setIsFocusPaused(!isFocusPaused);
-    }
-  };
-
-  const stopTimer = () => {
-    setIsFocusActive(false);
-    setIsFocusPaused(false);
-    setFocusSeconds(45 * 60);
-  };
-
-  const pauseTimer = () => {
-    setIsFocusPaused(true);
-  };
-
-  const formatTimer = () => {
-    const m = Math.floor(focusSeconds / 60).toString().padStart(2, '0');
-    const s = (focusSeconds % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
 
   const parseSpotifyUrl = (url: string) => {
     if (url.includes('/embed/')) return url;
@@ -206,13 +157,6 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
         setToken,
         isAuthenticated: !!token,
         logout,
-        isFocusActive,
-        isFocusPaused,
-        focusSeconds,
-        toggleTimer,
-        stopTimer,
-        pauseTimer,
-        formatTimer,
         isAudioModalOpen,
         setIsAudioModalOpen,
         audioMode,

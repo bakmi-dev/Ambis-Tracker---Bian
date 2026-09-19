@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { taskApi, projectApi, competitionApi, goalApi, analyticsApi } from '../api';
 import { useGlobalState } from '../context/GlobalContext';
+import { useFocusTimer } from '../context/FocusTimerContext';
 
 const GALLERY = [
   {
@@ -54,12 +55,17 @@ const Dashboard = () => {
 
   const { 
     user,
-    isFocusActive, 
-    toggleTimer, 
     isPlayingBinaural, 
     toggleBinaural,
     setIsAudioModalOpen
   } = useGlobalState();
+  const {
+    isActive: isFocusActive,
+    isPaused: isFocusPaused,
+    startTimer,
+    pauseTimer,
+    resumeTimer
+  } = useFocusTimer();
 
   // Modal states
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -137,7 +143,7 @@ const Dashboard = () => {
         title: newTaskTitle,
         category: 'General',
         priority: 'medium',
-        scheduled_date: new Date().toISOString()
+        due_date: new Date().toISOString()
       });
       setShowTaskModal(false);
       setNewTaskTitle('');
@@ -228,9 +234,9 @@ const Dashboard = () => {
                 <span>Lihat Study Journey</span>
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </button>
-              <button onClick={toggleTimer} className="px-space-md py-space-sm rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-lg text-label-lg font-medium flex items-center gap-space-xs transition-colors group">
-                <span className="material-symbols-outlined text-secondary text-[20px] group-hover:scale-110 transition-transform" style={{ fontVariationSettings: "'FILL' 1" }}>{isFocusActive ? 'pause' : 'play_arrow'}</span>
-                <span>{isFocusActive ? 'Pause Fokus' : 'Mulai Fokus'}</span>
+              <button onClick={() => { isFocusActive ? (isFocusPaused ? resumeTimer() : pauseTimer()) : startTimer(45); }} className="px-space-md py-space-sm rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-lg text-label-lg font-medium flex items-center gap-space-xs transition-colors group">
+                <span className="material-symbols-outlined text-secondary text-[20px] group-hover:scale-110 transition-transform" style={{ fontVariationSettings: "'FILL' 1" }}>{isFocusActive && !isFocusPaused ? 'pause' : 'play_arrow'}</span>
+                <span>{isFocusActive && !isFocusPaused ? 'Pause Fokus' : isFocusPaused ? 'Resume Fokus' : 'Mulai Fokus'}</span>
               </button>
               <div className="hidden xl:flex items-center gap-2 px-space-md py-space-xs rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
                 <span className="material-symbols-outlined text-secondary text-[16px]">bolt</span>

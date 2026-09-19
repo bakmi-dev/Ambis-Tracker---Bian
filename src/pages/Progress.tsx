@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { analyticsApi, learningApi, projectApi, competitionApi, profileApi, taskApi, studySessionApi } from '../api';
 import Avatar from '../components/common/Avatar';
+import { useGlobalState } from '../context/GlobalContext';
 
 interface ProfileData {
   name: string;
@@ -15,6 +16,7 @@ interface ProfileData {
 }
 
 const Progress = () => {
+  const { user, setUser } = useGlobalState();
   const [metrics, setMetrics] = useState({
     xp: 0,
     streak: 0,
@@ -23,18 +25,18 @@ const Progress = () => {
     learningPaths: 0,
     projectsAndComps: 0
   });
-  
-  const [profile, setProfile] = useState<ProfileData>({
-    name: 'Operator',
-    tagline: 'Cognitive Architect',
-    bio: '',
-    location: 'Global Workspace',
-    role: 'CS Undergraduate',
-    github: '',
-    linkedin: '',
-    portfolio: '',
-    avatarUrl: ''
-  });
+
+  const currentProfile = {
+    name: user?.name || 'Operator',
+    tagline: user?.role_track || 'Cognitive Architect',
+    bio: user?.bio || 'Membangun disiplin kognitif, menguasai sistem terdistribusi, dan konsisten belajar setiap hari tanpa distraksi.',
+    location: user?.location || 'Global Workspace',
+    role: user?.role_track || 'CS Undergraduate',
+    github: user?.github || '',
+    linkedin: user?.linkedin || '',
+    portfolio: user?.website || '',
+    avatarUrl: user?.avatar_url || ''
+  };
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -42,7 +44,7 @@ const Progress = () => {
 
   // Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [form, setForm] = useState<ProfileData>(profile);
+  const [form, setForm] = useState<ProfileData>(currentProfile);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -85,18 +87,10 @@ const Progress = () => {
 
         if (profileRes.user) {
           const u = profileRes.user;
-          const pData = {
-            name: u.name || 'Operator',
-            tagline: u.role_track || 'Cognitive Architect',
-            bio: u.bio || 'Membangun disiplin kognitif, menguasai sistem terdistribusi, dan konsisten belajar setiap hari tanpa distraksi.',
-            location: 'Global Workspace',
-            role: u.role_track || 'CS Undergraduate',
-            github: u.github || '',
-            linkedin: u.linkedin || '',
-            portfolio: u.website || '',
-            avatarUrl: u.avatar_url || ''
-          };
-          setProfile(pData);
+          setUser({
+            ...user,
+            ...u
+          });
         }
 
       } catch (error) {
@@ -109,23 +103,26 @@ const Progress = () => {
   }, []);
 
   const openEditModal = () => {
-    setForm(profile);
+    setForm(currentProfile);
     setIsEditModalOpen(true);
   };
 
   const handleSaveProfile = async () => {
     setIsLoading(true);
     try {
-      await profileApi.updateProfile({
+      const res = await profileApi.updateProfile({
         name: form.name,
         role_track: form.role,
         bio: form.bio,
         github: form.github,
         linkedin: form.linkedin,
         website: form.portfolio,
+        location: form.location,
         avatar_url: form.avatarUrl
       });
-      setProfile(form);
+      if (res.user) {
+        setUser({ ...user, ...res.user });
+      }
       setIsEditModalOpen(false);
 
     } catch (err) {
@@ -136,7 +133,7 @@ const Progress = () => {
   };
 
   const handleShare = () => {
-    const url = `https://${profile.portfolio}`;
+    const url = currentProfile.portfolio.startsWith('http') ? currentProfile.portfolio : `https://${currentProfile.portfolio}`;
     navigator.clipboard.writeText(url);
     setToastMessage('Link portofolio berhasil disalin!');
     setTimeout(() => setToastMessage(''), 3000);
@@ -176,10 +173,10 @@ const Progress = () => {
               <span className="material-symbols-outlined text-[14px]">chevron_right</span>
               <span>Personal Identity</span>
               <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span className="text-secondary font-semibold">{profile.name}'s Profile</span>
+              <span className="text-secondary font-semibold">{currentProfile.name}'s Profile</span>
             </div>
             <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">Personal Profile & Growth Overview</h1>
-            <p className="font-body-md text-body-md text-on-surface-variant max-w-3xl">Identitas personal, ringkasan level perkembangan, lencana pencapaian, dan jejak langkah kognitif {profile.name}.</p>
+            <p className="font-body-md text-body-md text-on-surface-variant max-w-3xl">Identitas personal, ringkasan level perkembangan, lencana pencapaian, dan jejak langkah kognitif {currentProfile.name}.</p>
           </div>
           
           {/* Action Buttons */}
@@ -203,7 +200,7 @@ const Progress = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-space-lg w-full lg:w-auto">
               {/* Avatar + Status Pill */}
               <div className="relative shrink-0">
-                <Avatar src={profile.avatarUrl} name={profile.name} size="xl" />
+                <Avatar src={currentProfile.avatarUrl} name={currentProfile.name} size="xl" />
                 <div className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold shadow-md flex items-center gap-0.5">
                   <span>LV</span>
                   <span>{level}</span>
@@ -213,22 +210,22 @@ const Progress = () => {
               {/* Bio and Metadata */}
               <div className="space-y-space-xs max-w-2xl">
                 <div className="flex flex-wrap items-center gap-space-sm">
-                  <h2 className="font-headline-lg text-headline-lg text-on-surface font-bold">{profile.name}</h2>
-                  <span className="px-space-sm py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-medium tracking-wide">{profile.tagline}</span>
+                  <h2 className="font-headline-lg text-headline-lg text-on-surface font-bold">{currentProfile.name}</h2>
+                  <span className="px-space-sm py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-medium tracking-wide">{currentProfile.tagline}</span>
                 </div>
                 <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                  {profile.bio}
+                  {currentProfile.bio}
                 </p>
                 
                 {/* Meta Badges */}
                 <div className="flex flex-wrap items-center gap-space-xs pt-space-xs">
                   <div className="flex items-center gap-1 px-space-sm py-1 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
                     <span className="material-symbols-outlined text-[14px] text-secondary">location_on</span>
-                    <span>{profile.location}</span>
+                    <span>{currentProfile.location}</span>
                   </div>
                   <div className="flex items-center gap-1 px-space-sm py-1 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
                     <span className="material-symbols-outlined text-[14px] text-primary">school</span>
-                    <span>{profile.role}</span>
+                    <span>{currentProfile.role}</span>
                   </div>
                   <div className="flex items-center gap-1 px-space-sm py-1 rounded-lg bg-surface-container font-label-sm text-label-sm text-secondary font-semibold">
                     <span className="material-symbols-outlined text-[14px] text-secondary">bolt</span>
@@ -244,27 +241,54 @@ const Progress = () => {
             
             {/* Quick Links / Socials */}
             <div className="flex lg:flex-col flex-wrap gap-space-xs w-full lg:w-auto shrink-0 pt-space-sm lg:pt-0">
-              <a href={`https://github.com/${profile.github}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between gap-space-md px-space-md py-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface group">
-                <div className="flex items-center gap-space-xs">
-                  <span className="material-symbols-outlined text-[16px] text-outline group-hover:text-primary transition-colors">code</span>
-                  <span className="font-label-md text-label-md">GitHub</span>
-                </div>
-                <span className="font-label-sm text-label-sm text-on-surface-variant">@{profile.github}</span>
-              </a>
-              <a href={`https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between gap-space-md px-space-md py-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface group">
-                <div className="flex items-center gap-space-xs">
-                  <span className="material-symbols-outlined text-[16px] text-outline group-hover:text-secondary transition-colors">work</span>
-                  <span className="font-label-md text-label-md">LinkedIn</span>
-                </div>
-                <span className="font-label-sm text-label-sm text-on-surface-variant">/in/{profile.linkedin}</span>
-              </a>
-              <a href={`https://${profile.portfolio}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between gap-space-md px-space-md py-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface group">
-                <div className="flex items-center gap-space-xs">
-                  <span className="material-symbols-outlined text-[16px] text-outline group-hover:text-tertiary transition-colors">public</span>
-                  <span className="font-label-md text-label-md">Portfolio</span>
-                </div>
-                <span className="font-label-sm text-label-sm text-on-surface-variant">{profile.portfolio}</span>
-              </a>
+              {currentProfile.github ? (
+                <a href={`https://github.com/${currentProfile.github}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between gap-space-md px-space-md py-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface group">
+                  <div className="flex items-center gap-space-xs">
+                    <span className="material-symbols-outlined text-[16px] text-outline group-hover:text-primary transition-colors">code</span>
+                    <span className="font-label-md text-label-md">GitHub</span>
+                  </div>
+                  <span className="font-label-sm text-label-sm text-on-surface-variant">@{currentProfile.github}</span>
+                </a>
+              ) : (
+                <button onClick={openEditModal} className="flex items-center justify-between gap-space-md px-space-md py-space-xs rounded-lg border border-dashed border-outline/50 hover:bg-surface-container transition-colors text-on-surface-variant hover:text-on-surface group">
+                  <div className="flex items-center gap-space-xs">
+                    <span className="material-symbols-outlined text-[16px]">add</span>
+                    <span className="font-label-md text-label-md">Tambah GitHub</span>
+                  </div>
+                </button>
+              )}
+              {currentProfile.linkedin ? (
+                <a href={`https://linkedin.com/in/${currentProfile.linkedin}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between gap-space-md px-space-md py-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface group">
+                  <div className="flex items-center gap-space-xs">
+                    <span className="material-symbols-outlined text-[16px] text-outline group-hover:text-secondary transition-colors">work</span>
+                    <span className="font-label-md text-label-md">LinkedIn</span>
+                  </div>
+                  <span className="font-label-sm text-label-sm text-on-surface-variant">/in/{currentProfile.linkedin}</span>
+                </a>
+              ) : (
+                <button onClick={openEditModal} className="flex items-center justify-between gap-space-md px-space-md py-space-xs rounded-lg border border-dashed border-outline/50 hover:bg-surface-container transition-colors text-on-surface-variant hover:text-on-surface group">
+                  <div className="flex items-center gap-space-xs">
+                    <span className="material-symbols-outlined text-[16px]">add</span>
+                    <span className="font-label-md text-label-md">Tambah LinkedIn</span>
+                  </div>
+                </button>
+              )}
+              {currentProfile.portfolio ? (
+                <a href={currentProfile.portfolio.startsWith('http') ? currentProfile.portfolio : `https://${currentProfile.portfolio}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between gap-space-md px-space-md py-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface group">
+                  <div className="flex items-center gap-space-xs">
+                    <span className="material-symbols-outlined text-[16px] text-outline group-hover:text-tertiary transition-colors">public</span>
+                    <span className="font-label-md text-label-md">Portfolio</span>
+                  </div>
+                  <span className="font-label-sm text-label-sm text-on-surface-variant">{currentProfile.portfolio.replace(/^https?:\/\//, '')}</span>
+                </a>
+              ) : (
+                <button onClick={openEditModal} className="flex items-center justify-between gap-space-md px-space-md py-space-xs rounded-lg border border-dashed border-outline/50 hover:bg-surface-container transition-colors text-on-surface-variant hover:text-on-surface group">
+                  <div className="flex items-center gap-space-xs">
+                    <span className="material-symbols-outlined text-[16px]">add</span>
+                    <span className="font-label-md text-label-md">Tambah Portfolio</span>
+                  </div>
+                </button>
+              )}
             </div>
           </div>
           

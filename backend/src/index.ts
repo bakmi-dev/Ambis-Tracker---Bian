@@ -16,6 +16,7 @@ import knowledgeRoutes from './routes/knowledgeRoutes';
 import learningRoutes from './routes/learningRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
 import profileRoutes from './routes/profileRoutes';
+import ritualRoutes from './routes/ritualRoutes';
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ app.use('/api/v1/knowledge', knowledgeRoutes);
 app.use('/api/v1/learning', learningRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/profile', profileRoutes);
+app.use('/api/v1/rituals', ritualRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);
