@@ -63,16 +63,21 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
         success: true,
         isNewUser: false,
         user,
-        token
+        token,
+        data: {
+          user,
+          token
+        }
       });
     } else {
-      // ── New user: create with is_onboarded = false ──
+      // ── New user: create with is_onboarded = true ──
       const userId = randomUUID();
+      const defaultWorkspace = `${name || 'Operator'}'s Command Deck`;
       const insertResult = await query(
-        `INSERT INTO users (id, google_id, email, name, avatar_url, is_onboarded)
-         VALUES ($1, $2, $3, $4, $5, FALSE)
-         RETURNING id, google_id, email, name, avatar_url, role_track, workspace_name, focus_target_hours, is_onboarded, xp, current_streak, created_at`,
-        [userId, googleId, email, name || 'User', picture || null]
+        `INSERT INTO users (id, google_id, email, name, avatar_url, is_onboarded, workspace_name, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, TRUE, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+         RETURNING id, google_id, email, name, avatar_url, role_track, workspace_name, focus_target_hours, is_onboarded, xp, current_streak, created_at, updated_at`,
+        [userId, googleId, email, name || 'User', picture || null, defaultWorkspace]
       );
 
       const newUser = insertResult.rows[0];
@@ -80,9 +85,13 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
 
       res.status(201).json({
         success: true,
-        isNewUser: true,
+        isNewUser: false,
         user: newUser,
-        token
+        token,
+        data: {
+          user: newUser,
+          token
+        }
       });
     }
   } catch (error: any) {
@@ -155,12 +164,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
     const userId = randomUUID();
+    const defaultWorkspace = `${name}'s Command Deck`;
 
     const result = await query(
-      `INSERT INTO users (id, name, email, password_hash, is_onboarded)
-       VALUES ($1, $2, $3, $4, FALSE)
-       RETURNING id, email, name, role_track, workspace_name, focus_target_hours, is_onboarded, created_at`,
-      [userId, name, email, passwordHash]
+      `INSERT INTO users (id, name, email, password_hash, is_onboarded, workspace_name, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, TRUE, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       RETURNING id, email, name, role_track, workspace_name, focus_target_hours, is_onboarded, created_at, updated_at`,
+      [userId, name, email, passwordHash, defaultWorkspace]
     );
 
     const newUser = result.rows[0];
@@ -169,7 +179,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     res.status(201).json({
       success: true,
       user: newUser,
-      token
+      token,
+      data: {
+        user: newUser,
+        token
+      }
     });
   } catch (error) {
     console.error('[Auth Register] Error:', error);
@@ -216,7 +230,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       success: true,
       user,
-      token
+      token,
+      data: {
+        user,
+        token
+      }
     });
   } catch (error) {
     console.error('[Auth Login] Error:', error);

@@ -47,16 +47,19 @@ export default async function handler(req: any, res: any) {
 
     if (userResult.rows.length === 0) {
       const userId = randomUUID();
+      const defaultWorkspace = `${name || 'Operator'}'s Command Deck`;
       const insertResult = await pool.query(
-        'INSERT INTO users (id, google_id, email, name, avatar_url, is_onboarded) VALUES ($1, $2, $3, $4, $5, false) RETURNING *',
-        [userId, google_id, email, name, picture]
+        `INSERT INTO users (id, google_id, email, name, avatar_url, is_onboarded, workspace_name, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, TRUE, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+         RETURNING *`,
+        [userId, google_id, email, name || 'User', picture || null, defaultWorkspace]
       );
       user = insertResult.rows[0];
     } else {
       user = userResult.rows[0];
       // Update google_id and avatar if they came via a manual registration before
       if (!user.google_id) {
-        await pool.query('UPDATE users SET google_id = $1, avatar_url = $2 WHERE id = $3', [google_id, picture, user.id]);
+        await pool.query('UPDATE users SET google_id = $1, avatar_url = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3', [google_id, picture, user.id]);
         user.google_id = google_id;
         user.avatar_url = picture;
       }
@@ -69,19 +72,25 @@ export default async function handler(req: any, res: any) {
       { expiresIn: '7d' }
     );
 
+    const userPayload = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      avatar_url: user.avatar_url,
+      is_onboarded: user.is_onboarded,
+      role_track: user.role_track,
+      workspace_name: user.workspace_name,
+      focus_target_hours: user.focus_target_hours
+    };
+
     return res.status(200).json({
       success: true,
       isNewUser: !user.is_onboarded,
       token: appToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        avatar_url: user.avatar_url,
-        is_onboarded: user.is_onboarded,
-        role_track: user.role_track,
-        workspace_name: user.workspace_name,
-        focus_target_hours: user.focus_target_hours
+      user: userPayload,
+      data: {
+        token: appToken,
+        user: userPayload
       }
     });
   } catch (err: any) {

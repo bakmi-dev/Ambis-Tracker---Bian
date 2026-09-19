@@ -119,21 +119,14 @@ const Register = () => {
           setUser(userData);
           if (token) setToken(token);
 
-          setVerifiedEmail(userData.email || registerEmail);
-          setVerifiedName(userData.name || registerName);
-          setVerifiedAvatar(userData.avatar_url || '');
-          setAvatarUrl(userData.avatar_url || '');
-          const firstName = (userData.name || registerName).split(' ')[0];
-          setDisplayName(firstName);
-          setWorkspaceName(`${firstName}'s Command Deck`);
-
           setLogs(prev => [
             ...prev,
             `> IDENTITAS TERDAFTAR: ${userData.email || registerEmail}`,
-            '> MENGALOKASIKAN RUANG PENYIMPANAN PRIBADI...',
-            '> Lengkapi konfigurasi operator kognitif Anda:',
+            '> INISIALISASI SESI OPERATOR: BERHASIL.',
+            '> OTORISASI COMMAND DECK DIBERIKAN.',
+            '> MENGALIHKAN KE DASHBOARD...',
           ]);
-          setStep('onboarding');
+          setTimeout(() => navigate('/dashboard'), 800);
         } else {
           throw new Error('Respons server tidak valid. Data user tidak ditemukan.');
         }
@@ -161,12 +154,12 @@ const Register = () => {
         const userData = result?.data?.user || result?.user;
         const token = result?.data?.token || result?.token;
 
-        if (userData && typeof userData.is_onboarded !== 'undefined') {
+        if (userData) {
           setUser(userData);
           if (token) setToken(token);
 
-          if (result.isNewUser || !userData.is_onboarded) {
-            // New user → go to onboarding step
+          if (!userData.is_onboarded) {
+            // New user without onboarding → go to onboarding step
             setVerifiedEmail(userData.email);
             setVerifiedName(userData.name);
             setVerifiedAvatar(userData.avatar_url || '');
@@ -183,9 +176,9 @@ const Register = () => {
             ]);
             setStep('onboarding');
           } else {
-            // Returning user → dashboard
-            setLogs(prev => [...prev, `> SELAMAT DATANG KEMBALI, ${userData.name.toUpperCase()}.`, '> MEMUAT COMMAND DECK...']);
-            setTimeout(() => navigate('/dashboard'), 1200);
+            // Returning / onboarded user → dashboard
+            setLogs(prev => [...prev, `> SESI TERVALIDASI: ${(userData.name || 'OPERATOR').toUpperCase()}.`, '> MEMUAT COMMAND DECK...']);
+            setTimeout(() => navigate('/dashboard'), 800);
           }
         } else {
           console.error('Payload user tidak valid dari server:', result);
