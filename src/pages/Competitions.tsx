@@ -506,95 +506,184 @@ const Competitions = () => {
       {/* Competitions Cards Matrix */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
         {filtered.map(comp => (
-          <div key={comp.id} className={`bg-surface-container-low rounded-2xl p-5 sm:p-6 flex flex-col justify-between relative hover:border-neutral-700/60 transition-all duration-200 border border-neutral-800/50 shadow-none`}>
-            <div className="flex flex-col gap-3">
+          <div key={comp.id} className={`bg-surface-container-low rounded-2xl flex flex-col relative hover:border-neutral-700/60 transition-all duration-200 border border-neutral-800/50 shadow-none overflow-hidden`}>
+            
+            {/* Card Header: Category + Status + Actions */}
+            <div className="px-5 pt-5 pb-4 space-y-2.5">
               <div className="flex items-start justify-between gap-2">
-                <div className="flex flex-col">
-                  <span className="text-xs text-secondary uppercase font-semibold flex items-center gap-1.5">
+                {/* Left: Division badge + Status badge */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[10px] text-secondary uppercase font-bold tracking-widest font-mono">
                     {comp.division}
                   </span>
-                  <h3 className="text-lg font-bold text-on-surface tracking-tight mt-0.5 font-sans">
-                    {comp.title}
-                  </h3>
-                  <span className="text-xs font-semibold mt-1 text-primary">{formatRupiah(comp.prizePool)} Prize Pool</span>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <span className={`px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wider flex items-center gap-1 ${comp.badgeClass}`}>
-                    {comp.isPulsing && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>}
-                    {comp.badgeText === 'Finished' && <span className="material-symbols-outlined text-[14px]">workspace_premium</span>}
+                  <span className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 w-fit ${comp.badgeClass}`}>
+                    {comp.isPulsing && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse flex-shrink-0"></span>}
+                    {comp.badgeText === 'Finished' && <span className="material-symbols-outlined text-[13px]">workspace_premium</span>}
                     {comp.badgeText}
                   </span>
-                  <div className="flex items-center gap-1.5">
-                    <button onClick={() => openEditModal(comp)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-primary hover:bg-primary-container/20 transition-colors" title="Edit Kompetisi">
-                      <span className="material-symbols-outlined text-[16px]">edit</span>
-                    </button>
-                    <button onClick={() => handleDelete(comp.id)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors" title="Hapus Kompetisi">
-                      <span className="material-symbols-outlined text-[16px]">delete</span>
-                    </button>
-                  </div>
                 </div>
+                {/* Right: Actions */}
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <button onClick={() => openEditModal(comp)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-primary hover:bg-primary-container/20 transition-colors" title="Edit Kompetisi">
+                    <span className="material-symbols-outlined text-[15px]">edit</span>
+                  </button>
+                  <button onClick={() => handleDelete(comp.id)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors" title="Hapus">
+                    <span className="material-symbols-outlined text-[15px]">delete</span>
+                  </button>
+                </div>
+              </div>
 
-                {comp.outcome && (
-                  <div className="mt-4 p-space-sm bg-primary-container/10 border border-primary/20 rounded-lg">
-                    <span className="font-label-sm text-label-sm uppercase font-semibold text-primary block mb-1">Outcome / Prestasi</span>
-                    <p className="font-body-sm text-body-sm text-on-surface">{comp.outcome}</p>
-                  </div>
-                )}
-                {comp.links.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {comp.links.map((lnk, idx) => (
-                      <a key={idx} href={lnk.url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest transition-colors font-label-sm text-label-sm text-on-surface">
-                        <span className="material-symbols-outlined text-[14px]">link</span>
-                        {lnk.label}
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              <div className="bg-surface-container/60 border border-neutral-800/40 p-3 rounded-xl flex flex-col gap-1.5 mt-1">
-                <div className="flex justify-between items-center text-xs font-medium">
-                  <span className="text-outline uppercase text-[10px] font-semibold">{comp.registrationOrStatusText}</span>
-                  <span className="text-on-surface font-semibold">{comp.registrationOrStatusValue}</span>
-                </div>
-                <div className="flex justify-between items-center text-xs font-medium">
-                  <span className="text-outline uppercase text-[10px] font-semibold">{comp.deadlineText}</span>
-                  <span className={comp.deadlineValue.includes('Besok') || comp.deadlineValue.includes('hari lagi') || comp.category === 'wishlist' ? (comp.category === 'wishlist' ? 'text-tertiary font-bold' : (comp.deadlineValue.includes('Besok') || (parseInt(comp.deadlineValue) && parseInt(comp.deadlineValue) <= 3) ? 'text-tertiary font-bold' : 'text-secondary font-bold')) : 'text-on-surface font-semibold'}>
-                    {comp.deadlineValue}
+              {/* Title + Organizer + Prize */}
+              <div>
+                <h3 className="text-base font-bold text-on-surface tracking-tight leading-snug">
+                  {comp.title}
+                </h3>
+                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                  <span className="text-xs text-on-surface-variant flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]">business</span>
+                    {comp.organizer}
                   </span>
+                  {comp.prizePool > 0 && (
+                    <span className="text-xs font-bold text-secondary flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">payments</span>
+                      {formatRupiah(comp.prizePool)}
+                    </span>
+                  )}
                 </div>
-              </div>
-              
-              <div className="space-y-1.5 mt-1">
-                <div className="flex justify-between items-center text-xs font-medium">
-                  <span className="text-outline uppercase tracking-wider font-semibold">{comp.progressLabel}</span>
-                  <span className={`${comp.category === 'wishlist' ? 'text-outline font-bold' : (comp.category === 'preparing' && comp.progressPercent < 20 ? 'text-primary font-bold' : (comp.progressPercent === 100 ? 'text-secondary font-bold' : (comp.category === 'active' ? 'text-primary font-bold' : 'text-secondary font-bold')))} font-sans font-bold`}>
-                    {comp.progressPercent}% {comp.category === 'finished' ? 'Selesai' : ''}
-                  </span>
-                </div>
-                <div className="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full transition-all duration-500 ${comp.progressColorClass}`} style={{ width: `${comp.progressPercent}%` }}></div>
-                </div>
-              </div>
-              
-              <div className="mt-3 flex flex-col gap-2">
-                <span className="text-xs uppercase font-semibold text-outline tracking-wider">Persyaratan Submisi</span>
-                {comp.checklist.length > 0 ? (
-                  <div className="space-y-1.5">
-                    {comp.checklist.map(chk => (
-                      <div key={chk.id} onClick={() => toggleChecklist(comp.id, chk.id)} className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors ${chk.isChecked ? 'bg-surface-container/30' : 'bg-surface-container/60 hover:bg-surface-container'}`}>
-                        <span className={`material-symbols-outlined text-[18px] ${chk.isChecked ? 'text-secondary' : 'text-outline'}`} style={{ fontVariationSettings: chk.isChecked ? "'FILL' 1" : undefined }}>
-                          {chk.isChecked ? 'check_circle' : 'radio_button_unchecked'}
-                        </span>
-                        <span className={`text-xs font-medium ${chk.isChecked ? 'text-outline line-through' : 'text-on-surface'}`}>{chk.title}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-xs text-outline italic">No checklist items</span>
-                )}
               </div>
             </div>
+
+            {/* Mini Timeline Section */}
+            {(comp.timeline?.registration || comp.timeline?.submission || comp.timeline?.announcement) && (
+              <div className="mx-5 mb-3 p-3 rounded-xl bg-surface-container/60 border border-neutral-800/40">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-outline mb-2 block">Timeline Penting</span>
+                <div className="flex items-center gap-0">
+                  {[
+                    { label: 'Daftar', val: comp.timeline?.registration, icon: 'login' },
+                    { label: 'Submit', val: comp.timeline?.submission, icon: 'upload_file' },
+                    { label: 'Umumkan', val: comp.timeline?.announcement, icon: 'campaign' },
+                  ].filter(t => t.val).map((t, idx, arr) => (
+                    <div key={idx} className="flex items-center">
+                      <div className="flex flex-col items-center text-center min-w-[72px]">
+                        <div className="w-6 h-6 rounded-full bg-primary/15 text-primary flex items-center justify-center mb-1">
+                          <span className="material-symbols-outlined text-[12px]">{t.icon}</span>
+                        </div>
+                        <span className="text-[9px] uppercase font-bold text-outline tracking-wider leading-tight">{t.label}</span>
+                        <span className="text-[10px] font-semibold text-on-surface mt-0.5 leading-tight">{t.val}</span>
+                      </div>
+                      {idx < arr.length - 1 && (
+                        <div className="flex-1 h-px bg-neutral-800 mx-1 mb-4" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Progress Bar */}
+            <div className="mx-5 mb-3 space-y-1.5">
+              <div className="flex justify-between items-center text-xs font-medium">
+                <span className="text-outline uppercase text-[10px] font-bold tracking-wider">Readiness</span>
+                <span className={`font-bold font-mono ${
+                  comp.progressPercent === 100 ? 'text-secondary' :
+                  comp.category === 'active' ? 'text-primary' : 'text-on-surface-variant'
+                }`}>{comp.progressPercent}%</span>
+              </div>
+              <div className="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    comp.progressPercent === 100 ? 'bg-gradient-to-r from-secondary to-secondary-fixed' :
+                    comp.category === 'active' ? 'bg-gradient-to-r from-primary/70 to-primary' :
+                    comp.progressColorClass
+                  }`}
+                  style={{ width: `${comp.progressPercent}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Deliverables / Checklist */}
+            {comp.checklist.length > 0 && (
+              <div className="mx-5 mb-4 space-y-1">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-outline">Deliverables</span>
+                <div className="space-y-1">
+                  {comp.checklist.slice(0, 4).map(chk => (
+                    <div
+                      key={chk.id}
+                      onClick={() => toggleChecklist(comp.id, chk.id)}
+                      className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors ${
+                        chk.isChecked ? 'bg-secondary/8' : 'bg-surface-container/60 hover:bg-surface-container'
+                      }`}
+                    >
+                      <span
+                        className={`material-symbols-outlined text-[17px] flex-shrink-0 ${chk.isChecked ? 'text-secondary' : 'text-outline'}`}
+                        style={{ fontVariationSettings: chk.isChecked ? "'FILL' 1" : undefined }}
+                      >
+                        {chk.isChecked ? 'check_circle' : 'radio_button_unchecked'}
+                      </span>
+                      <span className={`text-xs font-medium flex-1 ${chk.isChecked ? 'text-outline line-through' : 'text-on-surface'}`}>
+                        {chk.title}
+                      </span>
+                    </div>
+                  ))}
+                  {comp.checklist.length > 4 && (
+                    <span className="text-[10px] text-outline italic pl-2">+{comp.checklist.length - 4} item lainnya...</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Deadline + Status Row */}
+            <div className="mx-5 mb-4 flex items-center justify-between p-2.5 rounded-xl bg-surface-container/50 border border-neutral-800/30">
+              <div className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[15px] text-outline">schedule</span>
+                <span className="text-xs text-outline">Deadline:</span>
+                <span className={`text-xs font-bold ${
+                  comp.deadlineValue === 'Hari Ini!' || comp.deadlineValue === 'Besok'
+                    ? 'text-error' : 'text-on-surface'
+                }`}>{comp.deadlineValue}</span>
+              </div>
+              <span className="text-xs font-medium text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full">
+                {comp.registrationOrStatusValue}
+              </span>
+            </div>
+
+            {/* Outcome */}
+            {comp.outcome && (
+              <div className="mx-5 mb-3 p-2.5 bg-primary-container/10 border border-primary/20 rounded-lg">
+                <span className="text-[10px] uppercase font-bold text-primary block mb-0.5 tracking-wider">Outcome / Prestasi</span>
+                <p className="text-xs text-on-surface leading-relaxed">{comp.outcome}</p>
+              </div>
+            )}
+
+            {/* Links Footer */}
+            {comp.links.length > 0 && (
+              <div className="mx-5 mb-5 flex flex-wrap gap-1.5 pt-3 border-t border-neutral-800/30">
+                {comp.links.map((lnk, idx) => {
+                  // Auto-detect icon from label
+                  const label = lnk.label.toLowerCase();
+                  const icon = label.includes('figma') || label.includes('design') ? 'design_services'
+                    : label.includes('github') || label.includes('repo') ? 'code'
+                    : label.includes('canva') ? 'brush'
+                    : label.includes('drive') ? 'folder'
+                    : label.includes('notion') || label.includes('doc') || label.includes('prd') ? 'description'
+                    : 'link';
+                  return (
+                    <a
+                      key={idx}
+                      href={lnk.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-neutral-800/50 transition-colors text-xs font-semibold text-on-surface"
+                    >
+                      <span className="material-symbols-outlined text-[13px] text-secondary">{icon}</span>
+                      {lnk.label}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+
+            {!comp.links.length && <div className="mb-2" />}
           </div>
         ))}
         

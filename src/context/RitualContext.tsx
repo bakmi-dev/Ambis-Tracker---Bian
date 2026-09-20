@@ -14,6 +14,7 @@ interface RitualContextType {
   error: string | null;
   fetchRituals: () => Promise<void>;
   addRitual: (title: string, targetMinutes: number) => Promise<boolean>;
+  updateRitual: (id: string, title: string, targetMinutes: number) => Promise<boolean>;
   toggleRitual: (id: string) => Promise<void>;
   deleteRitual: (id: string) => Promise<void>;
 }
@@ -43,14 +44,29 @@ export const RitualProvider = ({ children }: { children: ReactNode }) => {
 
   const addRitual = async (title: string, targetMinutes: number) => {
     try {
-      const res = await ritualApi.create({ title, target_minutes: targetMinutes.toString() });
+      const res = await ritualApi.create({ title, target_minutes: targetMinutes });
       if (res.success) {
-        setRituals([...rituals, res.data]);
+        setRituals(prev => [...prev, { ...res.data, is_completed: false }]);
         return true;
       }
       return false;
     } catch (err: any) {
       console.error(err);
+      return false;
+    }
+  };
+
+  const updateRitual = async (id: string, title: string, targetMinutes: number) => {
+    // Optimistic update
+    const previous = [...rituals];
+    setRituals(prev => prev.map(r => r.id === id ? { ...r, title, target_minutes: targetMinutes } : r));
+    try {
+      const res = await ritualApi.update(id, { title, target_minutes: targetMinutes });
+      if (res.success) return true;
+      setRituals(previous);
+      return false;
+    } catch {
+      setRituals(previous);
       return false;
     }
   };
@@ -92,7 +108,7 @@ export const RitualProvider = ({ children }: { children: ReactNode }) => {
   }, [fetchRituals]);
 
   return (
-    <RitualContext.Provider value={{ rituals, loading, error, fetchRituals, addRitual, toggleRitual, deleteRitual }}>
+    <RitualContext.Provider value={{ rituals, loading, error, fetchRituals, addRitual, updateRitual, toggleRitual, deleteRitual }}>
       {children}
     </RitualContext.Provider>
   );

@@ -374,6 +374,8 @@ export const ritualApi = {
   getAll: () => request<{ success: boolean; data: any[] }>('/rituals'),
   create: (body: { title: string; target_minutes?: string | number }) =>
     request<{ success: boolean; data: any }>('/rituals', { method: 'POST', body: JSON.stringify(body) }),
+  update: (id: string, body: { title?: string; target_minutes?: number }) =>
+    request<{ success: boolean; data: any }>(`/rituals/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   toggle: (id: string) =>
     request<{ success: boolean; data: any }>(`/rituals/${id}/toggle`, { method: 'PATCH' }),
   delete: (id: string) =>

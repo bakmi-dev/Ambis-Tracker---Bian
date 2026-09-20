@@ -31,7 +31,11 @@ interface Deadline {
 const Today = () => {
   const navigate = useNavigate();
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
-  const { rituals, toggleRitual, addRitual } = useDailyRituals();
+  const { rituals, toggleRitual, addRitual, updateRitual, deleteRitual } = useDailyRituals();
+  const [editingRitualId, setEditingRitualId] = useState<string | null>(null);
+  const [editRitualTitle, setEditRitualTitle] = useState('');
+  const [editRitualTarget, setEditRitualTarget] = useState(30);
+  const [confirmDeleteRitualId, setConfirmDeleteRitualId] = useState<string | null>(null);
 
   // Tasks from backend
   const [checklistTasks, setChecklistTasks] = useState<ChecklistTask[]>([]);
@@ -1031,72 +1035,155 @@ const Today = () => {
           </div>
 
           {/* Daily Rituals */}
-          <div className="rounded-2xl bg-surface-container-low p-6 sm:p-7 border border-white/5 shadow-sm space-y-6">
+          <div className="rounded-2xl bg-surface-container-low p-5 sm:p-6 border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-secondary text-[22px]">
-                  vital_signs
-                </span>
-                <h2 className="text-xl font-bold text-on-surface tracking-tight">
-                  Daily Rituals
-                </h2>
-              </div>
               <div className="flex items-center gap-3">
-                <span className="text-xs text-primary font-bold">
-                  {rituals.filter((r) => r.is_completed).length} / {rituals.length} Done
-                </span>
-                <button
-                  onClick={() => setIsRitualModalOpen(true)}
-                  className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high hover:text-primary transition-colors"
-                  title="Tambah Daily Ritual"
-                >
-                  <span className="material-symbols-outlined text-[18px]">add</span>
-                </button>
+                <div className="w-9 h-9 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center border border-secondary/20">
+                  <span className="material-symbols-outlined text-[20px]">vital_signs</span>
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-on-surface tracking-tight">Daily Rituals</h2>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full font-mono mt-0.5 inline-block ${
+                    rituals.filter(r => r.is_completed).length === rituals.length && rituals.length > 0
+                      ? 'bg-secondary/20 text-secondary'
+                      : 'bg-surface-container text-on-surface-variant'
+                  }`}>
+                    {rituals.filter((r) => r.is_completed).length} / {rituals.length} Done
+                  </span>
+                </div>
               </div>
+              <button
+                onClick={() => setIsRitualModalOpen(true)}
+                className="w-8 h-8 rounded-lg bg-surface-container hover:bg-secondary/20 text-on-surface-variant hover:text-secondary flex items-center justify-center transition-colors border border-neutral-800/50"
+                title="Tambah Daily Ritual"
+              >
+                <span className="material-symbols-outlined text-[18px]">add</span>
+              </button>
             </div>
 
-            <div className="space-y-2.5 text-sm">
+            <div className="space-y-1.5">
               {rituals.length > 0 ? (
                 rituals.map((ritual) => {
                   const isDone = ritual.is_completed;
-
                   return (
                     <div
                       key={ritual.id}
-                      onClick={() => toggleRitual(ritual.id)}
-                      className={`flex items-center justify-between p-3.5 px-4 rounded-xl transition-colors cursor-pointer group ${
-                        isDone ? "bg-surface-container/60" : "bg-surface-container hover:bg-surface-container-high"
+                      className={`group flex items-center gap-2.5 p-3 rounded-xl transition-all ${
+                        isDone
+                          ? 'bg-secondary/8 border border-secondary/15'
+                          : 'bg-surface-container border border-transparent hover:border-neutral-800/60'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`material-symbols-outlined text-[18px] ${
-                            isDone ? "text-secondary" : "text-outline group-hover:text-secondary"
-                          }`}
-                        >
-                          {isDone ? "check_box" : "check_box_outline_blank"}
+                      {/* Checkbox */}
+                      <button
+                        onClick={() => toggleRitual(ritual.id)}
+                        className={`flex-shrink-0 w-5 h-5 rounded flex items-center justify-center transition-all cursor-pointer ${
+                          isDone
+                            ? 'text-secondary'
+                            : 'text-outline group-hover:text-secondary'
+                        }`}
+                      >
+                        <span className="material-symbols-outlined text-[20px]">
+                          {isDone ? 'check_box' : 'check_box_outline_blank'}
                         </span>
-                        <span
-                          className={
-                            isDone
-                              ? "text-on-surface-variant line-through font-normal"
-                              : "text-on-surface font-medium"
-                          }
-                        >
-                          {ritual.title}
-                        </span>
-                      </div>
-                      <span className="text-xs text-outline font-normal">
-                        {ritual.target_minutes ? `${ritual.target_minutes} Menit` : "Daily"}
-                      </span>
+                      </button>
+
+                      {/* Inline Edit or Title */}
+                      {editingRitualId === ritual.id ? (
+                        <div className="flex-1 flex items-center gap-2">
+                          <input
+                            value={editRitualTitle}
+                            onChange={e => setEditRitualTitle(e.target.value)}
+                            className="flex-1 bg-surface-container-high border border-secondary/30 text-on-surface px-2 py-1 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-secondary"
+                            autoFocus
+                            onKeyDown={async e => {
+                              if (e.key === 'Enter') {
+                                await updateRitual(ritual.id, editRitualTitle, editRitualTarget);
+                                setEditingRitualId(null);
+                              } else if (e.key === 'Escape') {
+                                setEditingRitualId(null);
+                              }
+                            }}
+                          />
+                          <input
+                            type="number"
+                            value={editRitualTarget}
+                            onChange={e => setEditRitualTarget(parseInt(e.target.value) || 30)}
+                            className="w-14 bg-surface-container-high border border-secondary/30 text-on-surface px-2 py-1 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-secondary"
+                            min={1}
+                          />
+                          <span className="text-xs text-outline">m</span>
+                          <button
+                            onClick={async () => {
+                              await updateRitual(ritual.id, editRitualTitle, editRitualTarget);
+                              setEditingRitualId(null);
+                            }}
+                            className="w-7 h-7 rounded-lg bg-secondary/20 text-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/40"
+                          >
+                            <span className="material-symbols-outlined text-[15px]">check</span>
+                          </button>
+                          <button
+                            onClick={() => setEditingRitualId(null)}
+                            className="w-7 h-7 rounded-lg bg-surface-container text-outline flex items-center justify-center cursor-pointer hover:bg-surface-container-high"
+                          >
+                            <span className="material-symbols-outlined text-[15px]">close</span>
+                          </button>
+                        </div>
+                      ) : confirmDeleteRitualId === ritual.id ? (
+                        <div className="flex-1 flex items-center gap-2">
+                          <span className="text-sm text-error font-medium">Hapus ritual ini?</span>
+                          <button
+                            onClick={() => { deleteRitual(ritual.id); setConfirmDeleteRitualId(null); }}
+                            className="px-2.5 py-1 rounded-lg bg-error/20 text-error text-xs font-semibold cursor-pointer hover:bg-error/30"
+                          >
+                            Ya, Hapus
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteRitualId(null)}
+                            className="px-2.5 py-1 rounded-lg bg-surface-container text-outline text-xs cursor-pointer hover:bg-surface-container-high"
+                          >
+                            Batal
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <span className={`flex-1 text-sm font-medium truncate ${
+                            isDone ? 'text-on-surface-variant line-through' : 'text-on-surface'
+                          }`}>
+                            {ritual.title}
+                          </span>
+                          {/* Hover action buttons */}
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => {
+                                setEditingRitualId(ritual.id);
+                                setEditRitualTitle(ritual.title);
+                                setEditRitualTarget(ritual.target_minutes);
+                              }}
+                              className="w-7 h-7 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-primary flex items-center justify-center cursor-pointer transition-colors"
+                              title="Edit Ritual"
+                            >
+                              <span className="material-symbols-outlined text-[14px]">edit</span>
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteRitualId(ritual.id)}
+                              className="w-7 h-7 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-error flex items-center justify-center cursor-pointer transition-colors"
+                              title="Hapus Ritual"
+                            >
+                              <span className="material-symbols-outlined text-[14px]">delete</span>
+                            </button>
+                          </div>
+                          <span className="text-xs text-outline font-mono flex-shrink-0">
+                            {ritual.target_minutes ? `${ritual.target_minutes}m` : 'Daily'}
+                          </span>
+                        </>
+                      )}
                     </div>
                   );
                 })
               ) : (
                 <div className="py-8 text-center">
-                  <p className="text-xs text-outline">
-                    Tidak ada ritual harian hari ini.
-                  </p>
+                  <p className="text-xs text-outline">Tidak ada ritual harian. Klik + untuk menambah.</p>
                 </div>
               )}
             </div>

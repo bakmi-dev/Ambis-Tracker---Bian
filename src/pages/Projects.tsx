@@ -83,8 +83,8 @@ const mapBackendToFrontend = (bp: any): Project => {
     demoUrl: bp.demo_url || '',
     progressText: status === 'Completed' ? '100% Completed' : `${bp.progress_percent || 0}% Progress`,
     progressColorClass,
-    createdAt: new Date(bp.created_at),
-    updatedAt: new Date(bp.updated_at),
+    createdAt: bp.created_at ? new Date(bp.created_at) : new Date(),
+    updatedAt: bp.updated_at ? new Date(bp.updated_at) : new Date(),
     opacityClass: status === 'Archived' ? 'opacity-70 grayscale-[30%]' : ''
   };
 };
@@ -490,21 +490,47 @@ const Projects = () => {
               </div>
             </div>
             
-            {/* Footer Info */}
-            <div className="mt-4 pt-3 space-y-2 border-t border-neutral-800/40">
-              <div className="flex items-center justify-between text-xs font-medium">
-                <span className={`${project.status === 'Completed' ? 'text-secondary font-semibold' : 'text-on-surface-variant'} flex items-center gap-1`}>
-                  <span className="material-symbols-outlined text-[14px]">update</span>
-                  <span>Diperbarui {project.updatedAt ? project.updatedAt.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : ''}</span>
-                </span>
-                {project.progressPercent > 0 && <span className={`${project.progressColorClass.replace('bg-', 'text-')} font-bold font-sans`}>{project.progressText}</span>}
-                {project.progressPercent === 0 && project.status === 'Archived' && <span className="text-outline font-bold font-sans">{project.progressText}</span>}
-              </div>
-              {project.progressPercent > 0 && (
-                <div className="w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
-                  <div className={`h-full rounded-full transition-all duration-500 ${project.progressColorClass}`} style={{ width: `${project.progressPercent}%` }}></div>
+            {/* Progress Bar + Footer */}
+            <div className="mt-4 pt-3 space-y-2.5 border-t border-neutral-800/40">
+              {/* Progress percentage */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className={`flex items-center gap-1 font-medium ${project.status === 'Completed' ? 'text-secondary' : 'text-on-surface-variant'}`}>
+                    <span className="material-symbols-outlined text-[14px]">update</span>
+                    <span>
+                      {(() => {
+                        try {
+                          const d = project.updatedAt;
+                          if (!d || isNaN(d.getTime())) return 'Baru ditambahkan';
+                          return `Update ${d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+                        } catch { return 'Baru ditambahkan'; }
+                      })()}
+                    </span>
+                  </span>
+                  <span className={`font-bold font-mono text-xs ${
+                    project.status === 'Completed' ? 'text-secondary' :
+                    project.progressPercent >= 75 ? 'text-primary' :
+                    project.progressPercent >= 40 ? 'text-tertiary' : 'text-on-surface-variant'
+                  }`}>
+                    {project.status === 'Completed' ? '100%' : `${project.progressPercent}%`}
+                  </span>
                 </div>
-              )}
+                {/* Neon gradient progress bar - always shown */}
+                <div className="w-full h-2 rounded-full bg-surface-container overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${
+                      project.status === 'Completed'
+                        ? 'bg-gradient-to-r from-secondary to-secondary-fixed'
+                        : project.status === 'Archived'
+                        ? 'bg-surface-container-highest'
+                        : project.progressPercent >= 75
+                        ? 'bg-gradient-to-r from-primary to-secondary'
+                        : 'bg-gradient-to-r from-primary/70 to-primary'
+                    }`}
+                    style={{ width: `${project.status === 'Completed' ? 100 : project.progressPercent}%` }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         ))}

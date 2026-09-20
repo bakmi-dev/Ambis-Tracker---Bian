@@ -645,13 +645,20 @@ const Goals = () => {
         </div>
       </section>
 
-      {/* CREATE GOAL MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-surface-container-low p-6 sm:p-7 rounded-2xl max-w-2xl w-full shadow-2xl flex flex-col max-h-[90vh] border border-neutral-800/50">
-            <h2 className="text-xl font-bold text-on-surface mb-4">
-              {editingGoalId ? 'Edit Goal / Vision' : 'Create New Goal / Life Vision Target'}
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-on-surface">
+                {editingGoalId ? 'Edit Goal / Vision' : 'Create New Goal / Life Vision Target'}
+              </h2>
+              <button
+                onClick={() => { setIsModalOpen(false); setEditingGoalId(null); }}
+                className="w-8 h-8 rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface flex items-center justify-center"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
             
             <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -677,8 +684,21 @@ const Goals = () => {
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Status</label>
+                  <select
+                    value={formGoal.status}
+                    onChange={e => setFormGoal({...formGoal, status: e.target.value})}
+                    className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="active">🟢 Active (Sedang Dikerjakan)</option>
+                    <option value="completed">🏆 Achieved (Tercapai)</option>
+                    <option value="paused">⏸ Paused (Ditunda)</option>
+                  </select>
+                </div>
+                
+                <div className="md:col-span-2">
                   <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Target Deadline (Optional)</label>
                   <input 
                     type="date"
@@ -702,13 +722,35 @@ const Goals = () => {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline">Milestones Awal</label>
-                  <button onClick={handleAddMilestoneInput} className="text-primary text-xs font-semibold hover:text-primary-fixed cursor-pointer">+ Tambah Milestone</button>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-outline">Milestones Roadmap</label>
+                    {formGoal.milestones.filter(m => m.title.trim()).length > 0 && (
+                      <span className="text-[10px] text-secondary font-mono mt-0.5 block">
+                        {formGoal.milestones.filter(m => m.status === 'DONE').length}/{formGoal.milestones.filter(m => m.title.trim()).length} selesai
+                        {' '}• Velocity: {formGoal.milestones.filter(m => m.title.trim()).length > 0 ? Math.round(formGoal.milestones.filter(m => m.status === 'DONE').length / formGoal.milestones.filter(m => m.title.trim()).length * 100) : 0}%
+                      </span>
+                    )}
+                  </div>
+                  <button onClick={handleAddMilestoneInput} className="text-primary text-xs font-semibold hover:text-primary-fixed cursor-pointer flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">add</span> Tambah Milestone
+                  </button>
                 </div>
                 <div className="space-y-2">
                   {formGoal.milestones.map((m, idx) => (
                     <div key={m.id} className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-surface-container-highest text-outline flex items-center justify-center text-xs font-semibold flex-shrink-0">{idx + 1}</div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newM = [...formGoal.milestones];
+                          newM[idx] = { ...newM[idx], status: newM[idx].status === 'DONE' ? 'TODO' : 'DONE' };
+                          setFormGoal({...formGoal, milestones: newM});
+                        }}
+                        className={`w-6 h-6 rounded-full flex items-center justify-center border flex-shrink-0 transition-colors cursor-pointer ${
+                          m.status === 'DONE' ? 'bg-secondary border-secondary text-on-secondary' : 'border-outline hover:border-secondary'
+                        }`}
+                      >
+                        {m.status === 'DONE' && <span className="material-symbols-outlined text-[12px]">check</span>}
+                      </button>
                       <input 
                         value={m.title}
                         onChange={e => {
@@ -716,15 +758,15 @@ const Goals = () => {
                           newM[idx].title = e.target.value;
                           setFormGoal({...formGoal, milestones: newM});
                         }}
-                        className="flex-1 bg-surface-container text-on-surface text-sm px-3 py-2 rounded-lg border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary"
-                        placeholder="Mis. Phase 1: ..."
+                        className={`flex-1 bg-surface-container text-on-surface text-sm px-3 py-2 rounded-lg border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary ${m.status === 'DONE' ? 'line-through text-outline' : ''}`}
+                        placeholder={`Milestone ${idx + 1}: ...`}
                       />
                       <button onClick={() => {
                         const newM = [...formGoal.milestones];
                         newM.splice(idx, 1);
-                        setFormGoal({...formGoal, milestones: newM});
-                      }} className="w-8 h-8 flex items-center justify-center text-outline hover:text-error hover:bg-error-container/20 rounded-lg transition-colors cursor-pointer">
-                        <span className="material-symbols-outlined text-[18px]">close</span>
+                        setFormGoal({...formGoal, milestones: newM.length > 0 ? newM : [{ id: Date.now().toString(), title: '', status: 'TODO' }]});
+                      }} className="w-7 h-7 flex items-center justify-center text-outline hover:text-error hover:bg-error-container/20 rounded-lg transition-colors cursor-pointer">
+                        <span className="material-symbols-outlined text-[16px]">delete</span>
                       </button>
                     </div>
                   ))}

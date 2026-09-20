@@ -108,6 +108,29 @@ export const toggleRitual = asyncHandler(async (req: Request, res: Response) => 
   res.json({ success: true, data: { ...existing, is_completed } });
 });
 
+// PATCH /api/v1/rituals/:id (update title/target_minutes)
+export const updateRitual = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userId = await getDefaultUserId();
+  const { title, target_minutes } = req.body;
+
+  const existing = await prisma.dailyRitual.findFirst({ where: { id, user_id: userId } });
+  if (!existing) {
+    res.status(404).json({ success: false, error: 'Ritual not found' });
+    return;
+  }
+
+  const updated = await prisma.dailyRitual.update({
+    where: { id },
+    data: {
+      ...(title ? { title: title.trim() } : {}),
+      ...(target_minutes !== undefined ? { target_minutes: parseInt(target_minutes, 10) } : {}),
+    },
+  });
+
+  res.json({ success: true, data: { ...updated, is_completed: existing.is_active } });
+});
+
 // DELETE /api/v1/rituals/:id
 export const deleteRitual = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
