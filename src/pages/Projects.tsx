@@ -3,103 +3,89 @@ import { projectApi } from '../api';
 
 interface Project {
   id: string;
-  status: 'development' | 'planning' | 'completed' | 'archived';
+  status: 'Planning' | 'Development' | 'Completed' | 'Archived';
   title: string;
   description: string;
   badgeText: string;
   badgeClass: string;
   badgeIcon?: string;
   subBadgeText: string;
-  techTags: string[];
-  priority: 'Critical' | 'High' | 'Medium' | 'Low';
-  gitUrl: string;
-  relatedGoal: string;
-  relatedGoalIcon: string;
-  relatedGoalClass: string;
-  footerDateIcon?: string;
-  footerDateText?: string;
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
   progressPercent: number;
+  logoUrl?: string;
+  category: string;
+  prdUrl?: string;
+  designUrl?: string;
+  repoUrl?: string;
+  demoUrl?: string;
   progressText: string;
   progressColorClass: string;
   opacityClass?: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const getPriorityWeight = (p: string) => {
-  if (p === 'Critical') return 4;
-  if (p === 'High') return 3;
-  if (p === 'Medium') return 2;
-  return 1;
+  if (p === 'HIGH') return 3;
+  if (p === 'MEDIUM') return 2;
+  if (p === 'LOW') return 1;
+  return 0;
 };
 
 const mapBackendToFrontend = (bp: any): Project => {
-  let status: Project['status'] = 'planning';
-  if (bp.status === 'active' || bp.status === 'development') status = 'development';
-  else if (bp.status === 'completed') status = 'completed';
-  else if (bp.status === 'archived') status = 'archived';
+  let status: Project['status'] = bp.status || 'Planning';
+  // Map old statuses to new statuses if needed
+  if (status.toLowerCase() === 'active' || status.toLowerCase() === 'development') status = 'Development';
+  else if (status.toLowerCase() === 'todo') status = 'Planning';
+  else if (status.toLowerCase() === 'planning') status = 'Planning';
+  else if (status.toLowerCase() === 'completed') status = 'Completed';
+  else if (status.toLowerCase() === 'archived') status = 'Archived';
 
   let badgeText = 'PLANNING';
   let badgeClass = 'bg-surface-container-high text-on-surface-variant';
   let badgeIcon = 'draw';
   let progressColorClass = 'bg-primary';
 
-  if (status === 'development') {
+  if (status === 'Development') {
     badgeText = 'ACTIVE DEV';
     badgeClass = 'bg-primary-container text-primary';
     badgeIcon = 'terminal';
     progressColorClass = 'bg-primary';
-  } else if (status === 'completed') {
+  } else if (status === 'Completed') {
     badgeText = 'COMPLETED';
     badgeClass = 'bg-secondary-container/50 text-secondary';
     badgeIcon = 'verified';
     progressColorClass = 'bg-secondary';
-  } else if (status === 'archived') {
+  } else if (status === 'Archived') {
     badgeText = 'ARCHIVED';
     badgeClass = 'bg-surface-container text-outline';
     badgeIcon = 'inventory_2';
     progressColorClass = 'bg-surface-container-highest';
   }
 
-  // Parse JSON from description
-  let descriptionText = bp.description || 'No description provided.';
-  let techTags: string[] = [];
-  let priority: Project['priority'] = 'Medium';
-  let gitUrl = '';
-
-  try {
-    const parsed = JSON.parse(bp.description || '{}');
-    if (parsed && parsed.isJSONProjectDesc) {
-      descriptionText = parsed.realDescription || '';
-      techTags = parsed.techTags || [];
-      priority = parsed.priority || 'Medium';
-      gitUrl = parsed.gitUrl || '';
-    }
-  } catch (e) {
-    // String only
-  }
 
   return {
     id: bp.id,
     status,
     title: bp.title,
-    description: descriptionText,
+    description: bp.description || '',
     badgeText,
     badgeClass,
     badgeIcon,
-    subBadgeText: priority + ' Priority',
-    techTags,
-    priority,
-    gitUrl,
-    relatedGoal: 'General Engineering',
-    relatedGoalIcon: 'track_changes',
-    relatedGoalClass: 'text-primary',
-    footerDateIcon: 'update',
-    footerDateText: `Updated ${new Date(bp.updated_at).toLocaleDateString()}`,
-    progressPercent: bp.progress || 0,
-    progressText: status === 'completed' ? '100% Completed' : `${bp.progress || 0}% Progress`,
+    subBadgeText: `${bp.priority || 'MEDIUM'} Priority`,
+    priority: bp.priority || 'MEDIUM',
+    progressPercent: bp.progress_percent || 0,
+    logoUrl: bp.logo_url || '',
+    category: bp.category || 'Engineering',
+    prdUrl: bp.prd_url || '',
+    designUrl: bp.design_url || '',
+    repoUrl: bp.repo_url || '',
+    demoUrl: bp.demo_url || '',
+    progressText: status === 'Completed' ? '100% Completed' : `${bp.progress_percent || 0}% Progress`,
     progressColorClass,
-    opacityClass: status === 'archived' ? 'opacity-70' : '',
-    createdAt: new Date(bp.created_at)
+    createdAt: new Date(bp.created_at),
+    updatedAt: new Date(bp.updated_at),
+    opacityClass: status === 'Archived' ? 'opacity-70 grayscale-[30%]' : ''
   };
 };
 
@@ -109,10 +95,10 @@ const Projects = () => {
   
   const statusTabs = [
     { id: 'all', label: 'Semua Project' },
-    { id: 'development', label: 'Development' },
-    { id: 'planning', label: 'Planning' },
-    { id: 'completed', label: 'Completed' },
-    { id: 'archived', label: 'Archived' }
+    { id: 'Development', label: 'Development' },
+    { id: 'Planning', label: 'Planning' },
+    { id: 'Completed', label: 'Completed' },
+    { id: 'Archived', label: 'Archived' }
   ];
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -129,10 +115,15 @@ const Projects = () => {
   const [form, setForm] = useState({
     title: '',
     description: '',
-    status: 'development',
-    techTagsStr: '',
-    priority: 'Medium',
-    gitUrl: ''
+    status: 'Planning',
+    priority: 'MEDIUM',
+    progressPercent: 0,
+    logoUrl: '',
+    category: 'Engineering',
+    prdUrl: '',
+    designUrl: '',
+    repoUrl: '',
+    demoUrl: ''
   });
 
   const fetchProjects = async () => {
@@ -156,10 +147,15 @@ const Projects = () => {
     setForm({
       title: '',
       description: '',
-      status: 'development',
-      techTagsStr: '',
-      priority: 'Medium',
-      gitUrl: ''
+      status: 'Planning',
+      priority: 'MEDIUM',
+      progressPercent: 0,
+      logoUrl: '',
+      category: 'Engineering',
+      prdUrl: '',
+      designUrl: '',
+      repoUrl: '',
+      demoUrl: ''
     });
     setIsModalOpen(true);
   };
@@ -170,9 +166,14 @@ const Projects = () => {
       title: proj.title,
       description: proj.description,
       status: proj.status,
-      techTagsStr: proj.techTags.join(', '),
       priority: proj.priority,
-      gitUrl: proj.gitUrl
+      progressPercent: proj.progressPercent,
+      logoUrl: proj.logoUrl || '',
+      category: proj.category,
+      prdUrl: proj.prdUrl || '',
+      designUrl: proj.designUrl || '',
+      repoUrl: proj.repoUrl || '',
+      demoUrl: proj.demoUrl || ''
     });
     setIsModalOpen(true);
   };
@@ -180,30 +181,25 @@ const Projects = () => {
   const handleSave = async () => {
     if (!form.title) return;
     setIsLoading(true);
-    
-    const techArray = form.techTagsStr.split(',').map(s => s.trim()).filter(s => s);
-    const payloadDesc = JSON.stringify({
-      isJSONProjectDesc: true,
-      realDescription: form.description,
-      techTags: techArray,
-      priority: form.priority,
-      gitUrl: form.gitUrl
-    });
-
     try {
+      const data = {
+        title: form.title,
+        status: form.status,
+        description: form.description,
+        priority: form.priority,
+        progress_percent: form.progressPercent,
+        logo_url: form.logoUrl,
+        category: form.category,
+        prd_url: form.prdUrl,
+        design_url: form.designUrl,
+        repo_url: form.repoUrl,
+        demo_url: form.demoUrl,
+      };
+
       if (editingId) {
-        await projectApi.update(editingId, {
-          title: form.title,
-          status: form.status,
-          description: payloadDesc,
-          progress: form.status === 'completed' ? 100 : undefined
-        });
+        await projectApi.update(editingId, data);
       } else {
-        await projectApi.create({
-          title: form.title,
-          status: form.status,
-          description: payloadDesc
-        });
+        await projectApi.create(data);
       }
       setIsModalOpen(false);
       fetchProjects();
@@ -236,9 +232,9 @@ const Projects = () => {
   };
 
   // Metrics
-  const activeDevCount = projects.filter(p => p.status === 'development').length;
-  const gitLinkedCount = projects.filter(p => p.gitUrl && p.gitUrl.trim().length > 0).length;
-  const prodCount = projects.filter(p => p.status === 'completed').length;
+  const activeDevCount = projects.filter(p => p.status === 'Development').length;
+  const gitLinkedCount = projects.filter(p => p.repoUrl && p.repoUrl.trim().length > 0).length;
+  const prodCount = projects.filter(p => p.status === 'Completed').length;
 
   // Filter & Sort
   let filtered = activeStatusTab === 'all' ? projects : projects.filter(p => p.status === activeStatusTab);
@@ -424,12 +420,21 @@ const Projects = () => {
           <div key={project.id} className={`flex flex-col justify-between bg-surface-container-low hover:bg-surface-container p-5 sm:p-6 rounded-2xl border border-neutral-800/50 hover:border-neutral-700/60 transition-all duration-200 group relative overflow-hidden ${project.opacityClass || ''}`}>
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`px-2.5 py-0.5 rounded-md text-xs font-semibold uppercase tracking-wider flex items-center gap-1 ${project.badgeClass}`}>
-                    {project.badgeIcon && <span className="material-symbols-outlined text-[14px]">{project.badgeIcon}</span>}
-                    <span>{project.badgeText}</span>
-                  </span>
-                  <span className={`text-xs px-2 py-0.5 rounded uppercase font-semibold tracking-wider ${project.priority === 'Critical' ? 'bg-error-container/20 text-error' : (project.priority === 'High' ? 'text-tertiary bg-tertiary-container/20' : 'text-outline bg-surface-container')}`}>{project.subBadgeText}</span>
+                <div className="flex items-center gap-3">
+                  {project.logoUrl ? (
+                    <img src={project.logoUrl} alt="Logo" className="w-10 h-10 rounded-lg object-contain bg-surface-container p-1 border border-neutral-800/50" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant border border-neutral-800/50">
+                      <span className="material-symbols-outlined text-[20px]">folder_special</span>
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-1">
+                    <span className={`px-2.5 py-0.5 rounded-md text-xs font-semibold uppercase tracking-wider flex items-center gap-1 ${project.badgeClass} w-fit`}>
+                      {project.badgeIcon && <span className="material-symbols-outlined text-[14px]">{project.badgeIcon}</span>}
+                      <span>{project.badgeText}</span>
+                    </span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-bold tracking-wider w-fit ${project.priority === 'HIGH' ? 'bg-error-container/20 text-error' : (project.priority === 'MEDIUM' ? 'text-tertiary bg-tertiary-container/20' : 'text-outline bg-surface-container')}`}>{project.subBadgeText}</span>
+                  </div>
                 </div>
                 
                 <div className="flex items-center gap-1.5">
@@ -454,38 +459,34 @@ const Projects = () => {
               {/* Tech tags */}
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {project.techTags.map((tag, i) => (
-                  <span key={i} className="px-2 py-0.5 rounded bg-surface-container text-xs text-on-surface-variant font-mono">
+                  <span key={i} className="px-2 py-0.5 rounded bg-surface-container text-[11px] text-on-surface-variant font-mono border border-neutral-800/40">
                     {tag}
                   </span>
                 ))}
               </div>
               
-              {/* Goal Relation & Git Link */}
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                <div className="p-2.5 rounded-xl bg-surface-container/60 border border-neutral-800/40 flex items-center gap-2 overflow-hidden">
-                  <span className={`material-symbols-outlined text-[16px] ${project.relatedGoalClass}`}>{project.relatedGoalIcon}</span>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-[10px] text-outline block uppercase font-semibold">Related</span>
-                    <span className="text-xs font-semibold text-on-surface truncate block">Engineering</span>
-                  </div>
-                </div>
-                
-                {project.gitUrl ? (
-                  <a href={project.gitUrl} target="_blank" rel="noreferrer" className="p-2.5 rounded-xl bg-surface-container/60 hover:bg-surface-container border border-neutral-800/40 transition-colors flex items-center gap-2 overflow-hidden group/link">
-                    <span className="material-symbols-outlined text-[16px] text-on-surface-variant group-hover/link:text-primary">link</span>
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[10px] text-outline block uppercase font-semibold">Repository</span>
-                      <span className="text-xs font-semibold text-on-surface truncate block group-hover/link:text-primary transition-colors">{project.gitUrl.replace('https://github.com/', '')}</span>
-                    </div>
+              {/* Links */}
+              <div className="mt-4 flex flex-wrap gap-2 pt-3 border-t border-neutral-800/40">
+                {project.repoUrl && (
+                  <a href={project.repoUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-neutral-800/50 transition-colors text-xs font-semibold text-on-surface cursor-pointer">
+                    <span className="material-symbols-outlined text-[14px]">code</span> Repo
                   </a>
-                ) : (
-                  <div className="p-2.5 rounded-xl bg-surface-container/60 border border-neutral-800/40 flex items-center gap-2 overflow-hidden opacity-50">
-                    <span className="material-symbols-outlined text-[16px] text-outline">link_off</span>
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[10px] text-outline block uppercase font-semibold">Repository</span>
-                      <span className="text-xs font-semibold text-on-surface truncate block">No Link</span>
-                    </div>
-                  </div>
+                )}
+                {project.demoUrl && (
+                  <a href={project.demoUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-neutral-800/50 transition-colors text-xs font-semibold text-on-surface cursor-pointer">
+                    <span className="material-symbols-outlined text-[14px]">open_in_new</span> Live Demo
+                  </a>
+                )}
+                {project.prdUrl && (
+                  <a href={project.prdUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-neutral-800/50 transition-colors text-xs font-semibold text-on-surface cursor-pointer">
+                    <span className="material-symbols-outlined text-[14px]">description</span> PRD
+                  </a>
+                )}
+                {project.designUrl && (
+                  <a href={project.designUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-neutral-800/50 transition-colors text-xs font-semibold text-on-surface cursor-pointer">
+                    <span className="material-symbols-outlined text-[14px]">design_services</span> Design
+                  </a>
+                )}
                 )}
               </div>
             </div>
@@ -493,12 +494,12 @@ const Projects = () => {
             {/* Footer Info */}
             <div className="mt-4 pt-3 space-y-2 border-t border-neutral-800/40">
               <div className="flex items-center justify-between text-xs font-medium">
-                <span className={`${project.status === 'completed' ? 'text-secondary font-semibold' : 'text-on-surface-variant'} flex items-center gap-1`}>
-                  {project.footerDateIcon && <span className="material-symbols-outlined text-[14px]">{project.footerDateIcon}</span>}
-                  <span>{project.footerDateText}</span>
+                <span className={`${project.status === 'Completed' ? 'text-secondary font-semibold' : 'text-on-surface-variant'} flex items-center gap-1`}>
+                  <span className="material-symbols-outlined text-[14px]">update</span>
+                  <span>Diperbarui {project.updatedAt ? project.updatedAt.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : ''}</span>
                 </span>
                 {project.progressPercent > 0 && <span className={`${project.progressColorClass.replace('bg-', 'text-')} font-bold font-sans`}>{project.progressText}</span>}
-                {project.progressPercent === 0 && project.status === 'archived' && <span className="text-outline font-bold font-sans">{project.progressText}</span>}
+                {project.progressPercent === 0 && project.status === 'Archived' && <span className="text-outline font-bold font-sans">{project.progressText}</span>}
               </div>
               {project.progressPercent > 0 && (
                 <div className="w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
@@ -582,10 +583,10 @@ const Projects = () => {
                     onChange={e => setForm({...form, status: e.target.value})} 
                     className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary"
                   >
-                    <option value="planning">Planning (Akan Dibangun)</option>
-                    <option value="development">Development (Sedang Berjalan)</option>
-                    <option value="completed">Completed (Selesai/Live)</option>
-                    <option value="archived">Archived (Diarsipkan)</option>
+                    <option value="Planning">Planning (Akan Dibangun)</option>
+                    <option value="Development">Development (Sedang Berjalan)</option>
+                    <option value="Completed">Completed (Selesai/Live)</option>
+                    <option value="Archived">Archived (Diarsipkan)</option>
                   </select>
                 </div>
 
@@ -596,31 +597,102 @@ const Projects = () => {
                     onChange={e => setForm({...form, priority: e.target.value})} 
                     className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary"
                   >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                    <option value="Critical">Critical</option>
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
                   </select>
                 </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Tech Stack / Tags (Pisahkan dengan koma)</label>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Tech Stack / Tags</label>
                   <input 
                     value={form.techTagsStr} 
                     onChange={e => setForm({...form, techTagsStr: e.target.value})} 
                     className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary" 
-                    placeholder="Mis. React, Node.js, Go, PostgreSQL" 
+                    placeholder="Pisahkan dengan koma" 
                   />
                 </div>
-                
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Link Repository / Demo URL (Opsional)</label>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Kategori</label>
                   <input 
-                    value={form.gitUrl} 
-                    onChange={e => setForm({...form, gitUrl: e.target.value})} 
+                    value={form.category} 
+                    onChange={e => setForm({...form, category: e.target.value})} 
                     className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary" 
-                    placeholder="https://github.com/..." 
+                    placeholder="Mis. Engineering" 
                   />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5 flex items-center justify-between">
+                    <span>Progress</span>
+                    <span className="text-primary font-bold">{form.progressPercent}%</span>
+                  </label>
+                  <input 
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={form.progressPercent} 
+                    onChange={e => setForm({...form, progressPercent: Number(e.target.value)})} 
+                    className="w-full accent-primary cursor-pointer" 
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Logo URL (PNG / SVG)</label>
+                  <div className="flex items-center gap-3">
+                    {form.logoUrl && (
+                      <img src={form.logoUrl} alt="Logo Preview" className="w-10 h-10 rounded-lg bg-surface-container-high object-contain p-1 border border-surface-container-highest" />
+                    )}
+                    <input 
+                      value={form.logoUrl} 
+                      onChange={e => setForm({...form, logoUrl: e.target.value})} 
+                      className="flex-1 bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" 
+                      placeholder="https://.../logo.png" 
+                    />
+                  </div>
+
+                  </div>
+
+                <div className="md:col-span-2 mt-4 pt-4 border-t border-surface-container-highest">
+                  <h3 className="font-label-md text-on-surface font-bold uppercase tracking-widest mb-3">Artefak Dokumentasi (Opsional)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Link PRD / Dokumen</label>
+                      <input 
+                        value={form.prdUrl} 
+                        onChange={e => setForm({...form, prdUrl: e.target.value})} 
+                        className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" 
+                        placeholder="https://docs.google.com/..." 
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Link UI/UX (Figma)</label>
+                      <input 
+                        value={form.designUrl} 
+                        onChange={e => setForm({...form, designUrl: e.target.value})} 
+                        className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" 
+                        placeholder="https://figma.com/..." 
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Link Repositori</label>
+                      <input 
+                        value={form.repoUrl} 
+                        onChange={e => setForm({...form, repoUrl: e.target.value})} 
+                        className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" 
+                        placeholder="https://github.com/..." 
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Link Demo / Live</label>
+                      <input 
+                        value={form.demoUrl} 
+                        onChange={e => setForm({...form, demoUrl: e.target.value})} 
+                        className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" 
+                        placeholder="https://...vercel.app" 
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

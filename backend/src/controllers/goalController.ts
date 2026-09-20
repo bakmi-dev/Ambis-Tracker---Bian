@@ -21,7 +21,7 @@ export const getGoals = asyncHandler(async (req: Request, res: Response) => {
 // POST /api/v1/goals
 export const createGoal = asyncHandler(async (req: Request, res: Response) => {
   const userId = await getDefaultUserId();
-  const { title, description, deadline, category } = req.body;
+  const { title, description, deadline, category, target_date, milestones } = req.body;
 
   if (!title || typeof title !== 'string' || title.trim() === '') {
     res.status(400).json({ success: false, error: 'Title is required' });
@@ -34,7 +34,9 @@ export const createGoal = asyncHandler(async (req: Request, res: Response) => {
       title: title.trim(),
       description: description || null,
       deadline: deadline ? new Date(deadline) : null,
+      target_date: target_date ? new Date(target_date) : null,
       category: category || null,
+      milestones: milestones || [],
     },
   });
 
@@ -52,7 +54,7 @@ export const updateGoal = asyncHandler(async (req: Request, res: Response) => {
     return;
   }
 
-  const { title, description, deadline, status, progress_percentage, category } = req.body;
+  const { title, description, deadline, status, progress_percentage, category, target_date, milestones } = req.body;
 
   const updated = await prisma.goal.update({
     where: { id },
@@ -60,9 +62,11 @@ export const updateGoal = asyncHandler(async (req: Request, res: Response) => {
       ...(title !== undefined && { title: title.trim() }),
       ...(description !== undefined && { description }),
       ...(deadline !== undefined && { deadline: deadline ? new Date(deadline) : null }),
+      ...(target_date !== undefined && { target_date: target_date ? new Date(target_date) : null }),
       ...(status !== undefined && { status }),
       ...(progress_percentage !== undefined && { progress_percentage }),
       ...(category !== undefined && { category }),
+      ...(milestones !== undefined && { milestones }),
     },
   });
 

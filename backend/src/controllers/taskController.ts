@@ -21,14 +21,25 @@ export const getTasks = asyncHandler(async (req: Request, res: Response) => {
     const start = new Date(d); start.setUTCHours(0, 0, 0, 0);
     const end = new Date(d); end.setUTCHours(23, 59, 59, 999);
     
-    // Rollover logic: Tasks due today OR (not completed and due before today)
+    // Rollover logic: 
+    // - Incomplete tasks due today or earlier
+    // - Completed tasks completed today
+    // - Fallback for old data completed today but missing completed_at
     where = {
       ...where,
       OR: [
-        { due_date: { gte: start, lte: end } },
         {
           is_completed: false,
-          due_date: { lt: start }
+          due_date: { lte: end }
+        },
+        {
+          is_completed: true,
+          completed_at: { gte: start, lte: end }
+        },
+        {
+          is_completed: true,
+          completed_at: null,
+          due_date: { gte: start, lte: end }
         }
       ]
     };

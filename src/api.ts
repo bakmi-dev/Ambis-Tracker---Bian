@@ -264,7 +264,7 @@ export const studySessionApi = {
 // ==================== GOALS ====================
 export const goalApi = {
   getAll: () => request<{ success: boolean; data: any[] }>('/goals'),
-  create: (body: { title: string; description?: string; deadline?: string; category?: string }) =>
+  create: (body: { title: string; description?: string; deadline?: string; target_date?: string; category?: string; milestones?: any[] }) =>
     request<{ success: boolean; data: any }>('/goals', { method: 'POST', body: JSON.stringify(body) }),
   update: (id: string, body: Record<string, any>) =>
     request<{ success: boolean; data: any }>(`/goals/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
@@ -275,7 +275,7 @@ export const goalApi = {
 // ==================== COMPETITIONS ====================
 export const competitionApi = {
   getAll: () => request<{ success: boolean; data: any[] }>('/competitions'),
-  create: (body: { title: string; description?: string; organizer?: string; type?: string; deadline?: string; status?: string }) =>
+  create: (body: { title: string; description?: string; organizer?: string; type?: string; deadline?: string; status?: string; timeline?: any; outcome?: string; links?: any[]; documentation_images?: any[] }) =>
     request<{ success: boolean; data: any }>('/competitions', { method: 'POST', body: JSON.stringify(body) }),
   update: (id: string, body: Record<string, any>) =>
     request<{ success: boolean; data: any }>(`/competitions/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
@@ -286,7 +286,7 @@ export const competitionApi = {
 // ==================== PROJECTS ====================
 export const projectApi = {
   getAll: () => request<{ success: boolean; data: any[] }>('/projects'),
-  create: (body: { title: string; description?: string; deadline?: string; status?: string }) =>
+  create: (body: { title: string; description?: string; deadline?: string; status?: string; priority?: string; progress_percent?: number; logo_url?: string; category?: string; prd_url?: string; design_url?: string; repo_url?: string; demo_url?: string }) =>
     request<{ success: boolean; data: any }>('/projects', { method: 'POST', body: JSON.stringify(body) }),
   update: (id: string, body: Record<string, any>) =>
     request<{ success: boolean; data: any }>(`/projects/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
@@ -372,7 +372,7 @@ export const authApi = {
 // ==================== RITUALS ====================
 export const ritualApi = {
   getAll: () => request<{ success: boolean; data: any[] }>('/rituals'),
-  create: (body: { title: string; target?: string }) =>
+  create: (body: { title: string; target_minutes?: string | number }) =>
     request<{ success: boolean; data: any }>('/rituals', { method: 'POST', body: JSON.stringify(body) }),
   toggle: (id: string) =>
     request<{ success: boolean; data: any }>(`/rituals/${id}/toggle`, { method: 'PATCH' }),

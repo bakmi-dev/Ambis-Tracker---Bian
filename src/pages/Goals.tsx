@@ -18,6 +18,7 @@ interface Goal {
   categoryColorClass: string;
   statusText: string;
   targetText: string;
+  targetDateISO: string;
   targetColorClass?: string;
   title: string;
   description: string;
@@ -50,17 +51,7 @@ const mapBackendGoalToFrontend = (bg: any): Goal => {
   else if (categoryId === 'education') { categoryIcon = 'school'; categoryColorClass = 'bg-secondary-container/20 text-secondary'; progressGradientClass = 'from-secondary-fixed to-secondary'; }
 
   let descriptionText = bg.description || '';
-  let milestones: Milestone[] = [];
-  
-  try {
-    const parsed = JSON.parse(bg.description || '{}');
-    if (parsed && parsed.isJSONGoalDesc) {
-      descriptionText = parsed.text || '';
-      milestones = parsed.milestones || [];
-    }
-  } catch (e) {
-    // Normal string
-  }
+  let milestones: Milestone[] = Array.isArray(bg.milestones) ? bg.milestones : [];
 
   // Determine active milestone to highlight
   let foundActive = false;
@@ -79,9 +70,10 @@ const mapBackendGoalToFrontend = (bg: any): Goal => {
     categoryId,
     categoryIcon,
     categoryColorClass,
-    statusText: bg.status === 'completed' ? 'Completed' : 'Active',
-    targetText: bg.deadline ? new Date(bg.deadline).toLocaleDateString() : 'No Deadline',
-    targetColorClass: bg.deadline && new Date(bg.deadline) < new Date() ? 'bg-error-container/20 text-error' : '',
+    statusText: bg.status === 'completed' ? 'Achieved' : (bg.status === 'paused' ? 'Paused' : 'Active'),
+    targetText: bg.target_date ? new Date(bg.target_date).toLocaleDateString() : (bg.deadline ? new Date(bg.deadline).toLocaleDateString() : 'No Deadline'),
+    targetDateISO: bg.target_date ? new Date(bg.target_date).toISOString().split('T')[0] : (bg.deadline ? new Date(bg.deadline).toISOString().split('T')[0] : ''),
+    targetColorClass: (bg.target_date || bg.deadline) && new Date(bg.target_date || bg.deadline) < new Date() && bg.status !== 'completed' ? 'bg-error-container/20 text-error' : '',
     title: bg.title,
     description: descriptionText,
     progressPercent: bg.progress_percentage || 0,
@@ -113,12 +105,21 @@ const Goals = () => {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formGoal, setFormGoal] = useState({
+  const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
+  const [formGoal, setFormGoal] = useState<{
+    title: string;
+    category: string;
+    status: string;
+    deadline: string;
+    description: string;
+    milestones: { id: string; title: string; status: 'DONE' | 'ACTIVE' | 'TODO' }[];
+  }>({
     title: '',
     category: 'career',
+    status: 'active',
     deadline: '',
     description: '',
-    milestones: [{ id: Date.now().toString(), title: '', status: 'TODO' as const }]
+    milestones: [{ id: Date.now().toString(), title: '', status: 'TODO' }]
   });
 
   const fetchGoals = async () => {
@@ -167,12 +168,6 @@ const Goals = () => {
       return { ...m, status: 'TODO' as const };
     });
 
-    const updatedDescStr = JSON.stringify({
-      isJSONGoalDesc: true,
-      text: goal.description,
-      milestones: updatedMilestones
-    });
-
     // Optimistic Update
     setGoals(prevGoals => prevGoals.map(g => {
       if (g.id === goalId) {
@@ -187,9 +182,13 @@ const Goals = () => {
     }));
 
     try {
+      let payloadStatus = goal.statusText === 'Achieved' ? 'completed' : (goal.statusText === 'Paused' ? 'paused' : 'active');
+      if (newProgress === 100) payloadStatus = 'completed';
+
       await goalApi.update(goalId, {
-        description: updatedDescStr,
-        progress_percentage: newProgress
+        milestones: updatedMilestones,
+        progress_percentage: newProgress,
+        status: payloadStatus
       });
     } catch (err) {
       console.error(err);
@@ -197,32 +196,54 @@ const Goals = () => {
     }
   };
 
-  const handleCreateGoal = async () => {
+  const openEditModal = (goal: Goal) => {
+    setEditingGoalId(goal.id);
+    setFormGoal({
+      title: goal.title,
+      category: goal.categoryId,
+      status: goal.statusText === 'Achieved' ? 'completed' : (goal.statusText === 'Paused' ? 'paused' : 'active'),
+      deadline: goal.targetDateISO,
+      description: goal.description,
+      milestones: goal.milestones.length > 0 ? goal.milestones : [{ id: Date.now().toString(), title: '', status: 'TODO' }]
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSaveGoal = async () => {
     if (!formGoal.title) return;
     
     setIsLoading(true);
     try {
       const validMilestones = formGoal.milestones.filter(m => m.title.trim() !== '');
-      
-      const payloadDesc = JSON.stringify({
-        isJSONGoalDesc: true,
-        text: formGoal.description,
-        milestones: validMilestones
-      });
-
       const catLabel = categories.find(c => c.id === formGoal.category)?.label || 'General';
 
-      await goalApi.create({
-        title: formGoal.title,
-        description: payloadDesc,
-        deadline: formGoal.deadline ? new Date(formGoal.deadline).toISOString() : undefined,
-        category: catLabel,
-      });
+      if (editingGoalId) {
+        await goalApi.update(editingGoalId, {
+          title: formGoal.title,
+          description: formGoal.description,
+          deadline: formGoal.deadline ? new Date(formGoal.deadline).toISOString() : null,
+          target_date: formGoal.deadline ? new Date(formGoal.deadline).toISOString() : null,
+          category: catLabel,
+          status: formGoal.status,
+          milestones: validMilestones
+        });
+      } else {
+        await goalApi.create({
+          title: formGoal.title,
+          description: formGoal.description,
+          deadline: formGoal.deadline ? new Date(formGoal.deadline).toISOString() : undefined,
+          target_date: formGoal.deadline ? new Date(formGoal.deadline).toISOString() : undefined,
+          category: catLabel,
+          milestones: validMilestones
+        });
+      }
 
       setIsModalOpen(false);
+      setEditingGoalId(null);
       setFormGoal({
         title: '',
         category: 'career',
+        status: 'active',
         deadline: '',
         description: '',
         milestones: [{ id: Date.now().toString(), title: '', status: 'TODO' }]
@@ -345,6 +366,8 @@ const Goals = () => {
               <span className="material-symbols-outlined text-[18px]">event_upcoming</span>
             </div>
           </div>
+            </div>
+          </div>
           <div className="my-2 flex items-baseline gap-2">
             <span className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight leading-none font-sans">{q4Goals.length}</span>
             <span className="text-xs text-tertiary font-semibold">Sasaran Krusial</span>
@@ -433,8 +456,15 @@ const Goals = () => {
                     </span>
                   )}
                   <button 
+                    onClick={() => openEditModal(goal)}
+                    className="ml-auto mr-1 w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-primary hover:bg-primary-container/20 transition-colors cursor-pointer"
+                    title="Edit Goal"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">edit</span>
+                  </button>
+                  <button 
                     onClick={() => handleDeleteGoal(goal.id)}
-                    className="ml-auto w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors"
+                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors cursor-pointer"
                     title="Hapus Goal"
                   >
                     <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -621,7 +651,9 @@ const Goals = () => {
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-surface-container-low p-6 sm:p-7 rounded-2xl max-w-2xl w-full shadow-2xl flex flex-col max-h-[90vh] border border-neutral-800/50">
-            <h2 className="text-xl font-bold text-on-surface mb-4">Create New Goal / Life Vision Target</h2>
+            <h2 className="text-xl font-bold text-on-surface mb-4">
+              {editingGoalId ? 'Edit Goal / Vision' : 'Create New Goal / Life Vision Target'}
+            </h2>
             
             <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -703,9 +735,9 @@ const Goals = () => {
             </div>
             
             <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-neutral-800/50">
-              <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-semibold text-on-surface-variant hover:bg-surface-container transition-colors">Batal</button>
-              <button onClick={handleCreateGoal} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold bg-purple-600 hover:bg-purple-500 text-white transition-colors border border-purple-500/30 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">save</span> Simpan Goal
+              <button onClick={() => { setIsModalOpen(false); setEditingGoalId(null); }} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-semibold text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer">Batal</button>
+              <button onClick={handleSaveGoal} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold bg-purple-600 hover:bg-purple-500 text-white transition-colors border border-purple-500/30 flex items-center gap-2 cursor-pointer">
+                <span className="material-symbols-outlined text-[18px]">save</span> {editingGoalId ? 'Update Goal' : 'Simpan Goal'}
               </button>
             </div>
           </div>

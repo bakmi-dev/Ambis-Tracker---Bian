@@ -129,6 +129,10 @@ const Sidebar = () => {
                 <span className="material-symbols-outlined text-[20px]">menu_book</span>
                 <span>Knowledge Base</span>
               </NavLink>
+              <NavLink to="/ask-ambis-ai" className={navClasses}>
+                <span className="material-symbols-outlined text-[20px]">smart_toy</span>
+                <span>Ask Ambis AI</span>
+              </NavLink>
             </div>
           </nav>
         </div>

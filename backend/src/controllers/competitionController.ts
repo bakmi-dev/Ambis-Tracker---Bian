@@ -21,7 +21,7 @@ export const getCompetitions = asyncHandler(async (req: Request, res: Response) 
 // POST /api/v1/competitions
 export const createCompetition = asyncHandler(async (req: Request, res: Response) => {
   const userId = await getDefaultUserId();
-  const { title, description, organizer, type, deadline } = req.body;
+  const { title, description, organizer, type, deadline, timeline, outcome, links, documentation_images } = req.body;
 
   if (!title || typeof title !== 'string' || title.trim() === '') {
     res.status(400).json({ success: false, error: 'Title is required' });
@@ -36,6 +36,10 @@ export const createCompetition = asyncHandler(async (req: Request, res: Response
       organizer: organizer || null,
       type: type || null,
       deadline: deadline ? new Date(deadline) : null,
+      timeline: timeline || null,
+      outcome: outcome || null,
+      links: links || null,
+      documentation_images: documentation_images || null,
     },
   });
 
@@ -53,7 +57,7 @@ export const updateCompetition = asyncHandler(async (req: Request, res: Response
     return;
   }
 
-  const { title, description, organizer, type, deadline, status } = req.body;
+  const { title, description, organizer, type, deadline, status, timeline, outcome, links, documentation_images } = req.body;
 
   const updated = await prisma.competition.update({
     where: { id },
@@ -64,6 +68,10 @@ export const updateCompetition = asyncHandler(async (req: Request, res: Response
       ...(type !== undefined && { type }),
       ...(deadline !== undefined && { deadline: deadline ? new Date(deadline) : null }),
       ...(status !== undefined && { status }),
+      ...(timeline !== undefined && { timeline }),
+      ...(outcome !== undefined && { outcome }),
+      ...(links !== undefined && { links }),
+      ...(documentation_images !== undefined && { documentation_images }),
     },
   });
 

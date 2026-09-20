@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { taskApi, projectApi, competitionApi, goalApi, analyticsApi, studySessionApi } from '../api';
 import { useGlobalState } from '../context/GlobalContext';
 import { useFocusTimer } from '../context/FocusTimerContext';
+import { useDailyRituals } from '../context/RitualContext';
 
 const BIMBEL_RECOMMENDATIONS = [
   {
@@ -79,6 +80,12 @@ const Dashboard = () => {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [showCompModal, setShowCompModal] = useState(false);
   const [newCompTitle, setNewCompTitle] = useState('');
+  
+  // Ritual states
+  const { rituals, toggleRitual, addRitual } = useDailyRituals();
+  const [showRitualModal, setShowRitualModal] = useState(false);
+  const [newRitualTitle, setNewRitualTitle] = useState('');
+  const [newRitualTarget, setNewRitualTarget] = useState(30);
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -99,7 +106,7 @@ const Dashboard = () => {
       ]);
 
       setTasks(tasksRes.data);
-      setProjects(projectsRes.data.filter((p: any) => p.status === 'active' || p.status === 'development'));
+      setProjects(projectsRes.data.filter((p: any) => p.status === 'Planning' || p.status === 'Development'));
       setCompetitions(competitionsRes.data.filter((c: any) => c.status === 'Active Focus'));
       setGoals(goalsRes.data);
       setAnalytics(analyticsRes.data);
@@ -702,11 +709,13 @@ const Dashboard = () => {
                 projects.slice(0, 4).map((project, idx) => (
                   <div key={project.id} className="p-4 rounded-lg bg-surface-container space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider ${idx % 2 === 0 ? 'bg-secondary-container/20 text-secondary' : 'bg-primary-container/20 text-primary'
-                        }`}>
-                        PROJECT
-                      </span>
-                      <span className="text-xs font-mono text-on-surface-variant font-semibold">{project.progress}% Done</span>
+                      <div className="flex items-center gap-2">
+                        {project.logo_url && <img src={project.logo_url} alt="Logo" className="w-5 h-5 rounded bg-surface-container-high object-contain p-0.5" />}
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider ${idx % 2 === 0 ? 'bg-secondary-container/20 text-secondary' : 'bg-primary-container/20 text-primary'}`}>
+                          {project.category || 'PROJECT'}
+                        </span>
+                      </div>
+                      <span className="text-xs font-mono text-on-surface-variant font-semibold">{project.progress_percent || 0}% Done</span>
                     </div>
                     <div>
                       <h4 className="text-sm font-semibold text-on-surface truncate">{project.title}</h4>
@@ -715,14 +724,28 @@ const Dashboard = () => {
                     <div className="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
                       <div
                         className={`h-full rounded-full ${idx % 2 === 0 ? 'bg-secondary' : 'bg-primary'}`}
-                        style={{ width: `${project.progress}%` }}
+                        style={{ width: `${project.progress_percent || 0}%` }}
                       />
                     </div>
                     <div className="flex items-center justify-between text-[11px] font-mono text-outline pt-0.5">
                       <span>Status: {project.status}</span>
-                      <span className={`material-symbols-outlined text-[16px] ${idx % 2 === 0 ? 'text-secondary' : 'text-primary'}`}>
-                        {idx % 2 === 0 ? 'memory' : 'psychology'}
-                      </span>
+                      <div className="flex items-center gap-2 text-on-surface-variant">
+                          {project.repo_url && (
+                            <a href={project.repo_url} target="_blank" rel="noreferrer" className="hover:text-primary transition-colors" title="Repository">
+                              <span className="material-symbols-outlined text-[16px]">code</span>
+                            </a>
+                          )}
+                          {project.design_url && (
+                            <a href={project.design_url} target="_blank" rel="noreferrer" className="hover:text-primary transition-colors" title="Design">
+                              <span className="material-symbols-outlined text-[16px]">design_services</span>
+                            </a>
+                          )}
+                          {project.demo_url && (
+                            <a href={project.demo_url} target="_blank" rel="noreferrer" className="hover:text-primary transition-colors" title="Live Demo">
+                              <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+                            </a>
+                          )}
+                      </div>
                     </div>
                   </div>
                 ))
@@ -794,7 +817,61 @@ const Dashboard = () => {
         {/* RIGHT COLUMN */}
         <div className="lg:col-span-5 space-y-5">
 
-          {/* AUDIO SANCTUARY (Raised up to replace Skills Telemetry area) */}
+          {/* DAILY RITUALS */}
+          <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-surface-container text-secondary flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[18px]">pulse</span>
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Daily Rituals</h2>
+                  <p className="text-xs text-on-surface-variant mt-0.5">
+                    {rituals.filter(r => r.is_completed).length} / {rituals.length} Done
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setShowRitualModal(true)} className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors cursor-pointer">
+                <span className="material-symbols-outlined text-[18px]">add</span>
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {rituals.length > 0 ? (
+                rituals.map(ritual => (
+                  <div key={ritual.id} className={`flex items-center justify-between p-3.5 rounded-lg transition-colors ${ritual.is_completed ? 'bg-secondary/10 border border-secondary/20' : 'bg-surface-container border border-transparent'}`}>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => toggleRitual(ritual.id)}
+                        className={`w-5 h-5 rounded flex items-center justify-center border transition-colors cursor-pointer ${ritual.is_completed ? 'bg-secondary border-secondary text-on-secondary' : 'border-outline hover:border-secondary'}`}
+                      >
+                        {ritual.is_completed && <span className="material-symbols-outlined text-[14px] font-bold">check</span>}
+                      </button>
+                      <span className={`text-sm font-medium ${ritual.is_completed ? 'text-on-surface-variant line-through' : 'text-on-surface'}`}>
+                        {ritual.title}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        startTimer(ritual.target_minutes);
+                      }} 
+                      className="flex items-center gap-1.5 text-on-surface-variant hover:text-secondary transition-colors cursor-pointer"
+                      title="Start Timer"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">play_circle</span>
+                      <span className="text-xs font-mono">{ritual.target_minutes}m</span>
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="py-4 text-center text-outline text-xs italic">
+                  Belum ada ritual harian.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* AUDIO SANCTUARY */}
           <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1091,6 +1168,33 @@ const Dashboard = () => {
                 >
                   Simpan
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* QUICK ADD RITUAL MODAL */}
+      {showRitualModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-surface-container-low p-6 rounded-2xl max-w-md w-full shadow-2xl flex flex-col border border-white/10 relative space-y-4">
+            <h2 className="text-base font-bold text-on-surface flex items-center gap-2">
+              <span className="material-symbols-outlined text-secondary text-[20px]">pulse</span>
+              Tambah Daily Ritual
+            </h2>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const success = await addRitual(newRitualTitle, newRitualTarget);
+              if (success) {
+                setShowRitualModal(false);
+                setNewRitualTitle('');
+                setNewRitualTarget(30);
+              }
+            }} className="space-y-4">
+              <input required value={newRitualTitle} onChange={e => setNewRitualTitle(e.target.value)} type="text" className="w-full bg-surface-container border border-white/5 focus:border-secondary/50 text-on-surface placeholder:text-outline p-3 rounded-xl focus:outline-none text-xs" placeholder="Nama Ritual (ex: Belajar Bahasa Inggris)..." autoFocus />
+              <input required value={newRitualTarget} onChange={e => setNewRitualTarget(parseInt(e.target.value) || 30)} type="number" min="1" className="w-full bg-surface-container border border-white/5 focus:border-secondary/50 text-on-surface placeholder:text-outline p-3 rounded-xl focus:outline-none text-xs" placeholder="Estimasi Menit (ex: 30)" />
+              <div className="flex justify-end gap-2.5">
+                <button type="button" onClick={() => setShowRitualModal(false)} className="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-white/5 text-xs font-medium transition-colors cursor-pointer">Batal</button>
+                <button type="submit" className="px-4 py-2 rounded-lg bg-secondary text-on-secondary text-xs font-semibold transition-colors cursor-pointer">Simpan</button>
               </div>
             </form>
           </div>

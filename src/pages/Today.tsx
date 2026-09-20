@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { taskApi, analyticsApi, studySessionApi, ritualApi, competitionApi } from "../api";
+import { useGlobalState } from "../context/GlobalContext";
 import { useFocusTimer } from "../context/FocusTimerContext";
+import { useDailyRituals } from "../context/RitualContext";
 
 interface ChecklistTask {
   id: string;
@@ -13,6 +15,7 @@ interface ChecklistTask {
   description?: string;
   xp: number;
   completed: boolean;
+  due_date?: string;
 }
 
 interface Deadline {
@@ -29,7 +32,7 @@ interface Deadline {
 const Today = () => {
   const navigate = useNavigate();
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
-  const [rituals, setRituals] = useState<any[]>([]);
+  const { rituals, toggleRitual, addRitual } = useDailyRituals();
 
   // Tasks from backend
   const [checklistTasks, setChecklistTasks] = useState<ChecklistTask[]>([]);
@@ -57,7 +60,20 @@ const Today = () => {
         description: t.description || undefined,
         xp: t.xp || 10,
         completed: t.is_completed,
+        due_date: t.due_date,
       }));
+
+      // Sort to put overdue tasks at the top
+      const todayStr = new Date().toISOString().split("T")[0];
+      mapped.sort((a, b) => {
+        const aOverdue = !a.completed && a.due_date && a.due_date.split("T")[0] < todayStr;
+        const bOverdue = !b.completed && b.due_date && b.due_date.split("T")[0] < todayStr;
+        if (aOverdue && !bOverdue) return -1;
+        if (!aOverdue && bOverdue) return 1;
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        return 0;
+      });
+
       setChecklistTasks(mapped);
     } catch (err: any) {
       setError(err.message || "Gagal memuat tasks");
@@ -73,18 +89,6 @@ const Today = () => {
       setAnalytics(res.data);
     } catch {
       // Silently fail for analytics
-    }
-  }, []);
-
-  // Fetch rituals
-  const fetchRituals = useCallback(async () => {
-    try {
-      const res = await ritualApi.getAll();
-      if (res.success) {
-        setRituals(res.data);
-      }
-    } catch (e) {
-      console.error(e);
     }
   }, []);
 
@@ -109,7 +113,6 @@ const Today = () => {
       }, 200);
     }
   }, []);
-
   // Fetch deadlines (Tasks & Competitions H-1 to H-3)
   const fetchDeadlines = useCallback(async () => {
     try {
@@ -187,9 +190,8 @@ const Today = () => {
   useEffect(() => {
     fetchTasks();
     fetchAnalytics();
-    fetchRituals();
     fetchDeadlines();
-  }, [fetchTasks, fetchAnalytics, fetchRituals, fetchDeadlines]);
+  }, [fetchTasks, fetchAnalytics, fetchDeadlines]);
 
   const toggleTask = async (id: string) => {
     const task = checklistTasks.find((t) => t.id === id);
@@ -214,37 +216,6 @@ const Today = () => {
     }
   };
 
-  const toggleRitual = async (id: string) => {
-    const ritual = rituals.find((r) => r.id === id);
-    if (!ritual) return;
-
-    const todayStr = new Date().toISOString().split("T")[0];
-    const isCompleted = ritual.last_completed_date?.startsWith(todayStr);
-
-    // Optimistic UI
-    setRituals((prev) => prev.map((r) => {
-      if (r.id === id) {
-        return {
-          ...r,
-          last_completed_date: isCompleted ? null : new Date().toISOString()
-        };
-      }
-      return r;
-    }));
-
-    try {
-      await ritualApi.toggle(id);
-      fetchAnalytics(); // Refresh XP
-    } catch {
-      // Revert
-      setRituals((prev) => prev.map((r) => {
-        if (r.id === id) {
-          return { ...r, last_completed_date: ritual.last_completed_date };
-        }
-        return r;
-      }));
-    }
-  };
 
   const { 
     isActive, isPaused, timeLeft, initialDuration, currentTopic, 
@@ -301,7 +272,7 @@ const Today = () => {
   const [isRitualModalOpen, setIsRitualModalOpen] = useState(false);
   const [ritualForm, setRitualForm] = useState({
     title: "",
-    target: "",
+    targetMinutes: 30,
   });
 
   const handleCreateTask = async () => {
@@ -334,10 +305,11 @@ const Today = () => {
   const handleCreateRitual = async () => {
     if (!ritualForm.title) return;
     try {
-      await ritualApi.create(ritualForm);
-      setIsRitualModalOpen(false);
-      setRitualForm({ title: "", target: "" });
-      fetchRituals();
+      const success = await addRitual(ritualForm.title, ritualForm.targetMinutes);
+      if (success) {
+        setIsRitualModalOpen(false);
+        setRitualForm({ title: "", targetMinutes: 30 });
+      }
     } catch (err: any) {
       alert("Error: " + err.message);
     }
@@ -679,12 +651,19 @@ const Today = () => {
                   </button>
                 </div>
               ) : checklistTasks.length > 0 ? (
-                checklistTasks.map((task) => (
+                checklistTasks.map((task) => {
+                  const todayStr = new Date().toISOString().split("T")[0];
+                  const isOverdue = !task.completed && !!task.due_date && task.due_date.split("T")[0] < todayStr;
+                  const overdueDate = isOverdue ? new Date(task.due_date!).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' }) : "";
+
+                  return (
                   <div
                     key={task.id}
                     className={`p-4 sm:p-5 rounded-xl transition-all flex items-start justify-between gap-4 group ${
                       task.completed
                         ? "bg-surface-container/50 hover:bg-surface-container"
+                        : isOverdue 
+                        ? "bg-error-container/10 border border-error/30 hover:bg-error-container/20"
                         : "bg-surface-container hover:bg-surface-container-high"
                     }`}
                   >
@@ -694,6 +673,8 @@ const Today = () => {
                         className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all border ${
                           task.completed
                             ? "bg-primary border-primary text-on-primary"
+                            : isOverdue
+                            ? "border-error/40 bg-error-container text-error hover:border-error hover:bg-error hover:text-on-error"
                             : "border-outline/40 hover:border-primary text-transparent"
                         }`}
                       >
@@ -703,6 +684,12 @@ const Today = () => {
                       </button>
                       <div className="space-y-1.5 flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
+                          {isOverdue && (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-error text-on-error flex items-center gap-1 shadow-[0_0_10px_rgba(255,84,73,0.3)]">
+                              <span className="material-symbols-outlined text-[12px]">warning</span>
+                              OVERDUE // {overdueDate}
+                            </span>
+                          )}
                           <span
                             className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
                               task.completed
@@ -775,7 +762,8 @@ const Today = () => {
                       </div>
                     )}
                   </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="py-12 text-center">
                   <span className="material-symbols-outlined text-outline text-[48px] mb-2">
@@ -1056,10 +1044,7 @@ const Today = () => {
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xs text-primary font-bold">
-                  {rituals.filter((r) => {
-                    const todayStr = new Date().toISOString().split("T")[0];
-                    return r.last_completed_date?.startsWith(todayStr);
-                  }).length} / {rituals.length} Done
+                  {rituals.filter((r) => r.is_completed).length} / {rituals.length} Done
                 </span>
                 <button
                   onClick={() => setIsRitualModalOpen(true)}
@@ -1074,8 +1059,7 @@ const Today = () => {
             <div className="space-y-2.5 text-sm">
               {rituals.length > 0 ? (
                 rituals.map((ritual) => {
-                  const todayStr = new Date().toISOString().split("T")[0];
-                  const isDone = ritual.last_completed_date?.startsWith(todayStr);
+                  const isDone = ritual.is_completed;
 
                   return (
                     <div
@@ -1104,7 +1088,7 @@ const Today = () => {
                         </span>
                       </div>
                       <span className="text-xs text-outline font-normal">
-                        {ritual.target || "Daily"}
+                        {ritual.target_minutes ? `${ritual.target_minutes} Menit` : "Daily"}
                       </span>
                     </div>
                   );
@@ -1144,15 +1128,16 @@ const Today = () => {
               </div>
               <div>
                 <label className="block text-xs font-medium text-outline mb-1.5">
-                  Target (Opsional)
+                  Target Menit
                 </label>
                 <input
-                  value={ritualForm.target}
+                  type="number"
+                  value={ritualForm.targetMinutes}
                   onChange={(e) =>
-                    setRitualForm({ ...ritualForm, target: e.target.value })
+                    setRitualForm({ ...ritualForm, targetMinutes: parseInt(e.target.value) || 30 })
                   }
                   className="w-full bg-surface-container text-on-surface px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Contoh: 15 Menit"
+                  placeholder="Contoh: 15"
                 />
               </div>
             </div>

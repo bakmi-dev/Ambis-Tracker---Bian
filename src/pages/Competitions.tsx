@@ -9,7 +9,7 @@ interface CompChecklist {
 
 interface Competition {
   id: string;
-  category: 'active' | 'preparing' | 'submitted' | 'wishlist' | 'finished';
+  category: 'active' | 'preparing' | 'submitted' | 'finalist' | 'wishlist' | 'finished';
   organizer: string;
   title: string;
   division: string;
@@ -26,6 +26,14 @@ interface Competition {
   progressColorClass: string;
   prizePool: number;
   checklist: CompChecklist[];
+  timeline: {
+    registration?: string;
+    submission?: string;
+    announcement?: string;
+  };
+  outcome: string;
+  links: { label: string; url: string }[];
+  documentationImages: string[];
 }
 
 const formatRupiah = (num: number) => {
@@ -49,6 +57,7 @@ const mapBackendToFrontend = (bc: any): Competition => {
   if (status === 'completed' || status === 'finished') category = 'finished';
   else if (status === 'active') category = 'active';
   else if (status === 'wishlist') category = 'wishlist';
+  else if (status === 'finalist') category = 'finalist';
   else if (status === 'submitted') category = 'submitted';
   else if (status === 'preparation' || status === 'preparing') category = 'preparing';
 
@@ -69,6 +78,9 @@ const mapBackendToFrontend = (bc: any): Competition => {
   } else if (category === 'submitted') {
     badgeText = 'SUBMITTED';
     badgeClass = 'bg-tertiary-container/50 text-tertiary';
+  } else if (category === 'finalist') {
+    badgeText = 'FINALIST';
+    badgeClass = 'bg-secondary-container/50 text-secondary border border-secondary/30';
   }
 
   // Parse description for JSON
@@ -99,6 +111,7 @@ const mapBackendToFrontend = (bc: any): Competition => {
   if (category === 'finished' || progressPercent === 100) progressColorClass = 'bg-secondary';
   else if (category === 'wishlist') progressColorClass = 'bg-surface-container-highest';
   else if (category === 'submitted') progressColorClass = 'bg-tertiary';
+  else if (category === 'finalist') progressColorClass = 'bg-secondary';
 
   const deadlineDate = bc.deadline ? new Date(bc.deadline) : null;
   let deadlineValue = 'TBA';
@@ -128,7 +141,7 @@ const mapBackendToFrontend = (bc: any): Competition => {
     badgeClass,
     isPulsing,
     registrationOrStatusText: 'Status',
-    registrationOrStatusValue: category === 'finished' ? 'Finished' : (category === 'submitted' ? 'Waiting Result' : 'In Progress'),
+    registrationOrStatusValue: category === 'finished' ? 'Finished' : (category === 'finalist' ? 'Finalist' : (category === 'submitted' ? 'Waiting Result' : 'In Progress')),
     deadlineDate,
     deadlineText: 'Deadline',
     deadlineValue,
@@ -136,7 +149,11 @@ const mapBackendToFrontend = (bc: any): Competition => {
     progressPercent,
     progressColorClass,
     prizePool,
-    checklist
+    checklist,
+    timeline: bc.timeline || {},
+    outcome: bc.outcome || '',
+    links: Array.isArray(bc.links) ? bc.links : [],
+    documentationImages: Array.isArray(bc.documentation_images) ? bc.documentation_images : []
   };
 };
 
@@ -158,13 +175,19 @@ const Competitions = () => {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCompId, setEditingCompId] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: '',
+    organizer: '',
     type: 'Software Engineering',
     deadline: '',
     status: 'preparing',
     prizePool: 0,
-    checklist: [{ id: Date.now().toString(), title: '', isChecked: false }]
+    checklist: [{ id: Date.now().toString(), title: '', isChecked: false }],
+    timeline: { registration: '', submission: '', announcement: '' },
+    outcome: '',
+    links: [] as { label: string; url: string }[],
+    documentationImages: [] as string[]
   });
 
   const fetchCompetitions = async () => {
@@ -183,7 +206,29 @@ const Competitions = () => {
     fetchCompetitions();
   }, []);
 
-  const handleCreateSubmit = async () => {
+  const openEditModal = (comp: Competition) => {
+    setEditingCompId(comp.id);
+    setForm({
+      title: comp.title,
+      organizer: comp.organizer,
+      type: comp.division,
+      deadline: comp.deadlineDate ? comp.deadlineDate.toISOString().split('T')[0] : '',
+      status: comp.category === 'finished' ? 'finished' : comp.category,
+      prizePool: comp.prizePool,
+      checklist: comp.checklist.length > 0 ? comp.checklist : [{ id: Date.now().toString(), title: '', isChecked: false }],
+      timeline: { 
+        registration: comp.timeline?.registration || '', 
+        submission: comp.timeline?.submission || '', 
+        announcement: comp.timeline?.announcement || '' 
+      },
+      outcome: comp.outcome,
+      links: comp.links,
+      documentationImages: comp.documentationImages
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSaveSubmit = async () => {
     if (!form.title) return;
     setIsLoading(true);
     try {
@@ -194,23 +239,39 @@ const Competitions = () => {
         checklist: validChecklist
       });
 
-      await competitionApi.create({
+      const data = {
         title: form.title,
         type: form.type,
         deadline: form.deadline ? new Date(form.deadline).toISOString() : undefined,
         status: form.status,
         description: payloadDesc,
-        organizer: 'Competition Event'
-      });
+        organizer: form.organizer || 'Competition Event',
+        timeline: form.timeline,
+        outcome: form.outcome,
+        links: form.links,
+        documentation_images: form.documentationImages
+      };
+
+      if (editingCompId) {
+        await competitionApi.update(editingCompId, data);
+      } else {
+        await competitionApi.create(data);
+      }
 
       setIsModalOpen(false);
+      setEditingCompId(null);
       setForm({
         title: '',
+        organizer: '',
         type: 'Software Engineering',
         deadline: '',
         status: 'preparing',
         prizePool: 0,
-        checklist: [{ id: Date.now().toString(), title: '', isChecked: false }]
+        checklist: [{ id: Date.now().toString(), title: '', isChecked: false }],
+        timeline: { registration: '', submission: '', announcement: '' },
+        outcome: '',
+        links: [],
+        documentationImages: []
       });
       fetchCompetitions();
     } catch (err) {
@@ -463,10 +524,32 @@ const Competitions = () => {
                     {comp.badgeText === 'Finished' && <span className="material-symbols-outlined text-[14px]">workspace_premium</span>}
                     {comp.badgeText}
                   </span>
-                  <button onClick={() => handleDelete(comp.id)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors" title="Hapus Kompetisi">
-                    <span className="material-symbols-outlined text-[16px]">delete</span>
-                  </button>
+                  <div className="flex items-center gap-1 mt-1">
+                    <button onClick={() => {if(typeof (window as any).openEditModal === 'function') (window as any).openEditModal(comp); else console.warn('openEditModal not found in HEAD')}} className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-primary hover:bg-primary-container/20 transition-colors" title="Edit Kompetisi">
+                      <span className="material-symbols-outlined text-[16px]">edit</span>
+                    </button>
+                    <button onClick={() => handleDelete(comp.id)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors" title="Hapus Kompetisi">
+                      <span className="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
+                  </div>
                 </div>
+
+                {comp.outcome && (
+                  <div className="mt-4 p-space-sm bg-primary-container/10 border border-primary/20 rounded-lg">
+                    <span className="font-label-sm text-label-sm uppercase font-semibold text-primary block mb-1">Outcome / Prestasi</span>
+                    <p className="font-body-sm text-body-sm text-on-surface">{comp.outcome}</p>
+                  </div>
+                )}
+                {comp.links.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {comp.links.map((lnk, idx) => (
+                      <a key={idx} href={lnk.url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest transition-colors font-label-sm text-label-sm text-on-surface">
+                        <span className="material-symbols-outlined text-[14px]">link</span>
+                        {lnk.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className="bg-surface-container/60 border border-neutral-800/40 p-3 rounded-xl flex flex-col gap-1.5 mt-1">
@@ -527,7 +610,9 @@ const Competitions = () => {
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-surface-container-low p-6 sm:p-7 rounded-2xl max-w-2xl w-full shadow-2xl flex flex-col max-h-[90vh] border border-neutral-800/50">
-            <h2 className="text-xl font-bold text-on-surface mb-4 font-sans">Tambah Kompetisi / Hackathon Baru</h2>
+            <h2 className="text-xl font-bold text-on-surface mb-4 font-sans">
+              {(window as any).editingCompId ? 'Edit Kompetisi / Hackathon' : 'Tambah Kompetisi / Hackathon Baru'}
+            </h2>
             
             <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -571,6 +656,7 @@ const Competitions = () => {
                     <option value="active">Active Focus</option>
                     <option value="preparing">Preparing</option>
                     <option value="submitted">Submitted</option>
+                    <option value="finalist">Finalist</option>
                     <option value="wishlist">Wishlist</option>
                     <option value="finished">Finished / Archive</option>
                   </select>
@@ -588,6 +674,26 @@ const Competitions = () => {
                 </div>
               </div>
               
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <div>
+                  <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Tgl Registrasi (Opt)</label>
+                  <input type="date" value={form.timeline.registration} onChange={e => setForm({...form, timeline: {...form.timeline, registration: e.target.value}})} className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" />
+                </div>
+                <div>
+                  <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Tgl Submisi (Opt)</label>
+                  <input type="date" value={form.timeline.submission} onChange={e => setForm({...form, timeline: {...form.timeline, submission: e.target.value}})} className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" />
+                </div>
+                <div>
+                  <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Tgl Pengumuman (Opt)</label>
+                  <input type="date" value={form.timeline.announcement} onChange={e => setForm({...form, timeline: {...form.timeline, announcement: e.target.value}})} className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Outcome / Hasil</label>
+                <textarea value={form.outcome} onChange={e => setForm({...form, outcome: e.target.value})} className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" rows={2} placeholder="Mis. Juara 1 Nasional..." />
+              </div>
+
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-semibold uppercase tracking-wider text-outline">Persyaratan Submisi / Checklist</label>
@@ -618,12 +724,27 @@ const Competitions = () => {
                   ))}
                 </div>
               </div>
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block font-label-sm text-outline uppercase tracking-wider font-semibold">Links (Github, Figma, dll)</label>
+                  <button onClick={() => setForm(p => ({...p, links: [...p.links, {label: '', url: ''}]}))} className="text-primary font-label-sm text-label-sm font-semibold hover:text-primary-fixed">+ Tambah Link</button>
+                </div>
+                <div className="space-y-2">
+                  {form.links.map((lnk, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input value={lnk.label} onChange={e => { const newL = [...form.links]; newL[idx].label = e.target.value; setForm({...form, links: newL}); }} className="w-1/3 bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" placeholder="Label (Mis. Github)" />
+                      <input value={lnk.url} onChange={e => { const newL = [...form.links]; newL[idx].url = e.target.value; setForm({...form, links: newL}); }} className="flex-1 bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" placeholder="URL Link" />
+                      <button onClick={() => { const newL = [...form.links]; newL.splice(idx, 1); setForm({...form, links: newL}); }} className="w-8 h-8 flex items-center justify-center text-outline hover:text-error hover:bg-error-container/20 rounded-lg transition-colors"><span className="material-symbols-outlined text-[18px]">close</span></button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
             
             <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-neutral-800/50">
-              <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-semibold text-on-surface-variant hover:bg-surface-container transition-colors">Batal</button>
-              <button onClick={handleCreateSubmit} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold bg-purple-600 hover:bg-purple-500 text-white transition-colors border border-purple-500/30 flex items-center gap-2 shadow-none cursor-pointer">
-                <span className="material-symbols-outlined text-[18px]">save</span> Simpan Kompetisi
+              <button onClick={() => {setIsModalOpen(false); if(typeof (window as any).setEditingCompId === 'function') (window as any).setEditingCompId(null);}} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-semibold text-on-surface-variant hover:bg-surface-container transition-colors">Batal</button>
+              <button onClick={(window as any).handleSaveSubmit || handleCreateSubmit} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold bg-purple-600 hover:bg-purple-500 text-white transition-colors border border-purple-500/30 flex items-center gap-2 shadow-none cursor-pointer">
+                <span className="material-symbols-outlined text-[18px]">save</span> {(window as any).editingCompId ? 'Update Kompetisi' : 'Simpan Kompetisi'}
               </button>
             </div>
           </div>

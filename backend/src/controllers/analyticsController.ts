@@ -22,10 +22,10 @@ export const getDashboardSummary = asyncHandler(async (req: Request, res: Respon
 
   // Tasks completed today
   const todayTasksTotal = await prisma.task.count({
-    where: { user_id: userId, scheduled_date: { gte: startOfDay, lte: endOfDay } },
+    where: { user_id: userId, due_date: { gte: startOfDay, lte: endOfDay } },
   });
   const todayTasksCompleted = await prisma.task.count({
-    where: { user_id: userId, scheduled_date: { gte: startOfDay, lte: endOfDay }, is_completed: true },
+    where: { user_id: userId, due_date: { gte: startOfDay, lte: endOfDay }, is_completed: true },
   });
 
   // Total tasks overall

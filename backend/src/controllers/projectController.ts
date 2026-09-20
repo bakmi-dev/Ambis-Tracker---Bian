@@ -22,7 +22,11 @@ export const getProjects = asyncHandler(async (req: Request, res: Response) => {
 // POST /api/v1/projects
 export const createProject = asyncHandler(async (req: Request, res: Response) => {
   const userId = await getDefaultUserId();
-  const { title, description, deadline } = req.body;
+  const {
+    title, description, deadline, status,
+    priority, progress_percent, logo_url, category,
+    prd_url, design_url, repo_url, demo_url
+  } = req.body;
 
   if (!title || typeof title !== 'string' || title.trim() === '') {
     res.status(400).json({ success: false, error: 'Title is required' });
@@ -35,6 +39,15 @@ export const createProject = asyncHandler(async (req: Request, res: Response) =>
       title: title.trim(),
       description: description || null,
       deadline: deadline ? new Date(deadline) : null,
+      status: status || 'Planning',
+      priority: priority || 'MEDIUM',
+      progress_percent: progress_percent !== undefined ? Number(progress_percent) : 0,
+      logo_url: logo_url || null,
+      category: category || 'Engineering',
+      prd_url: prd_url || null,
+      design_url: design_url || null,
+      repo_url: repo_url || null,
+      demo_url: demo_url || null,
     },
     include: { tasks: true },
   });
@@ -53,15 +66,27 @@ export const updateProject = asyncHandler(async (req: Request, res: Response) =>
     return;
   }
 
-  const { title, description, deadline, status } = req.body;
+  const {
+    title, description, deadline, status,
+    priority, progress_percent, logo_url, category,
+    prd_url, design_url, repo_url, demo_url
+  } = req.body;
 
   const updated = await prisma.project.update({
     where: { id },
     data: {
-      ...(title !== undefined && { title: title.trim() }),
-      ...(description !== undefined && { description }),
-      ...(deadline !== undefined && { deadline: deadline ? new Date(deadline) : null }),
-      ...(status !== undefined && { status }),
+      title: title !== undefined ? title.trim() : undefined,
+      description: description !== undefined ? description : undefined,
+      deadline: deadline !== undefined ? (deadline ? new Date(deadline) : null) : undefined,
+      status: status !== undefined ? status : undefined,
+      priority: priority !== undefined ? priority : undefined,
+      progress_percent: progress_percent !== undefined ? Number(progress_percent) : undefined,
+      logo_url: logo_url !== undefined ? logo_url : undefined,
+      category: category !== undefined ? category : undefined,
+      prd_url: prd_url !== undefined ? prd_url : undefined,
+      design_url: design_url !== undefined ? design_url : undefined,
+      repo_url: repo_url !== undefined ? repo_url : undefined,
+      demo_url: demo_url !== undefined ? demo_url : undefined,
     },
     include: { tasks: true },
   });
@@ -70,8 +95,8 @@ export const updateProject = asyncHandler(async (req: Request, res: Response) =>
   if (updated.tasks.length > 0) {
     const doneTasks = updated.tasks.filter((t: any) => t.status === 'done').length;
     const progress = Math.round((doneTasks / updated.tasks.length) * 100);
-    await prisma.project.update({ where: { id }, data: { progress } });
-    updated.progress = progress;
+    await prisma.project.update({ where: { id }, data: { progress_percent: progress } });
+    (updated as any).progress_percent = progress;
   }
 
   res.json({ success: true, data: updated });
@@ -174,5 +199,5 @@ async function recalcProjectProgress(projectId: string) {
   const progress = tasks.length > 0
     ? Math.round((tasks.filter((t: any) => t.status === 'done').length / tasks.length) * 100)
     : 0;
-  await prisma.project.update({ where: { id: projectId }, data: { progress } });
+  await prisma.project.update({ where: { id: projectId }, data: { progress_percent: progress } });
 }

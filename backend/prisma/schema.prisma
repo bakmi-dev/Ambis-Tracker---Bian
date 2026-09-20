@@ -83,8 +83,10 @@ model Goal {
   title               String
   description         String?
   deadline            DateTime?
+  target_date         DateTime?
   status              String    @default("active") // active, completed, paused
   progress_percentage Int       @default(0)
+  milestones          Json?     @default("[]")
   category            String?
   created_at          DateTime  @default(now())
   updated_at          DateTime  @updatedAt
@@ -104,6 +106,10 @@ model Competition {
   type        String?
   deadline    DateTime?
   status      String    @default("preparation") // preparation, active, completed
+  timeline    Json?
+  outcome     String?
+  links       Json?
+  documentation_images Json?
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
 
@@ -114,15 +120,22 @@ model Competition {
 }
 
 model Project {
-  id          String    @id @default(uuid())
-  user_id     String
-  title       String
-  description String?
-  deadline    DateTime?
-  status      String    @default("active") // active, completed, archived
-  progress    Int       @default(0)
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt
+  id               String    @id @default(uuid())
+  user_id          String
+  title            String
+  description      String?
+  deadline         DateTime?
+  status           String    @default("Planning") // Planning, Development, Completed, Archived
+  priority         String    @default("MEDIUM")   // HIGH, MEDIUM, LOW
+  progress_percent Int       @default(0)
+  logo_url         String?
+  category         String    @default("Engineering")
+  prd_url          String?
+  design_url       String?
+  repo_url         String?
+  demo_url         String?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
 
   user  User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
   tasks ProjectTask[]
@@ -198,13 +211,28 @@ model DailyRitual {
   id                  String    @id @default(uuid())
   user_id             String
   title               String
-  target              String?
-  last_completed_date DateTime?
+  target_minutes      Int       @default(30)
+  is_active           Boolean   @default(true)
   created_at          DateTime  @default(now())
   updated_at          DateTime  @updatedAt
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  logs DailyRitualLog[]
 
-  @@index([user_id, last_completed_date])
+  @@index([user_id])
   @@map("daily_rituals")
+}
+
+model DailyRitualLog {
+  id             String      @id @default(uuid())
+  ritual_id      String
+  user_id        String
+  completed_date DateTime    @db.Date
+  created_at     DateTime    @default(now())
+
+  ritual DailyRitual @relation(fields: [ritual_id], references: [id], onDelete: Cascade)
+
+  @@unique([ritual_id, completed_date], name: "unique_ritual_per_day")
+  @@index([user_id, completed_date])
+  @@map("daily_ritual_logs")
 }

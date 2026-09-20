@@ -11,17 +11,35 @@ const getDefaultUserId = async (): Promise<string> => {
 // GET /api/v1/rituals
 export const getRituals = asyncHandler(async (req: Request, res: Response) => {
   const userId = await getDefaultUserId();
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+
   const rituals = await prisma.dailyRitual.findMany({
-    where: { user_id: userId },
+    where: { user_id: userId, is_active: true },
     orderBy: { created_at: 'asc' },
+    include: {
+      logs: {
+        where: {
+          completed_date: today,
+        }
+      }
+    }
   });
-  res.json({ success: true, data: rituals });
+
+  const formattedRituals = rituals.map(ritual => ({
+    id: ritual.id,
+    title: ritual.title,
+    target_minutes: ritual.target_minutes,
+    is_completed: ritual.logs.length > 0,
+  }));
+
+  res.json({ success: true, data: formattedRituals });
 });
 
 // POST /api/v1/rituals
 export const createRitual = asyncHandler(async (req: Request, res: Response) => {
   const userId = await getDefaultUserId();
-  const { title, target } = req.body;
+  const { title, target_minutes } = req.body;
 
   if (!title || typeof title !== 'string' || title.trim() === '') {
     res.status(400).json({ success: false, error: 'Title is required' });
@@ -32,11 +50,11 @@ export const createRitual = asyncHandler(async (req: Request, res: Response) => 
     data: {
       user_id: userId,
       title: title.trim(),
-      target: target || null,
+      target_minutes: target_minutes ? parseInt(target_minutes, 10) : 30,
     },
   });
 
-  res.status(201).json({ success: true, data: ritual });
+  res.status(201).json({ success: true, data: { ...ritual, is_completed: false } });
 });
 
 // PATCH /api/v1/rituals/:id/toggle
@@ -53,42 +71,41 @@ export const toggleRitual = asyncHandler(async (req: Request, res: Response) => 
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
 
-  const lastCompleted = existing.last_completed_date;
-  let isCompletedToday = false;
-  if (lastCompleted) {
-    const lc = new Date(lastCompleted);
-    lc.setUTCHours(0, 0, 0, 0);
-    if (lc.getTime() === today.getTime()) {
-      isCompletedToday = true;
+  const existingLog = await prisma.dailyRitualLog.findFirst({
+    where: {
+      ritual_id: id,
+      user_id: userId,
+      completed_date: today
     }
-  }
+  });
 
-  let updatedRitual;
-  if (isCompletedToday) {
+  let is_completed = false;
+
+  if (existingLog) {
     // Un-toggle
-    updatedRitual = await prisma.dailyRitual.update({
-      where: { id },
-      data: { last_completed_date: null },
-    });
-    // Remove XP
+    await prisma.dailyRitualLog.delete({ where: { id: existingLog.id } });
     await prisma.user.update({
       where: { id: userId },
-      data: { xp: { decrement: 5 } },
+      data: { xp: { decrement: 10 } },
     });
+    is_completed = false;
   } else {
-    // Toggle (Complete)
-    updatedRitual = await prisma.dailyRitual.update({
-      where: { id },
-      data: { last_completed_date: new Date() }, // record current timestamp
+    // Toggle
+    await prisma.dailyRitualLog.create({
+      data: {
+        ritual_id: id,
+        user_id: userId,
+        completed_date: today
+      }
     });
-    // Add XP
     await prisma.user.update({
       where: { id: userId },
-      data: { xp: { increment: 5 } },
+      data: { xp: { increment: 10 } },
     });
+    is_completed = true;
   }
 
-  res.json({ success: true, data: updatedRitual });
+  res.json({ success: true, data: { ...existing, is_completed } });
 });
 
 // DELETE /api/v1/rituals/:id
@@ -102,6 +119,11 @@ export const deleteRitual = asyncHandler(async (req: Request, res: Response) => 
     return;
   }
 
-  await prisma.dailyRitual.delete({ where: { id } });
+  // Soft delete
+  await prisma.dailyRitual.update({
+    where: { id },
+    data: { is_active: false }
+  });
+
   res.json({ success: true, message: 'Ritual deleted' });
 });

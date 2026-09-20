@@ -13,9 +13,11 @@ import Projects from './pages/Projects';
 import Progress from './pages/Progress';
 import Journal from './pages/Journal';
 import KnowledgeBase from './pages/KnowledgeBase';
+import AskAmbisAI from './pages/AskAmbisAI';
 import { useGlobalState } from './context/GlobalContext';
 import { GlobalProvider } from './context/GlobalContext';
 import { FocusTimerProvider } from './context/FocusTimerContext';
+import { RitualProvider } from './context/RitualContext';
 
 // Fade transition wrapper for smooth page transitions
 const FadeTransition = ({ children }: { children: ReactNode }) => {
@@ -93,6 +95,7 @@ const AppRoutes = () => {
             <Route path="/progress" element={<Progress />} />
             <Route path="/journal" element={<Journal />} />
             <Route path="/knowledge-base" element={<KnowledgeBase />} />
+            <Route path="/ask-ambis-ai" element={<AskAmbisAI />} />
           </Routes>
         </FadeTransition>
       </ProtectedRoute>
@@ -105,8 +108,10 @@ function App() {
     <BrowserRouter>
       <GlobalProvider>
         <FocusTimerProvider>
-          <DocumentTitleUpdater />
-          <AppRoutes />
+          <RitualProvider>
+            <DocumentTitleUpdater />
+            <AppRoutes />
+          </RitualProvider>
         </FocusTimerProvider>
       </GlobalProvider>
     </BrowserRouter>
