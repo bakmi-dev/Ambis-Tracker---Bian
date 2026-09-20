@@ -40,9 +40,41 @@ function handleLocalStorageFallback<T>(url: string, options?: RequestInit): T {
   const id = urlParts[1];
   
   // Custom mock for analytics & profile
-  if (resource === 'analytics' || resource === 'profile') {
+  if (resource === 'analytics') {
     if (method === 'GET') {
-      return { success: true, data: resource === 'profile' ? { name: 'Operator' } : {} } as any;
+      try {
+        const tasks = JSON.parse(localStorage.getItem('ambis_tasks') || '[]');
+        const todayStr = new Date().toISOString().split('T')[0];
+        const completedTasks = tasks.filter((t: any) => t.is_completed);
+        const sessions = JSON.parse(localStorage.getItem('ambis_study-sessions') || '[]');
+        const todaySessions = sessions.filter((s: any) => (s.start_time || s.created_at || '').startsWith(todayStr));
+        const totalFocusMinutes = todaySessions.reduce((acc: number, s: any) => acc + (s.duration_minutes || 0), 0);
+        const userSaved = JSON.parse(localStorage.getItem('ambis_user') || '{}');
+        
+        return {
+          success: true,
+          data: {
+            today: {
+              tasksCompleted: completedTasks.length,
+              tasksTotal: tasks.length,
+              focusTimeMinutes: totalFocusMinutes || 0,
+              sessionsCount: todaySessions.length || 0,
+            },
+            user: {
+              xp: (userSaved.xp || 200) + completedTasks.length * 10,
+              streak: userSaved.current_streak || 1,
+            }
+          }
+        } as any;
+      } catch {
+        return { success: true, data: {} } as any;
+      }
+    }
+  }
+
+  if (resource === 'profile') {
+    if (method === 'GET') {
+      return { success: true, data: { name: 'Operator' } } as any;
     }
   }
 
@@ -88,6 +120,9 @@ function handleLocalStorageFallback<T>(url: string, options?: RequestInit): T {
     data.push(newItem);
     localStorage.setItem(storageKey, JSON.stringify(data));
     showToast(`Data berhasil disimpan (Local)`);
+    if (resource === 'tasks') {
+      window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
+    }
     return { success: true, data: newItem } as any;
   }
 
@@ -116,6 +151,9 @@ function handleLocalStorageFallback<T>(url: string, options?: RequestInit): T {
     if (body && Object.keys(body).length > 2) {
        showToast(`Data berhasil diperbarui (Local)`);
     }
+    if (resource === 'tasks') {
+      window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
+    }
     return { success: true, data: data[index] } as any;
   }
 
@@ -134,6 +172,9 @@ function handleLocalStorageFallback<T>(url: string, options?: RequestInit): T {
     data = data.filter((d: any) => d.id !== id);
     localStorage.setItem(storageKey, JSON.stringify(data));
     showToast('Data berhasil dihapus (Local)');
+    if (resource === 'tasks') {
+      window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
+    }
     return { success: true, message: 'Deleted' } as any;
   }
 
@@ -188,12 +229,21 @@ export const taskApi = {
     const query = new URLSearchParams(params as Record<string, string>).toString();
     return request<{ success: boolean; data: any[] }>(`/tasks${query ? `?${query}` : ''}`);
   },
-  create: (body: { title: string; description?: string; priority?: string; due_date?: string; estimated_minutes?: number; category?: string; tags?: string[] }) =>
-    request<{ success: boolean; data: any }>('/tasks', { method: 'POST', body: JSON.stringify(body) }),
-  update: (id: string, body: Record<string, any>) =>
-    request<{ success: boolean; data: any }>(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
-  delete: (id: string) =>
-    request<{ success: boolean; message: string }>(`/tasks/${id}`, { method: 'DELETE' }),
+  create: async (body: { title: string; description?: string; priority?: string; due_date?: string; estimated_minutes?: number; category?: string; tags?: string[] }) => {
+    const res = await request<{ success: boolean; data: any }>('/tasks', { method: 'POST', body: JSON.stringify(body) });
+    window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
+    return res;
+  },
+  update: async (id: string, body: Record<string, any>) => {
+    const res = await request<{ success: boolean; data: any }>(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+    window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
+    return res;
+  },
+  delete: async (id: string) => {
+    const res = await request<{ success: boolean; message: string }>(`/tasks/${id}`, { method: 'DELETE' });
+    window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
+    return res;
+  },
 };
 
 // ==================== STUDY SESSIONS ====================

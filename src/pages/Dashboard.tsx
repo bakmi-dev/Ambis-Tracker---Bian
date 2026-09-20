@@ -108,6 +108,12 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
+
+    const handleSync = () => {
+      fetchDashboardData();
+    };
+    window.addEventListener('ambis:tasks-updated', handleSync);
+    return () => window.removeEventListener('ambis:tasks-updated', handleSync);
   }, [fetchDashboardData]);
 
   const showToast = (msg: string) => {
@@ -177,6 +183,9 @@ const Dashboard = () => {
   }
 
   const displayedTasks = tasks.filter(t => taskFilter === 'priority' ? t.priority === 'high' || t.priority === 'critical' : true).slice(0, 5);
+  const liveTasksCompleted = tasks.length > 0 ? tasks.filter(t => t.is_completed).length : (analytics?.today?.tasksCompleted || 0);
+  const liveTasksTotal = tasks.length > 0 ? tasks.length : (analytics?.today?.tasksTotal || 0);
+  const liveTaskPercent = liveTasksTotal > 0 ? Math.round((liveTasksCompleted / liveTasksTotal) * 100) : 0;
 
   return (
     <div className="flex flex-col w-full space-y-5 relative">
@@ -285,52 +294,71 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* QUICK STATS TELEMETRY GRID */}
+      {/* QUICK STATS TELEMETRY GRID - ALL INTER-LINKED */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Stat 1: Tasks */}
-        <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 hover:bg-surface-container-low/90 transition-colors flex flex-col justify-between">
+        {/* Stat 1: Tasks (Linked to Today & Tasks) */}
+        <div 
+          onClick={() => navigate('/today')}
+          className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between cursor-pointer group shadow-none"
+          title="Buka Today's Command Deck"
+        >
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono font-semibold tracking-wider text-outline uppercase">TASK SELESAI</span>
-              <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+              <span className="text-[11px] font-mono font-semibold tracking-wider text-outline group-hover:text-primary uppercase flex items-center gap-1 transition-colors">
+                TASK SELESAI
+                <span className="material-symbols-outlined text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-surface-container group-hover:bg-purple-600/20 flex items-center justify-center text-secondary group-hover:text-primary transition-colors">
                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl font-bold tracking-tight text-on-surface">
-                {analytics?.today?.tasksCompleted || 0}/{analytics?.today?.tasksTotal || 0}
+              <span className="text-2xl font-bold font-sans tracking-tight text-on-surface">
+                {liveTasksCompleted}/{liveTasksTotal}
               </span>
-              <span className="text-xs font-mono text-secondary font-semibold">
-                {analytics?.today?.tasksTotal > 0 ? Math.round((analytics.today.tasksCompleted / analytics.today.tasksTotal) * 100) : 0}%
+              <span className="text-xs font-sans text-secondary font-semibold">
+                {liveTaskPercent}%
               </span>
             </div>
             <div className="mt-3 w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
               <div
                 className="h-full bg-secondary rounded-full transition-all duration-500"
-                style={{ width: `${analytics?.today?.tasksTotal > 0 ? (analytics.today.tasksCompleted / analytics.today.tasksTotal) * 100 : 0}%` }}
+                style={{ width: `${liveTaskPercent}%` }}
               />
             </div>
           </div>
-          <div className="mt-3.5 flex items-center gap-1.5 text-xs text-on-surface-variant">
-            <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-            <span>{analytics?.today?.tasksCompleted || 0} target diselesaikan hari ini</span>
+          <div className="mt-3.5 flex items-center justify-between text-xs text-on-surface-variant">
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+              <span className="truncate">{liveTasksCompleted} target selesai</span>
+            </div>
+            <span className="text-secondary font-sans text-[11px] font-semibold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+              Today →
+            </span>
           </div>
         </div>
 
-        {/* Stat 2: Study Time */}
-        <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 hover:bg-surface-container-low/90 transition-colors flex flex-col justify-between">
+        {/* Stat 2: Study Time (Linked to Focus / Study Space) */}
+        <div 
+          onClick={() => navigate('/today')}
+          className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between cursor-pointer group shadow-none"
+          title="Buka Sesi Fokus di Today"
+        >
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono font-semibold tracking-wider text-outline uppercase">WAKTU FOKUS</span>
-              <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+              <span className="text-[11px] font-mono font-semibold tracking-wider text-outline group-hover:text-primary uppercase flex items-center gap-1 transition-colors">
+                WAKTU FOKUS
+                <span className="material-symbols-outlined text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-surface-container group-hover:bg-purple-600/20 flex items-center justify-center text-primary transition-colors">
                 <span className="material-symbols-outlined text-[18px]">timer</span>
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl font-bold tracking-tight text-on-surface">
+              <span className="text-2xl font-bold font-sans tracking-tight text-on-surface">
                 {Math.floor((analytics?.today?.focusTimeMinutes || 0) / 60)}j {(analytics?.today?.focusTimeMinutes || 0) % 60}m
               </span>
-              <span className="text-xs font-mono text-primary font-semibold">
+              <span className="text-xs font-sans text-primary font-semibold">
                 {Math.round(((analytics?.today?.focusTimeMinutes || 0) / 240) * 100)}%
               </span>
             </div>
@@ -341,24 +369,36 @@ const Dashboard = () => {
               />
             </div>
           </div>
-          <div className="mt-3.5 flex items-center gap-1.5 text-xs text-on-surface-variant">
-            <span className="material-symbols-outlined text-[14px] text-primary">flag</span>
-            <span>Target Harian: 4j 00m</span>
+          <div className="mt-3.5 flex items-center justify-between text-xs text-on-surface-variant">
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="material-symbols-outlined text-[14px] text-primary">flag</span>
+              <span className="truncate">Target: 4j 00m</span>
+            </div>
+            <span className="text-primary font-sans text-[11px] font-semibold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+              Sprint →
+            </span>
           </div>
         </div>
 
-        {/* Stat 3: Streak */}
-        <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 hover:bg-surface-container-low/90 transition-colors flex flex-col justify-between">
+        {/* Stat 3: Streak (Linked to Progress / Profile) */}
+        <div 
+          onClick={() => navigate('/progress')}
+          className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between cursor-pointer group shadow-none"
+          title="Buka Telemetri Pertumbuhan di Profile"
+        >
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono font-semibold tracking-wider text-outline uppercase">STREAK HARIAN</span>
-              <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+              <span className="text-[11px] font-mono font-semibold tracking-wider text-outline group-hover:text-primary uppercase flex items-center gap-1 transition-colors">
+                STREAK HARIAN
+                <span className="material-symbols-outlined text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-surface-container group-hover:bg-purple-600/20 flex items-center justify-center text-tertiary transition-colors">
                 <span className="material-symbols-outlined text-[18px]">local_fire_department</span>
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl font-bold tracking-tight text-on-surface">{analytics?.user?.streak || 0} Hari</span>
-              <span className="text-xs font-mono text-tertiary font-semibold">
+              <span className="text-2xl font-bold font-sans tracking-tight text-on-surface">{analytics?.user?.streak || 0} Hari</span>
+              <span className="text-xs font-sans text-tertiary font-semibold">
                 {analytics?.user?.streak > 0 ? 'AKTIF' : 'INAKTIF'}
               </span>
             </div>
@@ -369,23 +409,35 @@ const Dashboard = () => {
               />
             </div>
           </div>
-          <div className="mt-3.5 flex items-center gap-1.5 text-xs text-on-surface-variant">
-            <span className={`w-1.5 h-1.5 rounded-full ${analytics?.user?.streak > 0 ? 'bg-tertiary' : 'bg-outline'}`}></span>
-            <span>{analytics?.user?.streak > 0 ? 'Momentum konsistensi terjaga' : 'Mulai sesi fokus hari ini'}</span>
+          <div className="mt-3.5 flex items-center justify-between text-xs text-on-surface-variant">
+            <div className="flex items-center gap-1.5 truncate">
+              <span className={`w-1.5 h-1.5 rounded-full ${analytics?.user?.streak > 0 ? 'bg-tertiary' : 'bg-outline'}`}></span>
+              <span className="truncate">{analytics?.user?.streak > 0 ? 'Momentum terjaga' : 'Mulai fokus'}</span>
+            </div>
+            <span className="text-tertiary font-sans text-[11px] font-semibold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+              Profil →
+            </span>
           </div>
         </div>
 
-        {/* Stat 4: Next Countdown */}
-        <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 hover:bg-surface-container-low/90 transition-colors flex flex-col justify-between">
+        {/* Stat 4: Next Countdown (Linked to Tasks / Backlog) */}
+        <div 
+          onClick={() => navigate('/tasks')}
+          className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between cursor-pointer group shadow-none"
+          title="Buka Backlog Tasks untuk pantau tenggat waktu"
+        >
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono font-semibold tracking-wider text-outline uppercase">DEADLINE TERDEKAT</span>
-              <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+              <span className="text-[11px] font-mono font-semibold tracking-wider text-outline group-hover:text-primary uppercase flex items-center gap-1 transition-colors">
+                DEADLINE TERDEKAT
+                <span className="material-symbols-outlined text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-surface-container group-hover:bg-purple-600/20 flex items-center justify-center text-secondary group-hover:text-primary transition-colors">
                 <span className="material-symbols-outlined text-[18px]">event_upcoming</span>
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl font-bold tracking-tight text-secondary">
+              <span className="text-2xl font-bold font-sans tracking-tight text-secondary">
                 {projects.length > 0 && projects[0].deadline ? new Date(projects[0].deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '-'}
               </span>
             </div>
@@ -396,8 +448,11 @@ const Dashboard = () => {
               />
             </div>
           </div>
-          <div className="mt-3.5 flex items-center gap-1.5 text-xs text-on-surface-variant truncate">
-            <span className="truncate">{projects.length > 0 && projects[0].deadline ? projects[0].title : 'Tidak ada tenggat waktu'}</span>
+          <div className="mt-3.5 flex items-center justify-between text-xs text-on-surface-variant">
+            <span className="truncate max-w-[140px]">{projects.length > 0 && projects[0].deadline ? projects[0].title : 'Tidak ada tenggat'}</span>
+            <span className="text-secondary font-sans text-[11px] font-semibold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+              Tasks →
+            </span>
           </div>
         </div>
       </section>
@@ -497,13 +552,31 @@ const Dashboard = () => {
               )}
             </div>
 
-            <button
-              onClick={() => setShowTaskModal(true)}
-              className="w-full py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-neutral-800/50"
-            >
-              <span className="material-symbols-outlined text-[16px]">add</span>
-              <span>Tambah Task Baru</span>
-            </button>
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                onClick={() => setShowTaskModal(true)}
+                className="flex-1 py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-neutral-800/50"
+              >
+                <span className="material-symbols-outlined text-[16px]">add</span>
+                <span>Tambah Task</span>
+              </button>
+              <button
+                onClick={() => navigate('/today')}
+                className="py-2.5 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-secondary text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer border border-neutral-800/50"
+                title="Buka Jadwal Hari Ini di Today"
+              >
+                <span>Today</span>
+                <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+              </button>
+              <button
+                onClick={() => navigate('/tasks')}
+                className="py-2.5 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer border border-neutral-800/50"
+                title="Buka Backlog Lengkap di Tasks"
+              >
+                <span>Backlog Tasks</span>
+                <span className="material-symbols-outlined text-[15px]">open_in_new</span>
+              </button>
+            </div>
           </div>
 
           {/* ACTIVE PROJECTS */}

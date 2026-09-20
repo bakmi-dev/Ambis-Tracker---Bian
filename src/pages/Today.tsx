@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { taskApi, analyticsApi, studySessionApi, ritualApi, competitionApi } from "../api";
 import { useFocusTimer } from "../context/FocusTimerContext";
 
@@ -40,6 +41,7 @@ interface Deadline {
 
 
 const Today = () => {
+  const navigate = useNavigate();
   // Time blocks, deadlines, and rituals remain as frontend-only UI state
   const [timeBlocks] = useState<TimeBlock[]>([]);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
@@ -101,6 +103,16 @@ const Today = () => {
       console.error(e);
     }
   }, []);
+
+  // Listen for task synchronization across overview pages
+  useEffect(() => {
+    const handleSync = () => {
+      fetchTasks();
+      fetchAnalytics();
+    };
+    window.addEventListener('ambis:tasks-updated', handleSync);
+    return () => window.removeEventListener('ambis:tasks-updated', handleSync);
+  }, [fetchTasks, fetchAnalytics]);
 
   // Fetch deadlines (Tasks & Competitions H-1 to H-3)
   const fetchDeadlines = useCallback(async () => {
@@ -194,6 +206,7 @@ const Today = () => {
 
     try {
       await taskApi.update(id, { is_completed: !task.completed });
+      window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
       fetchAnalytics(); // refresh XP/stats
     } catch {
       // Revert on error
@@ -308,6 +321,7 @@ const Today = () => {
         priority: "high",
         estimatedMinutes: "30",
       });
+      window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
       fetchTasks();
       fetchAnalytics();
       fetchDeadlines(); // deadlines might include tasks
@@ -382,6 +396,22 @@ const Today = () => {
                 </span>
                 COGNITIVE RESONANCE: 94%
               </span>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-outline hover:text-on-surface text-xs font-sans font-medium transition-colors border border-neutral-800/40 cursor-pointer"
+                title="Buka Ringkasan Dashboard"
+              >
+                <span className="material-symbols-outlined text-[14px] text-secondary">dashboard</span>
+                Dashboard Overview →
+              </button>
+              <button
+                onClick={() => navigate('/tasks')}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-outline hover:text-on-surface text-xs font-sans font-medium transition-colors border border-neutral-800/40 cursor-pointer"
+                title="Buka Backlog Tasks Engine"
+              >
+                <span className="material-symbols-outlined text-[14px] text-primary">checklist</span>
+                Backlog Tasks →
+              </button>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold font-sans text-on-surface tracking-tight leading-tight">
               Today's Command: High Resonance & Deep Work
@@ -430,25 +460,30 @@ const Today = () => {
         </div>
       </div>
 
-      {/* Compact Daily Telemetry Strip */}
+      {/* Compact Daily Telemetry Strip - ALL INTER-LINKED */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Stat 1: Focus Time */}
-        <div className="relative p-6 rounded-2xl bg-surface-container-low border border-white/5 flex flex-col justify-between shadow-sm overflow-hidden group min-h-[140px]">
+        {/* Stat 1: Focus Time (Linked to Study Space) */}
+        <div 
+          onClick={() => navigate('/study-space')}
+          className="relative p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between shadow-none overflow-hidden group min-h-[140px] cursor-pointer"
+          title="Buka Study Space & Knowledge Forge"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs uppercase tracking-wider text-outline font-semibold">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold font-sans group-hover:text-primary transition-colors flex items-center gap-1">
               Focus Time Today
+              <span className="material-symbols-outlined text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
             </span>
-            <span className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+            <span className="w-8 h-8 rounded-lg bg-surface-container group-hover:bg-purple-600/20 flex items-center justify-center text-secondary group-hover:text-primary transition-colors">
               <span className="material-symbols-outlined text-[18px]">
                 schedule
               </span>
             </span>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight">
+            <span className="text-2xl sm:text-3xl font-bold font-sans text-on-surface tracking-tight">
               {focusHours}j {focusMins}m
             </span>
-            <span className="text-xs text-secondary font-bold">
+            <span className="text-xs font-sans text-secondary font-bold">
               {focusMinutes > 0
                 ? `${Math.min(Math.round((focusMinutes / 480) * 100), 100)}%`
                 : "0%"}
@@ -460,30 +495,36 @@ const Today = () => {
               style={{ width: `${Math.min((focusMinutes / 480) * 100, 100)}%` }}
             ></div>
           </div>
-          <span className="mt-2 text-xs text-on-surface-variant font-normal">
-            {focusMinutes > 0
-              ? `${focusMinutes} menit fokus hari ini`
-              : "Target 8 jam fokus harian"}
-          </span>
+          <div className="mt-2.5 flex items-center justify-between text-xs text-on-surface-variant font-normal">
+            <span>{focusMinutes > 0 ? `${focusMinutes}m fokus tercatat` : "Target 8j fokus"}</span>
+            <span className="text-secondary font-sans font-semibold group-hover:translate-x-0.5 transition-transform">
+              Study Space →
+            </span>
+          </div>
         </div>
 
-        {/* Stat 2: Daily Tasks */}
-        <div className="relative p-6 rounded-2xl bg-surface-container-low border border-white/5 flex flex-col justify-between shadow-sm overflow-hidden group min-h-[140px]">
+        {/* Stat 2: Daily Tasks (Linked to Tasks Engine) */}
+        <div 
+          onClick={() => navigate('/tasks')}
+          className="relative p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between shadow-none overflow-hidden group min-h-[140px] cursor-pointer"
+          title="Buka Tasks & Backlog Engine"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs uppercase tracking-wider text-outline font-semibold">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold font-sans group-hover:text-primary transition-colors flex items-center gap-1">
               Daily Tasks
+              <span className="material-symbols-outlined text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
             </span>
-            <span className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+            <span className="w-8 h-8 rounded-lg bg-surface-container group-hover:bg-purple-600/20 flex items-center justify-center text-primary transition-colors">
               <span className="material-symbols-outlined text-[18px]">
                 task_alt
               </span>
             </span>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight">
+            <span className="text-2xl sm:text-3xl font-bold font-sans text-on-surface tracking-tight">
               {todayTasksCompleted}/{todayTasksTotal}
             </span>
-            <span className="text-xs text-primary font-bold">
+            <span className="text-xs font-sans text-primary font-bold">
               {taskPercent}% Selesai
             </span>
           </div>
@@ -493,75 +534,90 @@ const Today = () => {
               style={{ width: `${taskPercent}%` }}
             ></div>
           </div>
-          <span className="mt-2 text-xs text-on-surface-variant font-normal">
-            {todayTasksTotal > 0
-              ? `${todayTasksCompleted} dari ${todayTasksTotal} selesai`
-              : "Target harian terdistribusi"}
-          </span>
+          <div className="mt-2.5 flex items-center justify-between text-xs text-on-surface-variant font-normal">
+            <span>{todayTasksCompleted} dari {todayTasksTotal} selesai</span>
+            <span className="text-primary font-sans font-semibold group-hover:translate-x-0.5 transition-transform">
+              Tasks Backlog →
+            </span>
+          </div>
         </div>
 
-        {/* Stat 3: Deep Work Blocks */}
-        <div className="relative p-6 rounded-2xl bg-surface-container-low border border-white/5 flex flex-col justify-between shadow-sm overflow-hidden group min-h-[140px]">
+        {/* Stat 3: Deep Work Blocks (Linked to Study Space) */}
+        <div 
+          onClick={() => navigate('/study-space')}
+          className="relative p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between shadow-none overflow-hidden group min-h-[140px] cursor-pointer"
+          title="Buka Sesi Belajar & Kurikulum"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs uppercase tracking-wider text-outline font-semibold">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold font-sans group-hover:text-primary transition-colors flex items-center gap-1">
               Deep Work Blocks
+              <span className="material-symbols-outlined text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
             </span>
-            <span className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+            <span className="w-8 h-8 rounded-lg bg-surface-container group-hover:bg-purple-600/20 flex items-center justify-center text-tertiary transition-colors">
               <span className="material-symbols-outlined text-[18px]">
                 psychology
               </span>
             </span>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight">
+            <span className="text-2xl sm:text-3xl font-bold font-sans text-on-surface tracking-tight">
               {analytics?.today?.sessionsCount || 0} Sesi
             </span>
-            <span className="text-xs text-tertiary font-bold">
+            <span className="text-xs font-sans text-tertiary font-bold">
               Active
             </span>
           </div>
           <div className="mt-3 flex gap-1.5">
-            <span className="flex-1 h-1.5 rounded-full bg-surface-container"></span>
-            <span className="flex-1 h-1.5 rounded-full bg-surface-container"></span>
+            <span className="flex-1 h-1.5 rounded-full bg-purple-500/60"></span>
+            <span className="flex-1 h-1.5 rounded-full bg-purple-500/40"></span>
             <span className="flex-1 h-1.5 rounded-full bg-surface-container"></span>
             <span className="flex-1 h-1.5 rounded-full bg-surface-container"></span>
           </div>
-          <span className="mt-2 text-xs text-on-surface-variant font-normal">
-            {analytics?.today?.sessionsCount > 0
-              ? `${analytics.today.sessionsCount} sesi sprint tercatat`
-              : "Siklus deep work terencana"}
-          </span>
+          <div className="mt-2.5 flex items-center justify-between text-xs text-on-surface-variant font-normal">
+            <span>{analytics?.today?.sessionsCount > 0 ? `${analytics.today.sessionsCount} sesi tercatat` : "Siklus deep work"}</span>
+            <span className="text-tertiary font-sans font-semibold group-hover:translate-x-0.5 transition-transform">
+              Forge →
+            </span>
+          </div>
         </div>
 
-        {/* Stat 4: Growth Velocity */}
-        <div className="relative p-6 rounded-2xl bg-surface-container-low border border-white/5 flex flex-col justify-between shadow-sm overflow-hidden group min-h-[140px]">
+        {/* Stat 4: Growth Velocity (Linked to Progress) */}
+        <div 
+          onClick={() => navigate('/progress')}
+          className="relative p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between shadow-none overflow-hidden group min-h-[140px] cursor-pointer"
+          title="Buka Profile & Telemetri Pertumbuhan"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs uppercase tracking-wider text-outline font-semibold">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold font-sans group-hover:text-primary transition-colors flex items-center gap-1">
               Growth Velocity
+              <span className="material-symbols-outlined text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
             </span>
-            <span className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+            <span className="w-8 h-8 rounded-lg bg-surface-container group-hover:bg-purple-600/20 flex items-center justify-center text-secondary group-hover:text-primary transition-colors">
               <span className="material-symbols-outlined text-[18px]">
                 stars
               </span>
             </span>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">
+            <span className="text-2xl sm:text-3xl font-bold font-sans text-primary tracking-tight">
               +{xp} XP
             </span>
-            <span className="text-xs text-primary font-bold">
+            <span className="text-xs font-sans text-primary font-bold">
               Streak: {streak}D
             </span>
           </div>
           <div className="mt-3 w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
             <div
-              className="bg-gradient-to-r from-secondary to-primary h-1.5 rounded-full"
-              style={{ width: `${Math.min(xp / 10, 100)}%` }}
+              className="bg-purple-500 h-1.5 rounded-full transition-all duration-500"
+              style={{ width: `${Math.min((xp % 500) / 5, 100)}%` }}
             ></div>
           </div>
-          <span className="mt-2 text-xs text-on-surface-variant font-normal">
-            {xp > 0 ? `${xp} XP terkumpul hari ini` : "Akumulasi XP dan streak harian"}
-          </span>
+          <div className="mt-2.5 flex items-center justify-between text-xs text-on-surface-variant font-normal">
+            <span>Level {Math.floor(xp / 100) + 1} Operator</span>
+            <span className="text-primary font-sans font-semibold group-hover:translate-x-0.5 transition-transform">
+              Profile →
+            </span>
+          </div>
         </div>
       </div>
 
@@ -714,9 +770,19 @@ const Today = () => {
                   Core Execution Checklist
                 </h2>
               </div>
-              <span className="text-xs text-on-surface-variant font-medium px-3 py-1 rounded-full bg-surface-container self-start sm:self-auto">
-                {checklistTasks.filter((t) => t.completed).length} dari {checklistTasks.length} selesai
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-on-surface-variant font-medium px-3 py-1 rounded-full bg-surface-container">
+                  {checklistTasks.filter((t) => t.completed).length} dari {checklistTasks.length} selesai
+                </span>
+                <button
+                  onClick={() => navigate('/tasks')}
+                  className="px-3 py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-primary hover:text-purple-300 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer border border-neutral-800/40"
+                  title="Kelola semua backlog task"
+                >
+                  <span>Buka di Tasks</span>
+                  <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                </button>
+              </div>
             </div>
 
             <div className="space-y-3">

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { taskApi } from '../api';
 
 const Tasks = () => {
+  const navigate = useNavigate();
   const [allTasks, setAllTasks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -37,6 +39,12 @@ const Tasks = () => {
 
   useEffect(() => {
     fetchTasks();
+
+    const handleSync = () => {
+      fetchTasks();
+    };
+    window.addEventListener('ambis:tasks-updated', handleSync);
+    return () => window.removeEventListener('ambis:tasks-updated', handleSync);
   }, []);
 
   // Actions
@@ -84,6 +92,7 @@ const Tasks = () => {
       setIsTaskModalOpen(false);
       setEditingTaskId(null);
       setTaskForm({ title: '', description: '', category: 'Study Space', priority: 'medium', due_date: '', defaultStatus: 'todo' });
+      window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
       fetchTasks();
     } catch (err) {
       console.error(err);
@@ -104,6 +113,7 @@ const Tasks = () => {
         tags = tags.filter((t: string) => t !== 'in_progress');
       }
       await taskApi.update(task.id, { is_completed, tags });
+      window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
       fetchTasks();
     } catch (err) {
       console.error(err);
@@ -115,6 +125,7 @@ const Tasks = () => {
     try {
       await taskApi.delete(id);
       if (activeTaskId === id) setActiveTaskId(null);
+      window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
       fetchTasks();
     } catch (err) {
       console.error(err);
@@ -241,15 +252,166 @@ const Tasks = () => {
             </p>
           </div>
           
-          {/* Action Group */}
-          <div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
+          {/* Action Group & Overview Shortcuts */}
+          <div className="flex items-center gap-2.5 flex-shrink-0 flex-wrap">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="px-3 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-outline hover:text-on-surface text-xs font-sans font-medium flex items-center gap-1.5 transition-colors cursor-pointer border border-neutral-800/50"
+              title="Buka Ringkasan Dashboard Overview"
+            >
+              <span className="material-symbols-outlined text-[15px] text-secondary">dashboard</span>
+              <span>Dashboard Overview →</span>
+            </button>
+            <button
+              onClick={() => navigate('/today')}
+              className="px-3 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-outline hover:text-on-surface text-xs font-sans font-medium flex items-center gap-1.5 transition-colors cursor-pointer border border-neutral-800/50"
+              title="Buka Jadwal Eksekusi Harian di Today"
+            >
+              <span className="material-symbols-outlined text-[15px] text-primary">today</span>
+              <span>Today's Command →</span>
+            </button>
             <button 
               onClick={() => { setEditingTaskId(null); setTaskForm({...taskForm, title: '', description: '', due_date: '', defaultStatus: 'todo'}); setIsTaskModalOpen(true); }} 
-              className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs sm:text-sm font-semibold flex items-center gap-2 transition-colors cursor-pointer border border-purple-500/30 active:scale-95 shadow-none"
+              className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border border-purple-500/30 active:scale-95 shadow-none"
             >
               <span className="material-symbols-outlined text-[18px]">add</span>
               <span>+ Buat Task Baru</span>
             </button>
+          </div>
+        </div>
+
+        {/* OVERVIEW STATS TELEMETRY STRIP - INTER-LINKED */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Stat 1: All Tasks */}
+          <div 
+            onClick={() => setActiveFilter('All Tasks')}
+            className={`p-5 rounded-2xl bg-surface-container-low border transition-all flex flex-col justify-between shadow-none cursor-pointer group ${
+              activeFilter === 'All Tasks' ? 'border-purple-500/60 bg-surface-container/60' : 'border-neutral-800/50 hover:border-purple-500/40 hover:bg-surface-container/40'
+            }`}
+            title="Tampilkan semua task backlog"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono font-semibold tracking-wider text-outline group-hover:text-primary uppercase flex items-center gap-1">
+                  SEMUA TASK
+                  <span className="material-symbols-outlined text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">filter_alt</span>
+                </span>
+                <div className="w-8 h-8 rounded-lg bg-surface-container group-hover:bg-purple-600/20 flex items-center justify-center text-secondary group-hover:text-primary transition-colors">
+                  <span className="material-symbols-outlined text-[18px]">checklist</span>
+                </div>
+              </div>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-2xl font-bold font-sans tracking-tight text-on-surface">
+                  {allTasks.length}
+                </span>
+                <span className="text-xs font-sans text-outline">Total</span>
+              </div>
+              <div className="mt-3 w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
+                <div className="h-full bg-secondary rounded-full" style={{ width: '100%' }}></div>
+              </div>
+            </div>
+            <div className="mt-3.5 flex items-center justify-between text-xs text-on-surface-variant">
+              <span>{allTasks.length} tugas terdata</span>
+              <span className="text-secondary font-sans text-[11px] font-semibold group-hover:translate-x-0.5 transition-transform">Filter →</span>
+            </div>
+          </div>
+
+          {/* Stat 2: To Do */}
+          <div 
+            onClick={() => { setActiveView('kanban'); setActiveFilter('All Tasks'); }}
+            className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between shadow-none cursor-pointer group"
+            title="Beralih ke kolom To Do di Kanban"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono font-semibold tracking-wider text-outline group-hover:text-primary uppercase flex items-center gap-1">
+                  TO DO
+                  <span className="material-symbols-outlined text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">view_column</span>
+                </span>
+                <div className="w-8 h-8 rounded-lg bg-surface-container group-hover:bg-purple-600/20 flex items-center justify-center text-outline group-hover:text-primary transition-colors">
+                  <span className="material-symbols-outlined text-[18px]">pending_actions</span>
+                </div>
+              </div>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-2xl font-bold font-sans tracking-tight text-on-surface">
+                  {todoTasks.length}
+                </span>
+                <span className="text-xs font-sans text-outline">Pending</span>
+              </div>
+              <div className="mt-3 w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
+                <div className="h-full bg-outline rounded-full" style={{ width: `${allTasks.length > 0 ? (todoTasks.length / allTasks.length) * 100 : 0}%` }}></div>
+              </div>
+            </div>
+            <div className="mt-3.5 flex items-center justify-between text-xs text-on-surface-variant">
+              <span>Menunggu pengerjaan</span>
+              <span className="text-outline font-sans text-[11px] font-semibold group-hover:translate-x-0.5 transition-transform">Kanban →</span>
+            </div>
+          </div>
+
+          {/* Stat 3: In Progress */}
+          <div 
+            onClick={() => { setActiveView('kanban'); setActiveFilter('All Tasks'); }}
+            className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between shadow-none cursor-pointer group"
+            title="Beralih ke kolom In Progress di Kanban"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono font-semibold tracking-wider text-outline group-hover:text-primary uppercase flex items-center gap-1">
+                  IN PROGRESS
+                  <span className="material-symbols-outlined text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">view_column</span>
+                </span>
+                <div className="w-8 h-8 rounded-lg bg-surface-container group-hover:bg-purple-600/20 flex items-center justify-center text-secondary group-hover:text-primary transition-colors">
+                  <span className="material-symbols-outlined text-[18px]">bolt</span>
+                </div>
+              </div>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-2xl font-bold font-sans tracking-tight text-on-surface">
+                  {inProgressTasks.length}
+                </span>
+                <span className="text-xs font-sans text-secondary font-semibold">Aktif</span>
+              </div>
+              <div className="mt-3 w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
+                <div className="h-full bg-secondary rounded-full" style={{ width: `${allTasks.length > 0 ? (inProgressTasks.length / allTasks.length) * 100 : 0}%` }}></div>
+              </div>
+            </div>
+            <div className="mt-3.5 flex items-center justify-between text-xs text-on-surface-variant">
+              <span>Sedang berlangsung</span>
+              <span className="text-secondary font-sans text-[11px] font-semibold group-hover:translate-x-0.5 transition-transform">Kanban →</span>
+            </div>
+          </div>
+
+          {/* Stat 4: Completed (Linked to Today & Kanban) */}
+          <div 
+            onClick={() => navigate('/today')}
+            className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between shadow-none cursor-pointer group"
+            title="Buka laporan checklist di Today"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono font-semibold tracking-wider text-outline group-hover:text-primary uppercase flex items-center gap-1">
+                  TASK SELESAI
+                  <span className="material-symbols-outlined text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
+                </span>
+                <div className="w-8 h-8 rounded-lg bg-surface-container group-hover:bg-purple-600/20 flex items-center justify-center text-primary transition-colors">
+                  <span className="material-symbols-outlined text-[18px]">task_alt</span>
+                </div>
+              </div>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-2xl font-bold font-sans tracking-tight text-on-surface">
+                  {completedTasks.length}
+                </span>
+                <span className="text-xs font-sans text-primary font-semibold">
+                  {allTasks.length > 0 ? Math.round((completedTasks.length / allTasks.length) * 100) : 0}%
+                </span>
+              </div>
+              <div className="mt-3 w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
+                <div className="h-full bg-primary rounded-full" style={{ width: `${allTasks.length > 0 ? (completedTasks.length / allTasks.length) * 100 : 0}%` }}></div>
+              </div>
+            </div>
+            <div className="mt-3.5 flex items-center justify-between text-xs text-on-surface-variant">
+              <span>Tuntas dieksekusi</span>
+              <span className="text-primary font-sans text-[11px] font-semibold group-hover:translate-x-0.5 transition-transform">Today →</span>
+            </div>
           </div>
         </div>
 
