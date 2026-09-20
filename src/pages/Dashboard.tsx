@@ -322,19 +322,14 @@ const Dashboard = () => {
                     {isFocusActive ? 'timer' : 'bolt'}
                   </span>
                   <span className="font-mono text-xs text-on-surface">
-                    {isFocusActive ? (
-                      <span className="text-secondary font-bold">
-                        Sprint: {formatTimer()}
-                      </span>
-                    ) : (
-                      <span>Target: 4j 00m</span>
-                    )}
+                    Target: 4j 00m (Selesai: {Math.floor((analytics?.today?.focusTimeMinutes || 0) / 60)}j {(analytics?.today?.focusTimeMinutes || 0) % 60}m)
                   </span>
                 </div>
-                <span className="text-neutral-600 font-mono text-xs">•</span>
-                <span className="font-mono text-xs text-on-surface-variant group-hover:text-on-surface transition-colors">
-                  Selesai: {Math.floor((analytics?.today?.focusTimeMinutes || 0) / 60)}j {(analytics?.today?.focusTimeMinutes || 0) % 60}m
-                </span>
+                {isFocusActive && (
+                  <span className="text-secondary font-bold font-mono text-[11px] px-1.5 py-0.5 rounded bg-secondary/15">
+                    {formatTimer()}
+                  </span>
+                )}
                 <span className="material-symbols-outlined text-[14px] text-on-surface-variant/60 group-hover:text-secondary group-hover:translate-x-0.5 transition-all">
                   arrow_forward
                 </span>

@@ -3,18 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { taskApi, analyticsApi, studySessionApi, ritualApi, competitionApi } from "../api";
 import { useFocusTimer } from "../context/FocusTimerContext";
 
-// Types for Mock Data
-interface TimeBlock {
-  id: string;
-  time: string;
-  category: string;
-  status: "Completed" | "Active" | "Upcoming";
-  duration?: string;
-  title: string;
-  description?: string;
-  xp?: number;
-}
-
 interface ChecklistTask {
   id: string;
   priority: "HIGH" | "MED" | "LOW";
@@ -38,12 +26,8 @@ interface Deadline {
   description: string;
 }
 
-
-
 const Today = () => {
   const navigate = useNavigate();
-  // Time blocks, deadlines, and rituals remain as frontend-only UI state
-  const [timeBlocks] = useState<TimeBlock[]>([]);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [rituals, setRituals] = useState<any[]>([]);
 
@@ -265,6 +249,7 @@ const Today = () => {
   const { 
     isActive, isPaused, timeLeft, initialDuration, currentTopic, 
     startTimer, pauseTimer, resumeTimer, stopTimer, formatTimer,
+    setCustomDuration,
     pendingSession, clearPendingSession
   } = useFocusTimer();
 
@@ -294,6 +279,10 @@ const Today = () => {
   }, [pendingSession, fetchAnalytics, clearPendingSession]);
 
   // Modals
+  const [isDurationModalOpen, setIsDurationModalOpen] = useState(false);
+  const [customMinutesInput, setCustomMinutesInput] = useState("45");
+  const [customTopicInput, setCustomTopicInput] = useState("");
+
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [taskForm, setTaskForm] = useState({
     title: "",
@@ -500,18 +489,18 @@ const Today = () => {
             </span>
             <span className="text-xs font-sans text-secondary font-bold">
               {focusMinutes > 0
-                ? `${Math.min(Math.round((focusMinutes / 480) * 100), 100)}%`
+                ? `${Math.min(Math.round((focusMinutes / 240) * 100), 100)}%`
                 : "0%"}
             </span>
           </div>
           <div className="mt-3 w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
             <div
               className="bg-secondary h-1.5 rounded-full transition-all duration-500 shadow-none"
-              style={{ width: `${Math.min((focusMinutes / 480) * 100, 100)}%` }}
+              style={{ width: `${Math.min((focusMinutes / 240) * 100, 100)}%` }}
             ></div>
           </div>
           <div className="mt-2.5 flex items-center justify-between text-xs text-on-surface-variant font-normal">
-            <span>{focusMinutes > 0 ? `${focusMinutes}m fokus tercatat` : "Target 8j fokus"}</span>
+            <span>Target: 4j 00m (Selesai: {focusHours}j {focusMins}m)</span>
             <span className="text-secondary font-sans font-semibold group-hover:translate-x-0.5 transition-transform">
               Focus Sprint →
             </span>
@@ -640,143 +629,8 @@ const Today = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
-        {/* LEFT COLUMN */}
+        {/* LEFT COLUMN - Core Execution Checklist (Promoted to Top) */}
         <div className="lg:col-span-8 flex flex-col space-y-6 sm:space-y-8">
-          {/* Time-Block Schedule */}
-          <div className="rounded-2xl bg-surface-container-low p-6 sm:p-7 border border-white/5 shadow-sm space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-secondary text-[22px]">
-                  view_timeline
-                </span>
-                <h2 className="text-xl font-bold text-on-surface tracking-tight">
-                  Daily Time-Block Schedule
-                </h2>
-              </div>
-              <span className="text-xs px-2.5 py-1 rounded-md bg-surface-container text-on-surface-variant uppercase font-medium">
-                Local UTC+7
-              </span>
-            </div>
-
-            <div className="relative space-y-4 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-container-highest">
-              {timeBlocks.length > 0 ? (
-                timeBlocks.map((block) => (
-                  <div
-                    key={block.id}
-                    className={`relative pl-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                      block.status === "Active"
-                        ? "p-5 rounded-xl bg-surface-container border border-neutral-800/50 shadow-none gap-4"
-                        : block.status === "Completed"
-                          ? "p-4 sm:p-5 rounded-xl bg-surface-container/60 hover:bg-surface-container transition-colors"
-                          : "p-4 sm:p-5 rounded-xl bg-surface-container/40 hover:bg-surface-container/70 transition-colors"
-                    }`}
-                  >
-                    {block.status === "Active" ? (
-                      <>
-                        <span className="absolute left-1.5 top-6 w-3.5 h-3.5 rounded-full bg-secondary/30 animate-ping"></span>
-                        <span className="absolute left-2 top-6.5 w-2.5 h-2.5 rounded-full bg-secondary"></span>
-                      </>
-                    ) : (
-                      <span
-                        className={`absolute left-2 top-4 w-2.5 h-2.5 rounded-full ring-4 ring-surface-container-low ${
-                          block.status === "Completed" ? "bg-outline" : "bg-surface-container-highest"
-                        }`}
-                      ></span>
-                    )}
-
-                    <div className={block.status === "Active" ? "space-y-1.5" : "space-y-1"}>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span
-                          className={`text-xs font-semibold ${
-                            block.status === "Active"
-                              ? "text-secondary font-bold"
-                              : block.status === "Completed"
-                                ? "text-on-surface-variant line-through"
-                                : "text-outline"
-                          }`}
-                        >
-                          {block.time}
-                        </span>
-                        {block.status === "Active" && (
-                          <span className="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary text-xs font-bold uppercase tracking-wider">
-                            ● ACTIVE NOW
-                          </span>
-                        )}
-                        <span
-                          className={`px-2 py-0.5 rounded text-xs ${
-                            block.status === "Active"
-                              ? "bg-surface-container-high text-primary font-semibold"
-                              : block.status === "Completed"
-                                ? "bg-surface-container-high text-outline"
-                                : "bg-surface-container text-outline"
-                          }`}
-                        >
-                          {block.category}
-                        </span>
-                        {block.status === "Completed" && block.duration && (
-                          <span className="flex items-center gap-1 text-secondary text-xs font-medium">
-                            <span className="material-symbols-outlined text-[14px]">
-                              check_circle
-                            </span>{" "}
-                            Selesai ({block.duration})
-                          </span>
-                        )}
-                        {block.status === "Upcoming" && (
-                          <span className="text-xs text-outline font-normal">
-                            Upcoming
-                          </span>
-                        )}
-                      </div>
-                      <div
-                        className={
-                          block.status === "Active"
-                            ? "text-base font-semibold text-on-surface"
-                            : block.status === "Completed"
-                              ? "text-sm font-medium text-on-surface-variant line-through"
-                              : "text-sm font-medium text-on-surface"
-                        }
-                      >
-                        {block.title}
-                      </div>
-                      {block.description && (
-                        <p className="text-xs text-on-surface-variant font-normal">
-                          {block.description}
-                        </p>
-                      )}
-                    </div>
-
-                    <div
-                      className={`flex-shrink-0 self-start sm:self-auto ${
-                        block.status === "Active"
-                          ? "flex items-center gap-2 sm:self-center"
-                          : "text-xs text-outline px-2.5 py-1 rounded bg-surface-container"
-                      }`}
-                    >
-                      {block.status === "Active" ? (
-                        <button className="px-4 py-1.5 rounded-lg bg-secondary text-on-secondary text-xs font-bold uppercase tracking-wider hover:bg-secondary-fixed transition-colors shadow-none">
-                          In Session
-                        </button>
-                      ) : block.xp ? (
-                        `+${block.xp} XP`
-                      ) : block.duration ? (
-                        block.duration
-                      ) : null}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="py-12 text-center pl-8">
-                  <span className="material-symbols-outlined text-outline text-[48px] mb-2">
-                    event_busy
-                  </span>
-                  <p className="text-sm text-outline">
-                    Belum ada blok waktu yang dijadwalkan.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* Actionable Tasks Checklist */}
           <div className="rounded-2xl bg-surface-container-low p-6 sm:p-7 border border-white/5 shadow-sm space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1011,16 +865,67 @@ const Today = () => {
                     </linearGradient>
                   </defs>
                 </svg>
-                <div className="absolute flex flex-col items-center justify-center text-center">
-                  <span className="text-3xl font-extrabold text-on-surface tracking-tight">
-                    {formatTimer()}
-                  </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomMinutesInput(initialDuration.toString());
+                    setCustomTopicInput(currentTopic);
+                    setIsDurationModalOpen(true);
+                  }}
+                  className="absolute flex flex-col items-center justify-center text-center group/timer cursor-pointer focus:outline-none"
+                  title="Klik untuk ubah durasi timer (Preset / Custom)"
+                >
+                  <div className="flex items-center gap-1">
+                    <span className="text-3xl font-extrabold text-on-surface tracking-tight group-hover/timer:text-secondary transition-colors">
+                      {formatTimer()}
+                    </span>
+                    <span className="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover/timer:opacity-100 group-hover/timer:text-secondary transition-all">
+                      edit
+                    </span>
+                  </div>
                   <span className="text-xs uppercase tracking-widest text-secondary font-bold mt-0.5">
-                    {isActive ? (isPaused ? "Paused" : "Running") : "Idle"}
+                    {isActive ? (isPaused ? "Paused" : "Running") : "Idle • Klik Edit"}
                   </span>
-                </div>
+                </button>
               </div>
-              <div className="mt-4 text-center">
+
+              {/* Quick Preset Selector Chips */}
+              <div className="flex items-center justify-center gap-1.5 flex-wrap mt-3">
+                {[15, 25, 45, 60].map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setCustomDuration(m)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+                      initialDuration === m
+                        ? "bg-secondary text-on-secondary font-bold shadow-sm"
+                        : "bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-neutral-800/40"
+                    }`}
+                    title={`Set durasi ${m} menit`}
+                  >
+                    {m}m
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomMinutesInput(initialDuration.toString());
+                    setCustomTopicInput(currentTopic);
+                    setIsDurationModalOpen(true);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center gap-1 ${
+                    ![15, 25, 45, 60].includes(initialDuration)
+                      ? "bg-secondary text-on-secondary font-bold shadow-sm"
+                      : "bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-neutral-800/40"
+                  }`}
+                  title="Atur durasi kustom"
+                >
+                  <span className="material-symbols-outlined text-[13px]">tune</span>
+                  <span>{![15, 25, 45, 60].includes(initialDuration) ? `${initialDuration}m` : "Custom"}</span>
+                </button>
+              </div>
+
+              <div className="mt-3 text-center">
                 <div className="text-base font-semibold text-on-surface">
                   {currentTopic || "Mulai Sesi Baru"}
                 </div>
@@ -1422,6 +1327,107 @@ const Today = () => {
                 className="px-5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold bg-purple-600 hover:bg-purple-500 text-white border border-purple-500/30 transition-colors shadow-none"
               >
                 Simpan Sesi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Duration & Topic Selector Modal */}
+      {isDurationModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-surface-container-low border border-neutral-800 rounded-2xl p-6 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-secondary/20 flex items-center justify-center text-secondary">
+                  <span className="material-symbols-outlined text-[18px]">timer</span>
+                </div>
+                <h3 className="text-base font-bold text-on-surface">
+                  Atur Durasi Focus Sprint
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDurationModalOpen(false)}
+                className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-outline hover:text-on-surface transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-on-surface-variant block mb-2">
+                  Preset Durasi:
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[15, 25, 30, 45, 60, 90].map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setCustomMinutesInput(m.toString())}
+                      className={`py-2 rounded-xl text-xs font-mono font-semibold transition-all border cursor-pointer ${
+                        parseInt(customMinutesInput, 10) === m
+                          ? "bg-purple-600 text-white border-purple-500/50"
+                          : "bg-surface-container hover:bg-surface-container-high text-on-surface border-neutral-800/50"
+                      }`}
+                    >
+                      {m} Menit
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-on-surface-variant block mb-1.5">
+                  Durasi Kustom:
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    max="240"
+                    value={customMinutesInput}
+                    onChange={(e) => setCustomMinutesInput(e.target.value)}
+                    className="flex-1 px-3.5 py-2 rounded-xl bg-surface-container border border-neutral-800 text-on-surface font-mono text-sm focus:outline-none focus:border-secondary transition-colors"
+                    placeholder="Contoh: 45"
+                  />
+                  <span className="text-xs text-on-surface-variant font-mono">Menit (1-240)</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-on-surface-variant block mb-1.5">
+                  Fokus Topik / Materi (Opsional):
+                </label>
+                <input
+                  type="text"
+                  value={customTopicInput}
+                  onChange={(e) => setCustomTopicInput(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-surface-container border border-neutral-800 text-on-surface font-sans text-sm focus:outline-none focus:border-secondary transition-colors"
+                  placeholder="Misal: Bab 4 Fisika Kuantum / Slicing UI"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsDurationModalOpen(false)}
+                className="flex-1 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface text-xs font-semibold transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const val = Math.max(1, Math.min(240, parseInt(customMinutesInput, 10) || 25));
+                  setCustomDuration(val, customTopicInput.trim() || undefined);
+                  setIsDurationModalOpen(false);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition-colors border border-purple-500/30 cursor-pointer"
+              >
+                Terapkan Durasi
               </button>
             </div>
           </div>

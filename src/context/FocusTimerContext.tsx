@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { studySessionApi } from '../api';
 
 type TimerMode = 'deep_focus' | 'short_break';
 
@@ -13,10 +14,11 @@ interface FocusTimerContextType {
   startTimer: (durationMinutes?: number, topic?: string) => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
-  stopTimer: () => void;
-  setCustomDuration: (minutes: number) => void;
+  stopTimer: () => Promise<void>;
+  setCustomDuration: (minutes: number, topic?: string) => void;
+  setCurrentTopic: (topic: string) => void;
   formatTimer: () => string;
-  endSession: () => void;
+  endSession: () => Promise<void>;
   
   // Pending Session State for Auto-Fill
   pendingSession: { duration: number; topic: string } | null;
@@ -102,27 +104,60 @@ export const FocusTimerProvider = ({ children }: { children: ReactNode }) => {
   const pauseTimer = () => setIsPaused(true);
   const resumeTimer = () => setIsPaused(false);
   
-  const stopTimer = () => {
+  const stopTimer = async () => {
+    const durationFinishedInSeconds = (initialDuration * 60) - timeLeft;
     setIsActive(false);
     setIsPaused(false);
-    const durationFinishedInSeconds = (initialDuration * 60) - timeLeft;
-    if (durationFinishedInSeconds >= 60) {
-      // If they finished at least 1 minute, save pending session
-      setPendingSession({ duration: Math.floor(durationFinishedInSeconds / 60), topic: currentTopic });
-    }
     setTimeLeft(initialDuration * 60);
+
+    // Calculate completed minutes. If run for at least 3 seconds, count as finished minutes (min 1 min)
+    const finishedMinutes = durationFinishedInSeconds >= 60
+      ? Math.round(durationFinishedInSeconds / 60)
+      : (durationFinishedInSeconds >= 3 ? 1 : 0);
+
+    if (finishedMinutes > 0) {
+      setPendingSession({ duration: finishedMinutes, topic: currentTopic });
+      try {
+        await studySessionApi.create({
+          title: currentTopic || "Focus Sprint",
+          duration_minutes: finishedMinutes,
+          takeaway: "Sesi selesai (Auto-logged)",
+          start_time: new Date(Date.now() - finishedMinutes * 60000).toISOString(),
+          end_time: new Date().toISOString(),
+        });
+        window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
+      } catch (err) {
+        console.error("Failed to auto-save focus session", err);
+      }
+    }
   };
 
-  const setCustomDuration = (minutes: number) => {
+  const setCustomDuration = (minutes: number, topic?: string) => {
     setInitialDuration(minutes);
     setTimeLeft(minutes * 60);
+    if (topic !== undefined) {
+      setCurrentTopic(topic);
+    }
   };
 
-  const endSession = () => {
+  const endSession = async () => {
     // Called when timer reaches 0
     setIsActive(false);
     setIsPaused(false);
+    setTimeLeft(initialDuration * 60);
     setPendingSession({ duration: initialDuration, topic: currentTopic });
+    try {
+      await studySessionApi.create({
+        title: currentTopic || "Focus Sprint",
+        duration_minutes: initialDuration,
+        takeaway: "Sesi penuh selesai (Auto-logged)",
+        start_time: new Date(Date.now() - initialDuration * 60000).toISOString(),
+        end_time: new Date().toISOString(),
+      });
+      window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
+    } catch (err) {
+      console.error("Failed to auto-save focus session", err);
+    }
   };
 
   const formatTimer = () => {
@@ -145,6 +180,7 @@ export const FocusTimerProvider = ({ children }: { children: ReactNode }) => {
         resumeTimer,
         stopTimer,
         setCustomDuration,
+        setCurrentTopic,
         formatTimer,
         endSession,
         pendingSession,

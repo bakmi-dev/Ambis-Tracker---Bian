@@ -6,6 +6,9 @@ import { useGlobalState } from '../../context/GlobalContext';
 const Header = () => {
   const { 
     setIsCommandPaletteOpen, 
+    setIsAudioModalOpen,
+    isPlayingBinaural,
+    audioMode,
     setIsSettingsModalOpen
   } = useGlobalState();
   const {
@@ -37,6 +40,8 @@ const Header = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const hasActiveAudio = isPlayingBinaural || audioMode === 'spotify';
 
   return (
     <header className="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl z-40 border-b border-white/5">
@@ -104,6 +109,14 @@ const Header = () => {
           )}
           
           <div className="flex items-center gap-space-xs">
+            <button 
+              onClick={() => setIsAudioModalOpen(true)}
+              className={`relative w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${hasActiveAudio ? 'bg-primary/10 text-primary' : 'bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface'}`}
+              title="Binaural Beats & Audio Sanctuary"
+            >
+              <span className="material-symbols-outlined text-[18px]">headphones</span>
+              {hasActiveAudio && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary animate-ping"></span>}
+            </button>
             <button className="relative w-9 h-9 rounded-xl bg-surface-container-low hover:bg-surface-container-high hover:text-on-surface text-on-surface-variant flex items-center justify-center transition-colors">
               <span className="material-symbols-outlined text-[18px]">notifications</span>
               <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-tertiary shadow-[0_0_6px_rgba(255,176,205,0.8)]"></span>

@@ -120,7 +120,7 @@ function handleLocalStorageFallback<T>(url: string, options?: RequestInit): T {
     data.push(newItem);
     localStorage.setItem(storageKey, JSON.stringify(data));
     showToast(`Data berhasil disimpan (Local)`);
-    if (resource === 'tasks') {
+    if (resource === 'tasks' || resource === 'study-sessions') {
       window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
     }
     return { success: true, data: newItem } as any;
@@ -249,10 +249,16 @@ export const taskApi = {
 // ==================== STUDY SESSIONS ====================
 export const studySessionApi = {
   getAll: () => request<{ success: boolean; data: any[] }>('/study-sessions'),
-  create: (body: { title?: string; start_time: string; end_time: string; duration_minutes: number; session_type?: string; takeaway?: string }) =>
-    request<{ success: boolean; data: any }>('/study-sessions', { method: 'POST', body: JSON.stringify(body) }),
-  delete: (id: string) =>
-    request<{ success: boolean; message: string }>(`/study-sessions/${id}`, { method: 'DELETE' }),
+  create: async (body: { title?: string; start_time: string; end_time: string; duration_minutes: number; session_type?: string; takeaway?: string }) => {
+    const res = await request<{ success: boolean; data: any }>('/study-sessions', { method: 'POST', body: JSON.stringify(body) });
+    window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
+    return res;
+  },
+  delete: async (id: string) => {
+    const res = await request<{ success: boolean; message: string }>(`/study-sessions/${id}`, { method: 'DELETE' });
+    window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
+    return res;
+  },
 };
 
 // ==================== GOALS ====================
