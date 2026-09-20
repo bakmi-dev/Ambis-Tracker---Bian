@@ -58,7 +58,7 @@ const mapBackendToFrontend = (bc: any): Competition => {
 
   if (category === 'active') {
     badgeText = 'ACTIVE SPRINT';
-    badgeClass = 'bg-primary-container text-primary shadow-[0_0_12px_rgba(208,188,255,0.4)]';
+    badgeClass = 'bg-primary-container text-primary';
     isPulsing = true;
   } else if (category === 'finished') {
     badgeText = 'Finished';
@@ -297,266 +297,276 @@ const Competitions = () => {
   });
 
   return (
-    <div className="flex flex-col w-full relative">
+    <div className="flex flex-col w-full max-w-7xl mx-auto pt-6 sm:pt-8 pb-12 space-y-6 sm:space-y-8">
       {isLoading && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-surface/50 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-            <p className="font-body-md text-on-surface-variant animate-pulse">Memuat kompetisi...</p>
+            <p className="text-sm font-medium text-on-surface-variant animate-pulse">Memuat kompetisi...</p>
           </div>
         </div>
       )}
-      <div className="flex flex-col gap-space-lg">
-        {/* Top Breadcrumb & Actions Header */}
-        <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-space-md">
-          <div className="flex flex-col gap-space-xs">
-            <div className="flex items-center gap-space-xs font-label-sm text-label-sm tracking-widest text-secondary uppercase">
-              <span>Command Deck</span>
-              <span className="material-symbols-outlined text-[12px] text-outline">chevron_right</span>
-              <span>Competitions Arena</span>
-              <span className="material-symbols-outlined text-[12px] text-outline">chevron_right</span>
-              <span className="text-primary font-bold">Active Preparation</span>
-            </div>
-            <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">
-              Competitions & Hackathon War Room
-            </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant max-w-3xl">
-              Pelacak arena kompetisi teknologi, hackathon, dan data science dengan pemantauan tenggat waktu ketat, sinkronisasi milestone tim, serta audit kesiapan berkas submisi.
-            </p>
+
+      {/* Top Breadcrumb & Actions Header */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-secondary font-semibold flex-wrap">
+            <span className="material-symbols-outlined text-[14px]">trophy</span>
+            <span>COMMAND DECK</span>
+            <span className="text-outline/40">/</span>
+            <span>COMPETITIONS ARENA</span>
+            <span className="text-outline/40">/</span>
+            <span className="text-primary font-bold">ACTIVE PREPARATION</span>
           </div>
-          <div className="flex items-center gap-space-sm self-start xl:self-auto flex-wrap">
-            <div className="flex items-center gap-space-xs bg-surface-container-low px-space-md py-2.5 rounded-xl border border-surface-container-highest relative cursor-pointer">
-              <span className="material-symbols-outlined text-outline text-[18px]">sort</span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase pointer-events-none">Urutkan:</span>
-              <select 
-                value={sortOption} 
-                onChange={(e) => setSortOption(e.target.value)} 
-                className="bg-transparent font-label-sm text-label-sm text-secondary font-semibold appearance-none outline-none cursor-pointer pr-4"
-              >
-                <option value="deadline">Deadline Terdekat</option>
-                <option value="prize">Prize Pool Terbesar</option>
-                <option value="name">Nama A-Z</option>
-              </select>
-            </div>
-            <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-space-xs bg-primary hover:bg-primary-fixed text-on-primary font-label-md text-label-md px-space-lg py-2.5 rounded-xl shadow-[0_0_24px_-2px_rgba(208,188,255,0.4)] transition-all active:scale-[0.98]">
-              <span className="material-symbols-outlined text-[18px]">add_circle</span>
-              <span className="tracking-wide uppercase font-semibold">+ Tambah Kompetisi Baru</span>
-            </button>
-          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface font-sans">
+            Competitions & Hackathon War Room
+          </h1>
+          <p className="text-sm sm:text-base text-on-surface-variant max-w-3xl leading-relaxed font-sans">
+            Pelacak arena kompetisi teknologi, hackathon, dan data science dengan pemantauan tenggat waktu ketat, sinkronisasi milestone tim, serta audit kesiapan berkas submisi.
+          </p>
         </div>
 
-        {/* Telemetry Metric Pulse Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
-          <div className="bg-surface-container-low p-space-md rounded-xl flex flex-col justify-between relative overflow-hidden shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Target Kritis</span>
-              <span className="w-7 h-7 rounded-lg bg-tertiary-container/30 text-tertiary flex items-center justify-center">
-                <span className="material-symbols-outlined text-[16px]">alarm_on</span>
-              </span>
-            </div>
-            <div className="mt-space-sm">
-              <div className="font-metric-display text-metric-display text-tertiary leading-none font-bold">
-                {targetKritisCount} Arena
-              </div>
-              <div className="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1">
-                <span>{targetKritisCount > 0 ? '&lt; 7 Hari Tersisa' : 'Tidak ada target mendesak'}</span>
-              </div>
-            </div>
+        {/* Action Cluster */}
+        <div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
+          <div className="relative inline-flex">
+            <select 
+              value={sortOption} 
+              onChange={(e) => setSortOption(e.target.value)} 
+              className="px-4 py-2.5 pl-9 pr-8 rounded-xl bg-surface-container-low border border-neutral-800/50 text-on-surface text-xs sm:text-sm font-medium hover:bg-surface-container transition-colors appearance-none cursor-pointer outline-none"
+            >
+              <option value="deadline">Deadline Terdekat</option>
+              <option value="prize">Prize Pool Terbesar</option>
+              <option value="name">Nama A-Z</option>
+            </select>
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline pointer-events-none">sort</span>
+            <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-[16px] text-outline pointer-events-none">expand_more</span>
           </div>
-          
-          <div className="bg-surface-container-low p-space-md rounded-xl flex flex-col justify-between shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Pipeline Tahap Aktif</span>
-              <span className="w-7 h-7 rounded-lg bg-secondary-container/30 text-secondary flex items-center justify-center">
-                <span className="material-symbols-outlined text-[16px]">hourglass_top</span>
-              </span>
-            </div>
-            <div className="mt-space-sm">
-              <div className="font-metric-display text-metric-display text-on-surface leading-none font-bold">{activeAndPrep.length} Arena</div>
-              <div className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-                Active / Preparing
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-surface-container-low p-space-md rounded-xl flex flex-col justify-between shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Target Pool Ekuitas</span>
-              <span className="w-7 h-7 rounded-lg bg-primary-container/30 text-primary flex items-center justify-center">
-                <span className="material-symbols-outlined text-[16px]">payments</span>
-              </span>
-            </div>
-            <div className="mt-space-sm">
-              <div className="font-metric-display text-[24px] text-secondary leading-none font-bold">
-                {formatRupiah(targetPoolTotal)}
-              </div>
-              <div className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-                Total Potensi Dana Hibah & Prize
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-surface-container-low p-space-md rounded-xl flex flex-col justify-between shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Audit Submisi Terdekat</span>
-              <span className="w-7 h-7 rounded-lg bg-surface-container-high text-primary flex items-center justify-center">
-                <span className="material-symbols-outlined text-[16px]">verified</span>
-              </span>
-            </div>
-            <div className="mt-space-sm">
-              <div className="font-metric-display text-[32px] text-primary leading-none font-bold">{auditSubmisiText}</div>
-              <div className="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1">
-                {auditSubmisiSub}
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Pipeline Stage Filter Tabs */}
-        <div className="flex items-center justify-between gap-space-md overflow-x-auto pb-1 mt-4">
-          <div className="flex items-center gap-space-xs flex-nowrap">
-            {tabs.map(tab => (
-              <button 
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-space-md py-space-xs rounded-lg font-label-sm text-label-sm uppercase tracking-wider font-semibold transition-all whitespace-nowrap ${
-                  activeTab === tab.id 
-                    ? 'bg-primary text-on-primary' 
-                    : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+          <button 
+            onClick={() => setIsModalOpen(true)} 
+            className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs sm:text-sm font-semibold flex items-center gap-2 transition-colors cursor-pointer border border-purple-500/30 active:scale-95 shadow-none"
+          >
+            <span className="material-symbols-outlined text-[18px]">add_circle</span>
+            <span>+ Tambah Kompetisi Baru</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Telemetry Metric Pulse Bar */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 flex flex-col justify-between min-h-[140px]">
+          <div className="flex items-center justify-between text-outline">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold">Target Kritis</span>
+            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+              <span className="material-symbols-outlined text-[18px]">alarm_on</span>
+            </div>
+          </div>
+          <div className="my-2 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-bold text-tertiary tracking-tight leading-none font-sans">
+              {targetKritisCount}
+            </span>
+            <span className="text-xs text-tertiary font-semibold">Arena</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-on-surface-variant font-normal">
+            <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+            <span>{targetKritisCount > 0 ? '< 7 Hari Tersisa' : 'Tidak ada target mendesak'}</span>
           </div>
         </div>
+        
+        <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 flex flex-col justify-between min-h-[140px]">
+          <div className="flex items-center justify-between text-outline">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold">Pipeline Tahap Aktif</span>
+            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+              <span className="material-symbols-outlined text-[18px]">hourglass_top</span>
+            </div>
+          </div>
+          <div className="my-2 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight leading-none font-sans">{activeAndPrep.length}</span>
+            <span className="text-xs text-secondary font-semibold">Arena</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-on-surface-variant font-normal">
+            <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            <span>Active / Preparing</span>
+          </div>
+        </div>
+        
+        <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 flex flex-col justify-between min-h-[140px]">
+          <div className="flex items-center justify-between text-outline">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold">Target Pool Ekuitas</span>
+            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined text-[18px]">payments</span>
+            </div>
+          </div>
+          <div className="my-2">
+            <div className="text-xl sm:text-2xl font-bold text-secondary tracking-tight leading-none font-sans">
+              {formatRupiah(targetPoolTotal)}
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-on-surface-variant font-normal">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+            <span>Total Potensi Prize</span>
+          </div>
+        </div>
+        
+        <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 flex flex-col justify-between min-h-[140px]">
+          <div className="flex items-center justify-between text-outline">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold">Audit Submisi Terdekat</span>
+            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined text-[18px]">verified</span>
+            </div>
+          </div>
+          <div className="my-2 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-bold text-primary tracking-tight leading-none font-sans">{auditSubmisiText}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-on-surface-variant font-normal">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+            <span>{auditSubmisiSub}</span>
+          </div>
+        </div>
+      </div>
 
-        {/* Competitions Cards Matrix */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-space-md mt-2">
-          {filtered.map(comp => (
-            <div key={comp.id} className={`bg-surface-container-low rounded-xl p-space-lg flex flex-col justify-between relative shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 border ${comp.deadlineValue.includes('hari lagi') && parseInt(comp.deadlineValue) <= 3 && comp.category !== 'finished' ? 'border-tertiary/50 shadow-[0_0_12px_rgba(255,180,171,0.2)]' : 'border-transparent'}`}>
-              <div className="flex flex-col gap-space-sm">
-                <div className="flex items-start justify-between gap-space-sm">
-                  <div className="flex flex-col">
-                    <span className="font-label-sm text-label-sm text-secondary uppercase font-semibold flex items-center gap-1.5">
-                      {comp.division}
-                    </span>
-                    <h3 className="font-headline-md text-headline-md text-on-surface font-bold tracking-tight mt-0.5">
-                      {comp.title}
-                    </h3>
-                    <span className="font-body-sm text-body-sm text-on-surface-variant font-medium mt-1 text-primary">{formatRupiah(comp.prizePool)} Prize Pool</span>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <span className={`px-2.5 py-1 rounded-full font-label-sm text-label-sm font-bold uppercase tracking-wider flex items-center gap-1 ${comp.badgeClass}`}>
-                      {comp.isPulsing && <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>}
-                      {comp.badgeText === 'Finished' && <span className="material-symbols-outlined text-[14px]">workspace_premium</span>}
-                      {comp.badgeText}
-                    </span>
-                    <button onClick={() => handleDelete(comp.id)} className="w-7 h-7 flex items-center justify-center rounded bg-surface-container-highest text-on-surface-variant hover:text-error hover:bg-error-container/30 transition-colors">
-                      <span className="material-symbols-outlined text-[16px]">delete</span>
-                    </button>
-                  </div>
+      {/* Pipeline Stage Filter Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        {tabs.map(tab => (
+          <button 
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer border ${
+              activeTab === tab.id 
+                ? 'bg-purple-600 text-white border-purple-500/30 font-semibold shadow-none' 
+                : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container border-neutral-800/50'
+            }`}
+          >
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Competitions Cards Matrix */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
+        {filtered.map(comp => (
+          <div key={comp.id} className={`bg-surface-container-low rounded-2xl p-5 sm:p-6 flex flex-col justify-between relative hover:border-neutral-700/60 transition-all duration-200 border border-neutral-800/50 shadow-none`}>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex flex-col">
+                  <span className="text-xs text-secondary uppercase font-semibold flex items-center gap-1.5">
+                    {comp.division}
+                  </span>
+                  <h3 className="text-lg font-bold text-on-surface tracking-tight mt-0.5 font-sans">
+                    {comp.title}
+                  </h3>
+                  <span className="text-xs font-semibold mt-1 text-primary">{formatRupiah(comp.prizePool)} Prize Pool</span>
                 </div>
-                
-                <div className={`bg-surface-container-lowest p-space-sm rounded-lg flex flex-col gap-space-xs mt-2`}>
-                  <div className="flex justify-between items-center text-label-sm font-label-sm">
-                    <span className="text-outline uppercase">{comp.registrationOrStatusText}</span>
-                    <span className="text-on-surface font-semibold">{comp.registrationOrStatusValue}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-label-sm font-label-sm">
-                    <span className="text-outline uppercase">{comp.deadlineText}</span>
-                    <span className={comp.deadlineValue.includes('Besok') || comp.deadlineValue.includes('hari lagi') || comp.category === 'wishlist' ? (comp.category === 'wishlist' ? 'text-tertiary font-bold' : (comp.deadlineValue.includes('Besok') || (parseInt(comp.deadlineValue) && parseInt(comp.deadlineValue) <= 3) ? 'text-tertiary font-bold' : 'text-secondary font-bold')) : 'text-on-surface font-semibold'}>
-                      {comp.deadlineValue}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="space-y-space-xs mt-3">
-                  <div className="flex justify-between items-center font-label-sm text-label-sm">
-                    <span className="text-outline uppercase tracking-wider">{comp.progressLabel}</span>
-                    <span className={`${comp.category === 'wishlist' ? 'text-outline font-bold' : (comp.category === 'preparing' && comp.progressPercent < 20 ? 'text-primary font-bold' : (comp.progressPercent === 100 ? 'text-secondary font-bold' : (comp.category === 'active' ? 'text-primary font-bold' : 'text-secondary font-bold')))}`}>
-                      {comp.progressPercent}% {comp.category === 'finished' ? 'Selesai' : ''}
-                    </span>
-                  </div>
-                  <div className="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all duration-500 ${comp.progressColorClass}`} style={{ width: `${comp.progressPercent}%` }}></div>
-                  </div>
-                </div>
-                
-                <div className="mt-4 flex flex-col gap-2">
-                  <span className="font-label-sm text-label-sm uppercase font-semibold text-outline">Persyaratan Submisi</span>
-                  {comp.checklist.length > 0 ? (
-                    <div className="space-y-2">
-                      {comp.checklist.map(chk => (
-                        <div key={chk.id} onClick={() => toggleChecklist(comp.id, chk.id)} className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors ${chk.isChecked ? 'bg-surface-container-lowest' : 'bg-surface-container-high/50 hover:bg-surface-container-high'}`}>
-                          <span className={`material-symbols-outlined text-[18px] ${chk.isChecked ? 'text-secondary' : 'text-outline'}`}>
-                            {chk.isChecked ? 'check_circle' : 'radio_button_unchecked'}
-                          </span>
-                          <span className={`font-body-sm text-body-sm ${chk.isChecked ? 'text-outline line-through' : 'text-on-surface'}`}>{chk.title}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-sm text-outline italic">No checklist items</span>
-                  )}
+                <div className="flex flex-col items-end gap-2">
+                  <span className={`px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wider flex items-center gap-1 ${comp.badgeClass}`}>
+                    {comp.isPulsing && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>}
+                    {comp.badgeText === 'Finished' && <span className="material-symbols-outlined text-[14px]">workspace_premium</span>}
+                    {comp.badgeText}
+                  </span>
+                  <button onClick={() => handleDelete(comp.id)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors" title="Hapus Kompetisi">
+                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                  </button>
                 </div>
               </div>
+              
+              <div className="bg-surface-container/60 border border-neutral-800/40 p-3 rounded-xl flex flex-col gap-1.5 mt-1">
+                <div className="flex justify-between items-center text-xs font-medium">
+                  <span className="text-outline uppercase text-[10px] font-semibold">{comp.registrationOrStatusText}</span>
+                  <span className="text-on-surface font-semibold">{comp.registrationOrStatusValue}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs font-medium">
+                  <span className="text-outline uppercase text-[10px] font-semibold">{comp.deadlineText}</span>
+                  <span className={comp.deadlineValue.includes('Besok') || comp.deadlineValue.includes('hari lagi') || comp.category === 'wishlist' ? (comp.category === 'wishlist' ? 'text-tertiary font-bold' : (comp.deadlineValue.includes('Besok') || (parseInt(comp.deadlineValue) && parseInt(comp.deadlineValue) <= 3) ? 'text-tertiary font-bold' : 'text-secondary font-bold')) : 'text-on-surface font-semibold'}>
+                    {comp.deadlineValue}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="space-y-1.5 mt-1">
+                <div className="flex justify-between items-center text-xs font-medium">
+                  <span className="text-outline uppercase tracking-wider font-semibold">{comp.progressLabel}</span>
+                  <span className={`${comp.category === 'wishlist' ? 'text-outline font-bold' : (comp.category === 'preparing' && comp.progressPercent < 20 ? 'text-primary font-bold' : (comp.progressPercent === 100 ? 'text-secondary font-bold' : (comp.category === 'active' ? 'text-primary font-bold' : 'text-secondary font-bold')))} font-sans font-bold`}>
+                    {comp.progressPercent}% {comp.category === 'finished' ? 'Selesai' : ''}
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+                  <div className={`h-full rounded-full transition-all duration-500 ${comp.progressColorClass}`} style={{ width: `${comp.progressPercent}%` }}></div>
+                </div>
+              </div>
+              
+              <div className="mt-3 flex flex-col gap-2">
+                <span className="text-xs uppercase font-semibold text-outline tracking-wider">Persyaratan Submisi</span>
+                {comp.checklist.length > 0 ? (
+                  <div className="space-y-1.5">
+                    {comp.checklist.map(chk => (
+                      <div key={chk.id} onClick={() => toggleChecklist(comp.id, chk.id)} className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors ${chk.isChecked ? 'bg-surface-container/30' : 'bg-surface-container/60 hover:bg-surface-container'}`}>
+                        <span className={`material-symbols-outlined text-[18px] ${chk.isChecked ? 'text-secondary' : 'text-outline'}`} style={{ fontVariationSettings: chk.isChecked ? "'FILL' 1" : undefined }}>
+                          {chk.isChecked ? 'check_circle' : 'radio_button_unchecked'}
+                        </span>
+                        <span className={`text-xs font-medium ${chk.isChecked ? 'text-outline line-through' : 'text-on-surface'}`}>{chk.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-xs text-outline italic">No checklist items</span>
+                )}
+              </div>
             </div>
-          ))}
-          
-          {filtered.length === 0 && !isLoading && (
-            <div className="lg:col-span-3 py-space-xl text-center flex flex-col items-center gap-space-sm bg-surface-container-lowest rounded-xl">
-              <span className="material-symbols-outlined text-outline text-[48px]">trophy</span>
-              <p className="font-body-md text-outline">Tidak ada kompetisi di kategori ini.</p>
-            </div>
-          )}
-        </div>
+          </div>
+        ))}
+        
+        {filtered.length === 0 && !isLoading && (
+          <div className="lg:col-span-3 py-12 text-center flex flex-col items-center gap-2 bg-surface-container/30 border border-neutral-800/50 rounded-2xl">
+            <span className="material-symbols-outlined text-outline/60 text-[36px]">trophy</span>
+            <p className="text-xs text-outline font-medium">Tidak ada kompetisi di kategori ini.</p>
+          </div>
+        )}
       </div>
 
       {/* CREATE MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface-container-low p-space-lg rounded-2xl max-w-2xl w-full shadow-2xl flex flex-col max-h-[90vh]">
-            <h2 className="font-headline-md text-on-surface font-bold mb-4">Tambah Kompetisi / Hackathon Baru</h2>
+          <div className="bg-surface-container-low p-6 sm:p-7 rounded-2xl max-w-2xl w-full shadow-2xl flex flex-col max-h-[90vh] border border-neutral-800/50">
+            <h2 className="text-xl font-bold text-on-surface mb-4 font-sans">Tambah Kompetisi / Hackathon Baru</h2>
             
             <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Nama Kompetisi / Hackathon</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Nama Kompetisi / Hackathon</label>
                   <input 
                     value={form.title} 
                     onChange={e => setForm({...form, title: e.target.value})} 
-                    className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" 
+                    className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary" 
                     placeholder="Mis. Gemastik 2026 - Data Mining" 
                   />
                 </div>
                 
                 <div>
-                  <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Kategori / Track</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Kategori / Track</label>
                   <input 
                     value={form.type} 
                     onChange={e => setForm({...form, type: e.target.value})} 
-                    className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" 
+                    className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary" 
                     placeholder="Mis. UI/UX, AI/ML..." 
                   />
                 </div>
                 
                 <div>
-                  <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Deadline Submisi</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Deadline Submisi</label>
                   <input 
                     type="date"
                     value={form.deadline} 
                     onChange={e => setForm({...form, deadline: e.target.value})} 
-                    className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" 
+                    className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary" 
                   />
                 </div>
 
                 <div>
-                  <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Tahap Pipeline</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Tahap Pipeline</label>
                   <select 
                     value={form.status} 
                     onChange={e => setForm({...form, status: e.target.value})} 
-                    className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest"
+                    className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="active">Active Focus</option>
                     <option value="preparing">Preparing</option>
@@ -567,12 +577,12 @@ const Competitions = () => {
                 </div>
 
                 <div>
-                  <label className="block font-label-sm text-outline mb-1 uppercase tracking-wider font-semibold">Prize Pool (IDR)</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Prize Pool (IDR)</label>
                   <input 
                     type="number"
                     value={form.prizePool || ''} 
                     onChange={e => setForm({...form, prizePool: Number(e.target.value)})} 
-                    className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest" 
+                    className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary" 
                     placeholder="Mis. 10000000" 
                   />
                 </div>
@@ -580,13 +590,13 @@ const Competitions = () => {
               
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block font-label-sm text-outline uppercase tracking-wider font-semibold">Persyaratan Submisi / Checklist</label>
-                  <button onClick={() => setForm(p => ({...p, checklist: [...p.checklist, {id: Date.now().toString(), title: '', isChecked: false}]}))} className="text-primary font-label-sm text-label-sm font-semibold hover:text-primary-fixed">+ Tambah Dokumen</button>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline">Persyaratan Submisi / Checklist</label>
+                  <button onClick={() => setForm(p => ({...p, checklist: [...p.checklist, {id: Date.now().toString(), title: '', isChecked: false}]}))} className="text-primary text-xs font-semibold hover:text-primary-fixed cursor-pointer">+ Tambah Dokumen</button>
                 </div>
                 <div className="space-y-2">
                   {form.checklist.map((m, idx) => (
                     <div key={m.id} className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-surface-container-highest text-outline flex items-center justify-center font-label-sm flex-shrink-0">{idx + 1}</div>
+                      <div className="w-6 h-6 rounded-full bg-surface-container-highest text-outline flex items-center justify-center text-xs font-semibold flex-shrink-0">{idx + 1}</div>
                       <input 
                         value={m.title}
                         onChange={e => {
@@ -594,14 +604,14 @@ const Competitions = () => {
                           newM[idx].title = e.target.value;
                           setForm({...form, checklist: newM});
                         }}
-                        className="flex-1 bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary border border-surface-container-highest"
+                        className="flex-1 bg-surface-container text-on-surface px-3 py-2 rounded-lg text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary"
                         placeholder="Mis. Pitch Deck PDF"
                       />
                       <button onClick={() => {
                         const newM = [...form.checklist];
                         newM.splice(idx, 1);
                         setForm({...form, checklist: newM});
-                      }} className="w-8 h-8 flex items-center justify-center text-outline hover:text-error hover:bg-error-container/20 rounded-lg transition-colors">
+                      }} className="w-8 h-8 flex items-center justify-center text-outline hover:text-error hover:bg-error-container/20 rounded-lg transition-colors cursor-pointer">
                         <span className="material-symbols-outlined text-[18px]">close</span>
                       </button>
                     </div>
@@ -610,9 +620,9 @@ const Competitions = () => {
               </div>
             </div>
             
-            <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-surface-container-highest">
-              <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 rounded-xl font-label-md text-on-surface-variant hover:bg-surface-container transition-colors font-semibold">Batal</button>
-              <button onClick={handleCreateSubmit} className="px-5 py-2.5 rounded-xl font-label-md bg-primary-container text-on-primary-container font-bold hover:bg-inverse-primary transition-colors shadow-sm flex items-center gap-2">
+            <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-neutral-800/50">
+              <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-semibold text-on-surface-variant hover:bg-surface-container transition-colors">Batal</button>
+              <button onClick={handleCreateSubmit} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold bg-purple-600 hover:bg-purple-500 text-white transition-colors border border-purple-500/30 flex items-center gap-2 shadow-none cursor-pointer">
                 <span className="material-symbols-outlined text-[18px]">save</span> Simpan Kompetisi
               </button>
             </div>

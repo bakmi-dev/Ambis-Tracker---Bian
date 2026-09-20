@@ -219,48 +219,74 @@ const Tasks = () => {
   }
 
   return (
-    <div className="flex flex-col w-full pb-space-xl">
+    <div className="flex flex-col w-full max-w-7xl mx-auto pt-6 sm:pt-8 pb-12 space-y-6 sm:space-y-8">
       {/* Command Header & View Switcher Bar */}
-      <section className="flex flex-col gap-space-lg mb-space-lg">
+      <section className="flex flex-col gap-4">
         {/* Breadcrumb & Main Heading with Quick Primary Action */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-space-xs font-label-sm text-label-sm text-outline uppercase tracking-wider mb-space-xs">
-              <span className="hover:text-on-surface transition-colors cursor-pointer">Command Deck</span>
-              <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span className="text-primary font-semibold">Tasks & Backlog Engine</span>
-              <span className="ml-space-xs px-2 py-0.5 rounded-full bg-primary-container/20 text-primary font-label-sm text-label-sm">Sprint #14</span>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-secondary font-semibold flex-wrap">
+              <span className="material-symbols-outlined text-[14px]">checklist</span>
+              <span>COMMAND DECK</span>
+              <span className="text-outline/40">/</span>
+              <span>TASKS & BACKLOG ENGINE</span>
+              <span className="text-outline/40">/</span>
+              <span className="text-primary font-bold">SPRINT #14</span>
             </div>
-            <h1 className="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight font-sans">
               Tasks & Backlog Engine
             </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl mt-0.5">
+            <p className="text-sm sm:text-base text-on-surface-variant max-w-2xl leading-relaxed font-sans">
               Kelola alur eksekusi tugas harian, sprint proyek, dan persiapan kompetisi secara terstruktur.
             </p>
           </div>
           
           {/* Action Group */}
-          <div className="flex items-center gap-space-sm flex-wrap">
-            <button onClick={() => { setEditingTaskId(null); setTaskForm({...taskForm, title: '', description: '', due_date: '', defaultStatus: 'todo'}); setIsTaskModalOpen(true); }} className="flex items-center gap-space-xs px-space-lg py-2.5 rounded-xl bg-primary hover:bg-primary-fixed text-on-primary font-body-md text-body-md font-semibold transition-all shadow-[0_0_20px_rgba(208,188,255,0.35)] active:scale-95">
-              <span className="material-symbols-outlined text-[20px]">add</span>
-              <span>New Task</span>
+          <div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
+            <button 
+              onClick={() => { setEditingTaskId(null); setTaskForm({...taskForm, title: '', description: '', due_date: '', defaultStatus: 'todo'}); setIsTaskModalOpen(true); }} 
+              className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs sm:text-sm font-semibold flex items-center gap-2 transition-colors cursor-pointer border border-purple-500/30 active:scale-95 shadow-none"
+            >
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              <span>+ Buat Task Baru</span>
             </button>
           </div>
         </div>
 
         {/* View Switcher Tabs & Search Toolbar */}
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md p-1.5 rounded-2xl bg-surface-container-lowest shadow-md">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-2 rounded-2xl bg-surface-container-low border border-neutral-800/50 shadow-none">
           {/* Switcher Segmented Control */}
-          <div className="flex items-center p-1 rounded-xl bg-surface-container-low gap-1">
-            <button onClick={() => setActiveView('kanban')} className={`flex items-center gap-space-xs px-space-md py-2 rounded-lg font-body-sm text-body-sm font-semibold shadow-sm transition-all ${activeView === 'kanban' ? 'bg-surface-container-high text-primary' : 'hover:bg-surface-container text-on-surface-variant hover:text-on-surface'}`}>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setActiveView('kanban')} 
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors border ${
+                activeView === 'kanban' 
+                  ? 'bg-purple-600 text-white border-purple-500/30 font-semibold shadow-none' 
+                  : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container border-neutral-800/50'
+              }`}
+            >
               <span className="material-symbols-outlined text-[18px]">view_kanban</span>
               <span>Kanban Board</span>
             </button>
-            <button onClick={() => setActiveView('list')} className={`flex items-center gap-space-xs px-space-md py-2 rounded-lg font-body-sm text-body-sm font-semibold shadow-sm transition-all ${activeView === 'list' ? 'bg-surface-container-high text-primary' : 'hover:bg-surface-container text-on-surface-variant hover:text-on-surface'}`}>
+            <button 
+              onClick={() => setActiveView('list')} 
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors border ${
+                activeView === 'list' 
+                  ? 'bg-purple-600 text-white border-purple-500/30 font-semibold shadow-none' 
+                  : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container border-neutral-800/50'
+              }`}
+            >
               <span className="material-symbols-outlined text-[18px]">format_list_bulleted</span>
               <span>List View</span>
             </button>
-            <button onClick={() => setActiveView('calendar')} className={`flex items-center gap-space-xs px-space-md py-2 rounded-lg font-body-sm text-body-sm font-semibold shadow-sm transition-all ${activeView === 'calendar' ? 'bg-surface-container-high text-primary' : 'hover:bg-surface-container text-on-surface-variant hover:text-on-surface'}`}>
+            <button 
+              onClick={() => setActiveView('calendar')} 
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors border ${
+                activeView === 'calendar' 
+                  ? 'bg-purple-600 text-white border-purple-500/30 font-semibold shadow-none' 
+                  : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container border-neutral-800/50'
+              }`}
+            >
               <span className="material-symbols-outlined text-[18px]">calendar_month</span>
               <span>Calendar Timeline</span>
             </button>
@@ -282,12 +308,12 @@ const Tasks = () => {
       {/* Filter & Telemetry Strip */}
       <section className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-space-md p-space-md rounded-2xl bg-surface-container-low mb-space-lg shadow-sm">
         {/* Filter Pills */}
-        <div className="flex items-center gap-space-xs flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           {['All Tasks', 'High Priority', 'Study Space', 'Projects', 'Competitions'].map(filter => (
             <button 
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`flex items-center gap-space-xs px-space-md py-1.5 rounded-full font-label-md text-label-md font-semibold transition-all ${activeFilter === filter ? 'bg-primary-container text-on-primary-container shadow-[0_0_12px_rgba(160,120,255,0.25)]' : 'bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface'}`}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${activeFilter === filter ? 'bg-purple-600 text-white border border-purple-500/30 shadow-none font-semibold' : 'bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-neutral-800/40'}`}
             >
               <span>{filter}</span>
             </button>
@@ -299,12 +325,12 @@ const Tasks = () => {
       {activeView === 'kanban' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-space-lg items-start">
           {/* COLUMN 1: TO DO */}
-          <div className="flex flex-col gap-space-md bg-surface-container-lowest p-space-md rounded-2xl shadow-md min-w-0">
+          <div className="flex flex-col gap-space-md bg-surface-container-lowest p-space-md rounded-2xl shadow-none border border-neutral-800/50 min-w-0">
             <div className="flex items-center justify-between pb-space-xs">
               <div className="flex items-center gap-space-sm">
                 <div className="w-3 h-3 rounded-full bg-outline"></div>
-                <h2 className="font-headline-md text-headline-md text-on-surface font-bold">To Do</h2>
-                <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold">{todoTasks.length}</span>
+                <h2 className="font-sans text-base text-on-surface font-bold">To Do</h2>
+                <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface text-xs font-semibold">{todoTasks.length}</span>
               </div>
             </div>
             <div className="flex flex-col gap-space-md">
@@ -317,12 +343,12 @@ const Tasks = () => {
           </div>
 
           {/* COLUMN 2: IN PROGRESS */}
-          <div className="flex flex-col gap-space-md bg-surface-container-lowest p-space-md rounded-2xl shadow-md min-w-0">
+          <div className="flex flex-col gap-space-md bg-surface-container-lowest p-space-md rounded-2xl shadow-none border border-neutral-800/50 min-w-0">
             <div className="flex items-center justify-between pb-space-xs">
               <div className="flex items-center gap-space-sm">
-                <div className="w-3 h-3 rounded-full bg-secondary shadow-[0_0_8px_rgba(76,215,246,0.8)]"></div>
-                <h2 className="font-headline-md text-headline-md text-on-surface font-bold">In Progress</h2>
-                <span className="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary font-label-sm text-label-sm font-semibold">{inProgressTasks.length}</span>
+                <div className="w-3 h-3 rounded-full bg-secondary"></div>
+                <h2 className="font-sans text-base text-on-surface font-bold">In Progress</h2>
+                <span className="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary text-xs font-semibold">{inProgressTasks.length}</span>
               </div>
             </div>
             <div className="flex flex-col gap-space-md">
@@ -335,12 +361,12 @@ const Tasks = () => {
           </div>
 
           {/* COLUMN 3: COMPLETED */}
-          <div className="flex flex-col gap-space-md bg-surface-container-lowest p-space-md rounded-2xl shadow-md min-w-0">
+          <div className="flex flex-col gap-space-md bg-surface-container-lowest p-space-md rounded-2xl shadow-none border border-neutral-800/50 min-w-0">
             <div className="flex items-center justify-between pb-space-xs">
               <div className="flex items-center gap-space-sm">
-                <div className="w-3 h-3 rounded-full bg-secondary-container shadow-[0_0_8px_rgba(3,181,211,0.6)]"></div>
-                <h2 className="font-headline-md text-headline-md text-on-surface font-bold">Completed</h2>
-                <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">{completedTasks.length}</span>
+                <div className="w-3 h-3 rounded-full bg-secondary-container"></div>
+                <h2 className="font-sans text-base text-on-surface font-bold">Completed</h2>
+                <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant text-xs font-semibold">{completedTasks.length}</span>
               </div>
             </div>
             <div className="flex flex-col gap-space-md">
@@ -440,31 +466,32 @@ const Tasks = () => {
       )}
 
       {/* Bottom Interactive Focus Command Strip */}
-      <section className="mt-space-xl p-space-lg rounded-2xl bg-surface-container-lowest flex flex-col md:flex-row items-center justify-between gap-space-md shadow-lg">
-        <div className="flex items-center gap-space-md w-full">
-          <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center flex-shrink-0 shadow-[0_0_16px_rgba(76,215,246,0.3)]">
-            <span className="material-symbols-outlined text-[28px]">rocket_launch</span>
+      <section className="rounded-2xl bg-surface-container-low border border-neutral-800/50 p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-none">
+        <div className="flex items-center gap-4 w-full">
+          <div className="w-11 h-11 rounded-xl bg-surface-container text-secondary flex items-center justify-center flex-shrink-0">
+            <span className="material-symbols-outlined text-[24px]">rocket_launch</span>
           </div>
           <div className="flex flex-col flex-1 overflow-hidden">
-            <span className="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider">Focus Execution Mode</span>
-            <span className="font-headline-md text-headline-md font-bold text-on-surface truncate">
+            <span className="font-mono text-xs text-secondary font-bold uppercase tracking-wider">Focus Execution Mode</span>
+            <span className="text-base sm:text-lg font-bold text-on-surface truncate font-sans">
               {activeTaskObj ? activeTaskObj.title : 'Mulai sesi fokus baru?'}
             </span>
-            <span className="font-body-sm text-body-sm text-on-surface-variant truncate">
+            <span className="text-xs text-on-surface-variant truncate font-normal">
               {activeTaskObj ? `Status: ${activeTaskObj.is_completed ? 'Selesai' : (activeTaskObj.tags?.includes('in_progress') ? 'In Progress' : 'To Do')}` : 'Pilih task terlebih dahulu dari daftar di atas.'}
             </span>
           </div>
         </div>
         
-        <div className="flex items-center gap-space-sm w-full md:w-auto">
+        <div className="flex items-center gap-3 w-full md:w-auto flex-shrink-0">
           <button 
             onClick={() => {
               alert(`Target fokus disetel ke: ${activeTaskObj?.title}\nSilakan mulai timer sprint di halaman utama.`);
               window.location.href = '/today';
             }}
-            className="flex-1 md:flex-initial flex items-center justify-center gap-space-xs px-space-lg py-2.5 rounded-xl bg-secondary hover:bg-secondary-fixed text-on-secondary font-body-md text-body-md font-bold transition-all shadow-[0_0_18px_rgba(76,215,246,0.4)] disabled:opacity-50 disabled:cursor-not-allowed" disabled={!activeTaskObj}
+            className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs sm:text-sm font-semibold transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer border border-purple-500/30 active:scale-95 shadow-none disabled:opacity-50 disabled:cursor-not-allowed" 
+            disabled={!activeTaskObj}
           >
-            <span className="material-symbols-outlined text-[20px]">play_arrow</span>
+            <span className="material-symbols-outlined text-[18px]">play_arrow</span>
             <span>Mulai Pomodoro (25m)</span>
           </button>
         </div>
@@ -473,21 +500,21 @@ const Tasks = () => {
       {/* MODAL */}
       {isTaskModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface-container-low p-space-lg rounded-2xl max-w-md w-full shadow-2xl space-y-space-md border border-surface-container-highest">
-            <h2 className="font-headline-md text-on-surface font-bold">{editingTaskId ? 'Edit Task' : 'Create New Task'}</h2>
+          <div className="bg-surface-container-low p-6 sm:p-7 rounded-2xl max-w-md w-full shadow-2xl space-y-4 border border-neutral-800/50">
+            <h2 className="text-xl font-bold text-on-surface font-sans">{editingTaskId ? 'Edit Task' : 'Create New Task'}</h2>
             <div className="space-y-3">
               <div>
-                <label className="block font-label-sm text-outline mb-1">Title</label>
-                <input value={taskForm.title} onChange={e => setTaskForm({...taskForm, title: e.target.value})} className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter task title" />
+                <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Judul Task</label>
+                <input value={taskForm.title} onChange={e => setTaskForm({...taskForm, title: e.target.value})} className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Masukkan judul task" />
               </div>
               <div>
-                <label className="block font-label-sm text-outline mb-1">Description (Optional)</label>
-                <textarea value={taskForm.description} onChange={e => setTaskForm({...taskForm, description: e.target.value})} className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" rows={2} placeholder="Brief description"></textarea>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Deskripsi (Opsional)</label>
+                <textarea value={taskForm.description} onChange={e => setTaskForm({...taskForm, description: e.target.value})} className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows={2} placeholder="Deskripsi singkat..."></textarea>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-label-sm text-outline mb-1">Category</label>
-                  <select value={taskForm.category} onChange={e => setTaskForm({...taskForm, category: e.target.value})} className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Kategori</label>
+                  <select value={taskForm.category} onChange={e => setTaskForm({...taskForm, category: e.target.value})} className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="Study Space">Study Space</option>
                     <option value="Projects">Projects</option>
                     <option value="Competitions">Competitions</option>
@@ -495,8 +522,8 @@ const Tasks = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-label-sm text-outline mb-1">Priority</label>
-                  <select value={taskForm.priority} onChange={e => setTaskForm({...taskForm, priority: e.target.value})} className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Prioritas</label>
+                  <select value={taskForm.priority} onChange={e => setTaskForm({...taskForm, priority: e.target.value})} className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="high">High</option>
                     <option value="medium">Medium</option>
                     <option value="low">Low</option>
@@ -504,13 +531,13 @@ const Tasks = () => {
                 </div>
               </div>
               <div>
-                <label className="block font-label-sm text-outline mb-1">Due Date</label>
-                <input type="date" value={taskForm.due_date} onChange={e => setTaskForm({...taskForm, due_date: e.target.value})} className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Due Date</label>
+                <input type="date" value={taskForm.due_date} onChange={e => setTaskForm({...taskForm, due_date: e.target.value})} className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => { setIsTaskModalOpen(false); setEditingTaskId(null); }} className="px-4 py-2 rounded-lg font-label-md text-on-surface-variant hover:bg-surface-container transition-colors">Cancel</button>
-              <button onClick={handleSaveTask} className="px-4 py-2 rounded-lg font-label-md bg-primary-container text-on-primary-container font-bold hover:bg-inverse-primary transition-colors shadow-sm">Save Task</button>
+            <div className="flex justify-end gap-3 pt-4 border-t border-neutral-800/50">
+              <button onClick={() => { setIsTaskModalOpen(false); setEditingTaskId(null); }} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-semibold text-on-surface-variant hover:bg-surface-container transition-colors">Batal</button>
+              <button onClick={handleSaveTask} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold bg-purple-600 hover:bg-purple-500 text-white transition-colors border border-purple-500/30 shadow-none cursor-pointer">Simpan Task</button>
             </div>
           </div>
         </div>

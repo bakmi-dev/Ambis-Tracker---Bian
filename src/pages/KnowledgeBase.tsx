@@ -171,175 +171,186 @@ const KnowledgeBase = () => {
   const extDocs = docs.filter(d => parseContent(d.content) !== null);
 
   return (
-    <div className="flex flex-col w-full relative">
+    <div className="flex flex-col w-full max-w-7xl mx-auto pt-6 sm:pt-8 pb-12 space-y-6 sm:space-y-8">
       {/* Toast Notification */}
-      <div className={`fixed bottom-6 right-6 z-[300] bg-surface-container-high text-on-surface border border-surface-container-highest px-6 py-3 rounded-xl shadow-lg transition-all duration-300 transform flex items-center gap-2 ${toastMessage ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
+      <div className={`fixed bottom-6 right-6 z-[300] bg-surface-container-high text-on-surface border border-neutral-800/50 px-6 py-3 rounded-xl shadow-lg transition-all duration-300 transform flex items-center gap-2 ${toastMessage ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
         <span className="material-symbols-outlined text-secondary">check_circle</span>
-        <span className="font-label-md font-semibold">{toastMessage}</span>
+        <span className="text-sm font-semibold">{toastMessage}</span>
       </div>
 
       {isLoading && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-surface/50 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-            <p className="font-body-md text-on-surface-variant animate-pulse">Memuat pengetahuan...</p>
+            <p className="text-sm font-medium text-on-surface-variant animate-pulse">Memuat pengetahuan...</p>
           </div>
         </div>
       )}
 
-      {/* Background Ambience */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
-      
       {/* Top Breadcrumb & Quick Status Header */}
-      <div className="flex flex-col gap-space-sm mb-space-lg relative z-10">
-        <div className="flex items-center justify-between flex-wrap gap-space-sm">
-          <div className="flex items-center gap-space-xs font-label-sm text-label-sm uppercase tracking-widest text-outline">
-            <span className="hover:text-on-surface cursor-pointer transition-colors">Command Deck</span>
-            <span>/</span>
-            <span className="hover:text-on-surface cursor-pointer transition-colors">Knowledge & Second Brain</span>
-            <span>/</span>
-            <span className="text-secondary font-semibold">Vault 0x7E3</span>
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-secondary font-semibold flex-wrap">
+            <span className="material-symbols-outlined text-[14px]">library_books</span>
+            <span>COMMAND DECK</span>
+            <span className="text-outline/40">/</span>
+            <span>KNOWLEDGE & SECOND BRAIN</span>
+            <span className="text-outline/40">/</span>
+            <span className="text-primary font-bold">VAULT 0X7E3</span>
           </div>
-          <div className="flex items-center gap-space-sm">
-            <div className="flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-surface-container-low text-secondary font-label-sm text-label-sm">
-              <span className="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-              <span>Obsidian Engine: Synced ({docs.length} Modul)</span>
-            </div>
-            <div className="flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm">
-              <span className="material-symbols-outlined text-[14px] text-primary">commit</span>
-              <span>Commit: #8f12a (Main Vault)</span>
-            </div>
-          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface font-sans">
+            Knowledge Base & Architecture Vault
+          </h1>
+          <p className="text-sm sm:text-base text-on-surface-variant max-w-3xl leading-relaxed font-sans">
+            Pusat dokumentasi modular, catatan arsitektur sistem terdistribusi, ringkasan RFC, cheatsheets, dan arsip referensi teknis {user?.name || 'Operator'}.
+          </p>
         </div>
-        
-        {/* Main Header Action Ribbon */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md pt-space-xs">
-          <div>
-            <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold flex items-center gap-space-sm">
-              Knowledge Base & Architecture Vault
-              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-label-sm text-label-sm font-semibold tracking-wider uppercase">Level 4 Scholar</span>
-            </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-1 max-w-3xl">
-              Pusat dokumentasi modular, catatan arsitektur sistem terdistribusi, ringkasan RFC, cheatsheets, dan arsip referensi teknis {user?.name || 'Operator'}.
-            </p>
-          </div>
-          {/* Action Cluster */}
-          <div className="flex items-center gap-space-sm flex-shrink-0 flex-wrap">
-            <button onClick={() => setShowExtModal(true)} className="px-space-md py-space-sm rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-lg text-label-lg font-semibold flex items-center gap-space-xs transition-all shadow-sm">
-              <span className="material-symbols-outlined text-[18px]">add_link</span>
-              <span>+ Tautkan Docs/Sheets</span>
-            </button>
-            <button onClick={() => setShowNoteModal(true)} className="px-space-lg py-space-sm rounded-xl bg-primary-container hover:bg-primary hover:text-on-primary text-on-primary-container font-label-lg text-label-lg font-bold flex items-center gap-space-xs transition-all shadow-[0_0_24px_-2px_rgba(139,92,246,0.45)] active:scale-95">
-              <span className="material-symbols-outlined text-[18px]">post_add</span>
-              <span>+ Buat Catatan Baru</span>
-            </button>
-          </div>
+        {/* Action Cluster */}
+        <div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
+          <button 
+            onClick={() => setShowExtModal(true)} 
+            className="px-4 py-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface text-xs sm:text-sm font-medium border border-neutral-800/50 transition-colors flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">add_link</span>
+            <span>+ Tautkan Docs/Sheets</span>
+          </button>
+          <button 
+            onClick={() => setShowNoteModal(true)} 
+            className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs sm:text-sm font-semibold flex items-center gap-2 transition-colors cursor-pointer border border-purple-500/30 active:scale-95 shadow-none"
+          >
+            <span className="material-symbols-outlined text-[18px]">post_add</span>
+            <span>+ Buat Catatan Baru</span>
+          </button>
         </div>
       </div>
 
       {/* Telemetry & Knowledge Stats Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md mb-space-xl relative z-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {/* Pod 1: Total Docs */}
-        <div className="p-space-lg rounded-2xl bg-surface-container-low shadow-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
-          <div className="flex items-center justify-between mb-space-xs">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Total Dokumen Vault</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+        <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 flex flex-col justify-between min-h-[140px] shadow-none">
+          <div className="flex items-center justify-between text-outline">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold">Total Dokumen Vault</span>
+            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
               <span className="material-symbols-outlined text-[18px]">library_books</span>
             </div>
           </div>
-          <div>
-            <div className="font-metric-display text-metric-display text-on-surface font-bold">{docs.length}</div>
-            <div className="flex items-center gap-space-xs mt-1 font-body-sm text-body-sm text-secondary">
-              <span className="material-symbols-outlined text-[14px]">horizontal_rule</span>
+          <div className="my-2">
+            <div className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight leading-none font-sans">{docs.length}</div>
+            <div className="flex items-center gap-1 mt-1 text-xs text-secondary font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
               <span>{docs.length} catatan sinkron</span>
             </div>
           </div>
-          <div className="mt-space-md pt-space-xs font-label-sm text-label-sm text-on-surface-variant flex items-center justify-between border-t border-surface-container-highest">
+          <div className="text-xs text-on-surface-variant flex items-center justify-between pt-1 border-t border-neutral-800/30 font-normal">
             <span>Kapasitas Indeks:</span>
             <span className="text-on-surface font-semibold">Tersedia</span>
           </div>
         </div>
+
         {/* Pod 2: External Links */}
-        <div className="p-space-lg rounded-2xl bg-surface-container-low shadow-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
-          <div className="flex items-center justify-between mb-space-xs">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">External Links</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary group-hover:scale-105 transition-transform">
+        <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 flex flex-col justify-between min-h-[140px] shadow-none">
+          <div className="flex items-center justify-between text-outline">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold">External Links</span>
+            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
               <span className="material-symbols-outlined text-[18px]">link</span>
             </div>
           </div>
-          <div>
-            <div className="font-metric-display text-metric-display text-on-surface font-bold">{extDocs.length}</div>
-            <div className="flex items-center gap-space-xs mt-1 font-body-sm text-body-sm text-on-surface-variant">
-              <span className="material-symbols-outlined text-[14px]">horizontal_rule</span>
+          <div className="my-2">
+            <div className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight leading-none font-sans">{extDocs.length}</div>
+            <div className="flex items-center gap-1 mt-1 text-xs text-on-surface-variant font-normal">
+              <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
               <span>Docs & Sheets tertaut</span>
             </div>
           </div>
-          <div className="mt-space-md pt-space-xs font-label-sm text-label-sm text-on-surface-variant flex items-center justify-between border-t border-surface-container-highest">
+          <div className="text-xs text-on-surface-variant flex items-center justify-between pt-1 border-t border-neutral-800/30 font-normal">
             <span>Akses Cepat:</span>
             <span className="text-secondary font-semibold">Aktif</span>
           </div>
         </div>
+
         {/* Pod 3: Active Vault Domains */}
-        <div className="p-space-lg rounded-2xl bg-surface-container-low shadow-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
-          <div className="flex items-center justify-between mb-space-xs">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Domain Kategori</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-tertiary group-hover:scale-105 transition-transform">
+        <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 flex flex-col justify-between min-h-[140px] shadow-none">
+          <div className="flex items-center justify-between text-outline">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold">Domain Kategori</span>
+            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
               <span className="material-symbols-outlined text-[18px]">hub</span>
             </div>
           </div>
-          <div>
-            <div className="font-metric-display text-metric-display text-on-surface font-bold">{categories.length}<span className="text-body-lg font-normal text-on-surface-variant ml-1">Pillars</span></div>
-            <div className="flex items-center gap-space-xs mt-1 font-body-sm text-body-sm text-on-surface-variant truncate">
+          <div className="my-2">
+            <div className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight leading-none font-sans">{categories.length}</div>
+            <div className="flex items-center gap-1 mt-1 text-xs text-on-surface-variant truncate font-normal">
               <span>{categories.slice(0,2).join(', ')}{categories.length > 2 ? '...' : ''}</span>
             </div>
           </div>
-          <div className="mt-space-md pt-space-xs font-label-sm text-label-sm text-on-surface-variant flex items-center justify-between border-t border-surface-container-highest">
+          <div className="text-xs text-on-surface-variant flex items-center justify-between pt-1 border-t border-neutral-800/30 font-normal">
             <span>Kepadatan Konsep:</span>
-            <span className="text-tertiary font-semibold">Aktif</span>
+            <span className="text-tertiary font-semibold">Optimal</span>
           </div>
         </div>
+
         {/* Pod 4: Sync & Telemetry Health */}
-        <div className="p-space-lg rounded-2xl bg-surface-container-low shadow-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
-          <div className="flex items-center justify-between mb-space-xs">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Obsidian Telemetry</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary group-hover:scale-105 transition-transform">
+        <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 flex flex-col justify-between min-h-[140px] shadow-none">
+          <div className="flex items-center justify-between text-outline">
+            <span className="text-xs uppercase tracking-wider text-outline font-semibold">Obsidian Telemetry</span>
+            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
               <span className="material-symbols-outlined text-[18px]">cloud_sync</span>
             </div>
           </div>
-          <div>
-            <div className="font-metric-display text-metric-display text-on-surface font-bold">100%</div>
-            <div className="flex items-center gap-space-xs mt-1 font-body-sm text-body-sm text-secondary">
-              <span className="material-symbols-outlined text-[14px]">cloud_sync</span>
+          <div className="my-2">
+            <div className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight leading-none font-sans">100%</div>
+            <div className="flex items-center gap-1 mt-1 text-xs text-secondary font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
               <span>Sinkronisasi aktif</span>
             </div>
           </div>
-          <div className="mt-space-md pt-space-xs font-label-sm text-label-sm text-on-surface-variant flex items-center justify-between border-t border-surface-container-highest">
+          <div className="text-xs text-on-surface-variant flex items-center justify-between pt-1 border-t border-neutral-800/30 font-normal">
             <span>Last Ping:</span>
-            <span className="text-on-surface font-label-sm">Baru saja</span>
+            <span className="text-on-surface font-mono text-[11px]">Online</span>
           </div>
         </div>
       </div>
 
       {/* Search Ribbon with Quick Filter Tokens */}
-      <div className="p-space-md rounded-2xl bg-surface-container-low shadow-sm mb-space-lg flex flex-col md:flex-row items-center gap-space-md relative z-10">
+      <div className="p-4 rounded-2xl bg-surface-container-low border border-neutral-800/50 shadow-none flex flex-col md:flex-row items-center gap-4">
         <div className="relative flex-1 w-full">
-          <span className="material-symbols-outlined absolute left-space-md top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+          <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
           <input 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-11 pl-12 pr-24 bg-surface-container text-on-surface placeholder:text-outline font-body-md text-body-md rounded-xl focus:outline-none focus:bg-surface-container-high transition-colors" 
+            className="w-full h-10 pl-10 pr-16 bg-surface-container text-on-surface placeholder:text-outline text-xs sm:text-sm rounded-xl focus:outline-none focus:bg-surface-container-high transition-colors border border-neutral-800/40" 
             placeholder="Cari catatan, tag (#raft, #concurrency), formula, atau cheatsheet..." type="text"
           />
-          <kbd className="absolute right-space-md top-1/2 -translate-y-1/2 px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm font-semibold pointer-events-none">⌘K</kbd>
+          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[11px] font-semibold pointer-events-none">⌘K</kbd>
         </div>
-        <div className="flex items-center gap-space-xs w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
-          <button onClick={() => setActiveTab('all')} className={`px-space-md py-1.5 rounded-xl font-label-sm text-label-sm font-semibold whitespace-nowrap transition-colors ${activeTab === 'all' ? 'bg-surface-container text-secondary' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'}`}>
+        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 no-scrollbar">
+          <button 
+            onClick={() => setActiveTab('all')} 
+            className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-colors border ${
+              activeTab === 'all' 
+                ? 'bg-purple-600 text-white border-purple-500/30 font-semibold shadow-none' 
+                : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container border-neutral-800/50'
+            }`}
+          >
             Semua Tipe
           </button>
-          <button onClick={() => setActiveTab('pinned')} className={`px-space-md py-1.5 rounded-xl font-label-sm text-label-sm font-semibold whitespace-nowrap transition-colors ${activeTab === 'pinned' ? 'bg-surface-container text-secondary' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'}`}>
+          <button 
+            onClick={() => setActiveTab('pinned')} 
+            className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-colors border ${
+              activeTab === 'pinned' 
+                ? 'bg-purple-600 text-white border-purple-500/30 font-semibold shadow-none' 
+                : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container border-neutral-800/50'
+            }`}
+          >
             Terverifikasi (Pinned)
           </button>
-          <button onClick={() => setActiveTab('external')} className={`px-space-md py-1.5 rounded-xl font-label-sm text-label-sm font-semibold whitespace-nowrap transition-colors ${activeTab === 'external' ? 'bg-surface-container text-secondary' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'}`}>
+          <button 
+            onClick={() => setActiveTab('external')} 
+            className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-colors border ${
+              activeTab === 'external' 
+                ? 'bg-purple-600 text-white border-purple-500/30 font-semibold shadow-none' 
+                : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container border-neutral-800/50'
+            }`}
+          >
             Tautan Docs
           </button>
         </div>

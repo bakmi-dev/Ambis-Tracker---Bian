@@ -315,44 +315,40 @@ const StudySpace = () => {
   const weeklyFocusMins = (analytics?.today?.focusTimeMinutes || 0) % 60;
 
   return (
-    <div className="flex flex-col w-full relative">
+    <div className="flex flex-col w-full max-w-7xl mx-auto pt-6 sm:pt-8 pb-12 space-y-6 sm:space-y-8 relative">
       {isLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface/50 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-            <p className="font-body-md text-on-surface-variant animate-pulse">Memuat workspace...</p>
+            <p className="font-sans text-sm text-on-surface-variant animate-pulse">Memuat workspace...</p>
           </div>
         </div>
       )}
       {/* Top Telemetry & Header Section */}
-      <section className="relative rounded-2xl bg-surface-container-low p-space-lg mb-space-lg overflow-hidden shadow-md">
-        {/* Ambient glowing backdrop aura */}
-        <div className="absolute -right-24 -top-24 w-96 h-96 bg-gradient-to-br from-primary/15 via-secondary/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-gradient-to-tr from-secondary-container/10 via-primary-container/10 to-transparent rounded-full blur-2xl pointer-events-none"></div>
-        
-        <div className="relative z-10 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-space-lg">
-          <div className="space-y-space-xs max-w-2xl">
-            <div className="flex items-center gap-space-sm flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-secondary uppercase tracking-widest font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-ping"></span>
-                Telemetry Protocol Active
+      <section className="relative rounded-2xl bg-surface-container-low p-6 sm:p-8 border border-neutral-800/50 shadow-none">
+        <div className="relative z-10 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-mono text-xs uppercase tracking-wider text-secondary font-semibold">
+                STUDY SPACE & KNOWLEDGE FORGE
               </span>
-              <span className="font-label-sm text-label-sm text-outline tracking-wider">NODE // CS-SYS-ACCELERATOR</span>
+              <span className="text-outline/40">•</span>
+              <span className="font-mono text-xs text-outline tracking-wider">NODE // CS-SYS-ACCELERATOR</span>
             </div>
-            <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">
+            <h1 className="font-sans text-2xl sm:text-3xl font-bold text-on-surface tracking-tight">
               Study Space & Knowledge Forge
             </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+            <p className="font-sans text-sm sm:text-base text-on-surface-variant leading-relaxed">
               Ruang akselerasi kompetensi teknis, kurikulum otodidak terstruktur, dan log sprint komputasi terdistribusi & rekayasa sistem.
             </p>
           </div>
           {/* Quick Action Buttons */}
-          <div className="flex items-center gap-space-sm flex-wrap xl:flex-nowrap">
-            <button onClick={scrollToLogger} className="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl bg-primary-container text-on-primary-container font-body-sm text-body-sm font-semibold shadow-[0_0_20px_rgba(160,120,255,0.4)] hover:brightness-110 active:scale-95 transition-all">
+          <div className="flex items-center gap-3 flex-wrap xl:flex-nowrap">
+            <button onClick={scrollToLogger} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-sans text-xs font-semibold uppercase tracking-wider border border-purple-500/30 shadow-none active:scale-95 transition-all">
               <span className="material-symbols-outlined text-[18px]">add_circle</span>
               <span>+ Log Sesi Belajar</span>
             </button>
-            <button onClick={() => setIsRoadmapModalOpen(true)} className="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-body-sm text-body-sm font-semibold transition-all">
+            <button onClick={() => setIsRoadmapModalOpen(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-sans text-xs font-semibold uppercase tracking-wider border border-neutral-800/40 shadow-none transition-all">
               <span className="material-symbols-outlined text-[18px]">alt_route</span>
               <span>+ Tambah Materi / Roadmap</span>
             </button>
@@ -360,48 +356,46 @@ const StudySpace = () => {
         </div>
         
         {/* Live Telemetry KPI Strip */}
-        <div className="mt-space-lg grid grid-cols-1 md:grid-cols-3 gap-space-md pt-space-md bg-surface-container-lowest/60 rounded-xl p-space-md backdrop-blur-md">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-neutral-800/40">
           {/* Streak */}
-          <div className="flex items-center gap-space-md">
-            <div className="w-11 h-11 rounded-xl bg-surface-container-high flex items-center justify-center text-secondary shadow-[0_0_12px_rgba(76,215,246,0.25)] flex-shrink-0">
-              <span className="material-symbols-outlined text-[24px]">local_fire_department</span>
+          <div className="p-5 rounded-2xl bg-surface-container border border-neutral-800/50 flex items-center gap-4 shadow-none">
+            <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-secondary shadow-none flex-shrink-0">
+              <span className="material-symbols-outlined text-[22px]">local_fire_department</span>
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Streak Konsistensi</span>
-                <span className="font-label-sm text-label-sm text-secondary font-bold">-</span>
+                <span className="font-sans text-xs uppercase tracking-wider text-outline font-semibold">Streak Konsistensi</span>
               </div>
-              <div className="font-headline-md text-headline-md text-on-surface font-bold truncate">{streak} Hari</div>
-              <span className="font-label-sm text-label-sm text-on-surface-variant">Terus pertahankan ritme belajar!</span>
+              <div className="font-sans text-xl sm:text-2xl font-bold text-on-surface truncate">{streak} Hari</div>
+              <span className="font-sans text-xs text-on-surface-variant">Terus pertahankan ritme belajar!</span>
             </div>
           </div>
           {/* Weekly Hours */}
-          <div className="flex items-center gap-space-md">
-            <div className="w-11 h-11 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shadow-[0_0_12px_rgba(208,188,255,0.25)] flex-shrink-0">
-              <span className="material-symbols-outlined text-[24px]">hourglass_top</span>
+          <div className="p-5 rounded-2xl bg-surface-container border border-neutral-800/50 flex items-center gap-4 shadow-none">
+            <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shadow-none flex-shrink-0">
+              <span className="material-symbols-outlined text-[22px]">hourglass_top</span>
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Sprint Minggu Ini</span>
-                <span className="font-label-sm text-label-sm text-primary font-bold">Live</span>
+                <span className="font-sans text-xs uppercase tracking-wider text-outline font-semibold">Sprint Minggu Ini</span>
               </div>
-              <div className="font-headline-md text-headline-md text-on-surface font-bold truncate">{weeklyFocusHours}j {weeklyFocusMins}m</div>
-              <span className="font-label-sm text-label-sm text-on-surface-variant">Total durasi fokus</span>
+              <div className="font-sans text-xl sm:text-2xl font-bold text-on-surface truncate">{weeklyFocusHours}j {weeklyFocusMins}m</div>
+              <span className="font-sans text-xs text-on-surface-variant">Total durasi fokus</span>
             </div>
           </div>
           {/* Level & XP */}
-          <div className="flex items-center gap-space-md">
-            <div className="w-11 h-11 rounded-xl bg-surface-container-high flex items-center justify-center text-tertiary shadow-[0_0_12px_rgba(255,176,205,0.25)] flex-shrink-0">
-              <span className="material-symbols-outlined text-[24px]">military_tech</span>
+          <div className="p-5 rounded-2xl bg-surface-container border border-neutral-800/50 flex items-center gap-4 shadow-none">
+            <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-tertiary shadow-none flex-shrink-0">
+              <span className="material-symbols-outlined text-[22px]">military_tech</span>
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between">
-                <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Level Telemetry</span>
-                <span className="font-label-sm text-label-sm font-semibold text-tertiary">{xp} XP</span>
+                <span className="font-sans text-xs uppercase tracking-wider text-outline font-semibold">Level Telemetry</span>
+                <span className="font-sans text-xs font-semibold text-tertiary">{xp} XP</span>
               </div>
-              <div className="font-headline-md text-headline-md text-on-surface font-bold truncate">Tingkat Pengetahuan Aktif</div>
-              <div className="w-full bg-surface-container-high h-1.5 rounded-full mt-1 overflow-hidden">
-                <div className="bg-gradient-to-r from-primary to-tertiary h-full rounded-full" style={{ width: `${Math.min((xp % 1000) / 10, 100)}%` }}></div>
+              <div className="font-sans text-base font-bold text-on-surface truncate">Tingkat Pengetahuan Aktif</div>
+              <div className="w-full bg-surface-container-high h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="bg-purple-500 h-full rounded-full" style={{ width: `${Math.min((xp % 1000) / 10, 100)}%` }}></div>
               </div>
             </div>
           </div>
@@ -487,7 +481,7 @@ const StudySpace = () => {
               <span className="material-symbols-outlined text-[16px] text-secondary">verified</span>
               <span>Sesi diverifikasi oleh Engine Telemetry Focus Ambis OS</span>
             </div>
-            <button disabled={isSubmitting} className="px-space-lg py-2.5 rounded-xl bg-primary text-on-primary font-body-sm text-body-sm font-semibold shadow-[0_0_16px_rgba(208,188,255,0.35)] hover:bg-primary-fixed hover:text-on-primary-fixed transition-all flex items-center gap-space-sm active:scale-95 disabled:opacity-50" type="submit">
+            <button disabled={isSubmitting} className="px-space-lg py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-sans text-xs font-semibold border border-purple-500/30 shadow-none transition-all flex items-center gap-space-sm active:scale-95 disabled:opacity-50" type="submit">
               <span className="material-symbols-outlined text-[18px]">bolt</span>
               <span>{isSubmitting ? 'Menyimpan...' : 'Simpan Sesi & Dapatkan XP'}</span>
             </button>
@@ -793,7 +787,7 @@ const StudySpace = () => {
             <span className="font-body-sm text-body-sm font-semibold text-on-surface">Binaural Isochronic Pulse</span>
             <span className="font-label-sm text-label-sm text-outline">Frequency: 14Hz Beta Focus</span>
           </div>
-          <button className="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center hover:bg-secondary-fixed hover:text-on-secondary-fixed transition-colors shadow-[0_0_12px_rgba(76,215,246,0.3)]">
+          <button className="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center hover:bg-secondary-fixed hover:text-on-secondary-fixed transition-colors shadow-none">
             <span className="material-symbols-outlined text-[20px]">play_arrow</span>
           </button>
         </div>

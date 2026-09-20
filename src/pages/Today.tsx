@@ -361,17 +361,14 @@ const Today = () => {
   const focusMins = focusMinutes % 60;
 
   return (
-    <div className="flex flex-col w-full space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-12">
+    <div className="flex flex-col w-full space-y-6 sm:space-y-8 max-w-7xl mx-auto pt-6 sm:pt-8 pb-12">
       {/* Top Command Status & Priming Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-surface-container-low p-6 sm:p-8 border border-white/5 shadow-sm">
-        <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-gradient-to-br from-primary-container/20 to-secondary/10 blur-3xl pointer-events-none"></div>
-        <div className="absolute -left-12 -bottom-12 w-64 h-64 rounded-full bg-secondary-container/10 blur-2xl pointer-events-none"></div>
-
+      <div className="relative overflow-hidden rounded-2xl bg-surface-container-low p-6 sm:p-8 border border-neutral-800/50 shadow-none">
         <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-secondary text-xs font-semibold uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-secondary font-mono text-xs font-semibold uppercase tracking-widest border border-neutral-800/40">
+                <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
                 {new Date().toLocaleDateString("id-ID", {
                   weekday: "long",
                   day: "numeric",
@@ -379,14 +376,14 @@ const Today = () => {
                   year: "numeric",
                 })}
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container/25 text-primary text-xs font-bold tracking-wide">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/40 border border-purple-500/20 text-purple-300 font-mono text-xs font-bold tracking-wide">
                 <span className="material-symbols-outlined text-[15px]">
                   bolt
                 </span>
                 COGNITIVE RESONANCE: 94%
               </span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-on-surface tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold font-sans text-on-surface tracking-tight leading-tight">
               Today's Command: High Resonance & Deep Work
             </h1>
             <p className="text-sm sm:text-base text-on-surface-variant flex items-center gap-2">
@@ -404,7 +401,7 @@ const Today = () => {
               onClick={() => {
                 startTimer(45);
               }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-secondary text-xs font-bold tracking-wider uppercase transition-all shadow-sm"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold tracking-wider uppercase transition-all border border-neutral-800/40 shadow-none"
             >
               <span className="material-symbols-outlined text-secondary text-[18px]">
                 graphic_eq
@@ -413,7 +410,7 @@ const Today = () => {
             </button>
             <button
               onClick={() => setIsStudyModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-highest text-secondary text-xs font-bold tracking-wider uppercase transition-all shadow-sm"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-highest text-on-surface text-xs font-semibold tracking-wider uppercase transition-all border border-neutral-800/40 shadow-none"
             >
               <span className="material-symbols-outlined text-secondary text-[18px]">
                 menu_book
@@ -422,7 +419,7 @@ const Today = () => {
             </button>
             <button
               onClick={() => setIsTaskModalOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary text-xs font-bold tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(160,120,255,0.35)] active:scale-95"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold tracking-wider uppercase transition-all border border-purple-500/30 shadow-none active:scale-95"
             >
               <span className="material-symbols-outlined text-[18px]">
                 add_task
@@ -459,7 +456,7 @@ const Today = () => {
           </div>
           <div className="mt-3 w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
             <div
-              className="bg-secondary h-1.5 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(76,215,246,0.6)]"
+              className="bg-secondary h-1.5 rounded-full transition-all duration-500 shadow-none"
               style={{ width: `${Math.min((focusMinutes / 480) * 100, 100)}%` }}
             ></div>
           </div>
@@ -492,7 +489,7 @@ const Today = () => {
           </div>
           <div className="mt-3 w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
             <div
-              className="bg-primary h-1.5 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(160,120,255,0.6)]"
+              className="bg-primary h-1.5 rounded-full transition-all duration-500 shadow-none"
               style={{ width: `${taskPercent}%` }}
             ></div>
           </div>
@@ -594,7 +591,7 @@ const Today = () => {
                     key={block.id}
                     className={`relative pl-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                       block.status === "Active"
-                        ? "p-5 rounded-xl bg-surface-container shadow-[0_0_16px_rgba(76,215,246,0.1)] gap-4"
+                        ? "p-5 rounded-xl bg-surface-container border border-neutral-800/50 shadow-none gap-4"
                         : block.status === "Completed"
                           ? "p-4 sm:p-5 rounded-xl bg-surface-container/60 hover:bg-surface-container transition-colors"
                           : "p-4 sm:p-5 rounded-xl bg-surface-container/40 hover:bg-surface-container/70 transition-colors"
@@ -602,7 +599,7 @@ const Today = () => {
                   >
                     {block.status === "Active" ? (
                       <>
-                        <span className="absolute left-1.5 top-6 w-3.5 h-3.5 rounded-full bg-secondary shadow-[0_0_10px_rgba(76,215,246,0.9)] animate-ping"></span>
+                        <span className="absolute left-1.5 top-6 w-3.5 h-3.5 rounded-full bg-secondary/30 animate-ping"></span>
                         <span className="absolute left-2 top-6.5 w-2.5 h-2.5 rounded-full bg-secondary"></span>
                       </>
                     ) : (
@@ -682,7 +679,7 @@ const Today = () => {
                       }`}
                     >
                       {block.status === "Active" ? (
-                        <button className="px-4 py-1.5 rounded-lg bg-secondary text-on-secondary text-xs font-bold uppercase tracking-wider hover:bg-secondary-fixed transition-colors shadow-[0_0_12px_rgba(76,215,246,0.3)]">
+                        <button className="px-4 py-1.5 rounded-lg bg-secondary text-on-secondary text-xs font-bold uppercase tracking-wider hover:bg-secondary-fixed transition-colors shadow-none">
                           In Session
                         </button>
                       ) : block.xp ? (
@@ -851,7 +848,7 @@ const Today = () => {
                   </p>
                   <button
                     onClick={() => setIsTaskModalOpen(true)}
-                    className="px-5 py-2.5 rounded-xl bg-primary text-on-primary text-xs font-bold uppercase tracking-wider hover:brightness-110 flex items-center gap-2 mx-auto shadow-[0_0_15px_rgba(160,120,255,0.4)]"
+                    className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-2 mx-auto border border-purple-500/30 shadow-none active:scale-95"
                   >
                     <span className="material-symbols-outlined text-[18px]">add</span>
                     Tambah Task Hari Ini
@@ -881,7 +878,7 @@ const Today = () => {
             <div className="absolute top-0 right-0 w-36 h-36 bg-secondary/10 rounded-full blur-2xl pointer-events-none"></div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(76,215,246,0.8)]"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-secondary"></span>
                 <h2 className="text-xl font-bold text-on-surface tracking-tight">
                   Active Focus Sprint
                 </h2>
@@ -975,7 +972,7 @@ const Today = () => {
                 }}
                 className={`py-3 rounded-xl text-xs uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-1.5 ${
                   !isActive || isPaused
-                    ? "bg-secondary text-on-secondary hover:brightness-110 shadow-[0_0_12px_rgba(76,215,246,0.3)]"
+                    ? "bg-secondary text-on-secondary hover:brightness-110 shadow-none"
                     : "bg-surface-container-high hover:bg-surface-bright text-on-surface"
                 }`}
               >
@@ -986,7 +983,7 @@ const Today = () => {
               </button>
               <button
                 onClick={stopTimer}
-                className="py-3 rounded-xl bg-primary hover:bg-primary-hover text-on-primary text-xs uppercase tracking-wider font-bold transition-all shadow-[0_0_16px_rgba(160,120,255,0.3)] flex items-center justify-center gap-1.5 active:scale-95"
+                className="py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs uppercase tracking-wider font-semibold transition-all border border-purple-500/30 shadow-none flex items-center justify-center gap-1.5 active:scale-95"
               >
                 <span className="material-symbols-outlined text-[18px]">
                   stop
@@ -1179,7 +1176,7 @@ const Today = () => {
               </button>
               <button
                 onClick={handleCreateRitual}
-                className="flex-1 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold bg-primary text-on-primary hover:brightness-110 shadow-[0_0_12px_rgba(160,120,255,0.3)]"
+                className="flex-1 py-2.5 rounded-xl text-xs uppercase tracking-wider font-semibold bg-purple-600 hover:bg-purple-500 text-white border border-purple-500/30 shadow-none"
               >
                 Simpan
               </button>
@@ -1268,7 +1265,7 @@ const Today = () => {
               </button>
               <button
                 onClick={handleCreateTask}
-                className="px-5 py-2 rounded-xl text-xs uppercase tracking-wider font-bold bg-primary text-on-primary hover:brightness-110 transition-colors shadow-[0_0_12px_rgba(160,120,255,0.3)]"
+                className="px-5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold bg-purple-600 hover:bg-purple-500 text-white border border-purple-500/30 transition-colors shadow-none"
               >
                 Simpan Task
               </button>
@@ -1338,7 +1335,7 @@ const Today = () => {
               </button>
               <button
                 onClick={handleLogStudy}
-                className="px-5 py-2 rounded-xl text-xs uppercase tracking-wider font-bold bg-secondary text-on-secondary hover:brightness-110 transition-colors shadow-[0_0_12px_rgba(76,215,246,0.3)]"
+                className="px-5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold bg-purple-600 hover:bg-purple-500 text-white border border-purple-500/30 transition-colors shadow-none"
               >
                 Simpan Sesi
               </button>
