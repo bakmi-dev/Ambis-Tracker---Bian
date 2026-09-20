@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { taskApi, analyticsApi, studySessionApi, ritualApi, competitionApi } from "../api";
-import { useGlobalState } from "../context/GlobalContext";
+import { taskApi, analyticsApi, studySessionApi, competitionApi } from "../api";
 import { useFocusTimer } from "../context/FocusTimerContext";
 import { useDailyRituals } from "../context/RitualContext";
 

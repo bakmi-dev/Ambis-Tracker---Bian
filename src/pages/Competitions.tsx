@@ -524,8 +524,8 @@ const Competitions = () => {
                     {comp.badgeText === 'Finished' && <span className="material-symbols-outlined text-[14px]">workspace_premium</span>}
                     {comp.badgeText}
                   </span>
-                  <div className="flex items-center gap-1 mt-1">
-                    <button onClick={() => {if(typeof (window as any).openEditModal === 'function') (window as any).openEditModal(comp); else console.warn('openEditModal not found in HEAD')}} className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-primary hover:bg-primary-container/20 transition-colors" title="Edit Kompetisi">
+                  <div className="flex items-center gap-1.5">
+                    <button onClick={() => openEditModal(comp)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-primary hover:bg-primary-container/20 transition-colors" title="Edit Kompetisi">
                       <span className="material-symbols-outlined text-[16px]">edit</span>
                     </button>
                     <button onClick={() => handleDelete(comp.id)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors" title="Hapus Kompetisi">
@@ -611,7 +611,7 @@ const Competitions = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-surface-container-low p-6 sm:p-7 rounded-2xl max-w-2xl w-full shadow-2xl flex flex-col max-h-[90vh] border border-neutral-800/50">
             <h2 className="text-xl font-bold text-on-surface mb-4 font-sans">
-              {(window as any).editingCompId ? 'Edit Kompetisi / Hackathon' : 'Tambah Kompetisi / Hackathon Baru'}
+              {editingCompId ? 'Edit Kompetisi / Hackathon' : 'Tambah Kompetisi / Hackathon Baru'}
             </h2>
             
             <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
@@ -742,9 +742,9 @@ const Competitions = () => {
             </div>
             
             <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-neutral-800/50">
-              <button onClick={() => {setIsModalOpen(false); if(typeof (window as any).setEditingCompId === 'function') (window as any).setEditingCompId(null);}} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-semibold text-on-surface-variant hover:bg-surface-container transition-colors">Batal</button>
-              <button onClick={(window as any).handleSaveSubmit || handleCreateSubmit} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold bg-purple-600 hover:bg-purple-500 text-white transition-colors border border-purple-500/30 flex items-center gap-2 shadow-none cursor-pointer">
-                <span className="material-symbols-outlined text-[18px]">save</span> {(window as any).editingCompId ? 'Update Kompetisi' : 'Simpan Kompetisi'}
+              <button onClick={() => {setIsModalOpen(false); setEditingCompId(null);}} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-semibold text-on-surface-variant hover:bg-surface-container transition-colors">Batal</button>
+              <button onClick={handleSaveSubmit} className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold bg-purple-600 hover:bg-purple-500 text-white transition-colors border border-purple-500/30 flex items-center gap-2 shadow-none cursor-pointer">
+                <span className="material-symbols-outlined text-[18px]">save</span> {editingCompId ? 'Update Kompetisi' : 'Simpan Kompetisi'}
               </button>
             </div>
           </div>

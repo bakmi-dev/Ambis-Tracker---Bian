@@ -458,7 +458,7 @@ const Projects = () => {
               
               {/* Tech tags */}
               <div className="flex flex-wrap gap-1.5 pt-1">
-                {project.techTags.map((tag, i) => (
+                {((project as any).techTags || []).map((tag: any, i: any) => (
                   <span key={i} className="px-2 py-0.5 rounded bg-surface-container text-[11px] text-on-surface-variant font-mono border border-neutral-800/40">
                     {tag}
                   </span>
@@ -486,7 +486,6 @@ const Projects = () => {
                   <a href={project.designUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-neutral-800/50 transition-colors text-xs font-semibold text-on-surface cursor-pointer">
                     <span className="material-symbols-outlined text-[14px]">design_services</span> Design
                   </a>
-                )}
                 )}
               </div>
             </div>
@@ -606,8 +605,8 @@ const Projects = () => {
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-outline mb-1.5">Tech Stack / Tags</label>
                   <input 
-                    value={form.techTagsStr} 
-                    onChange={e => setForm({...form, techTagsStr: e.target.value})} 
+                    value={(form as any).techTagsStr || ''} 
+                    onChange={e => setForm({...form, techTagsStr: e.target.value} as any)} 
                     className="w-full bg-surface-container text-on-surface px-4 py-2.5 rounded-xl text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-primary" 
                     placeholder="Pisahkan dengan koma" 
                   />

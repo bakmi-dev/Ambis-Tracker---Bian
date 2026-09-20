@@ -366,8 +366,6 @@ const Goals = () => {
               <span className="material-symbols-outlined text-[18px]">event_upcoming</span>
             </div>
           </div>
-            </div>
-          </div>
           <div className="my-2 flex items-baseline gap-2">
             <span className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight leading-none font-sans">{q4Goals.length}</span>
             <span className="text-xs text-tertiary font-semibold">Sasaran Krusial</span>
