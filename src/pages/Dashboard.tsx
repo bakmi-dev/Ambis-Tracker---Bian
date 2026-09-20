@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { taskApi, projectApi, competitionApi, goalApi, analyticsApi } from '../api';
+import { taskApi, projectApi, competitionApi, goalApi, analyticsApi, studySessionApi } from '../api';
 import { useGlobalState } from '../context/GlobalContext';
 import { useFocusTimer } from '../context/FocusTimerContext';
 
@@ -67,7 +67,11 @@ const Dashboard = () => {
     isPaused: isFocusPaused,
     startTimer,
     pauseTimer,
-    resumeTimer
+    resumeTimer,
+    stopTimer,
+    formatTimer,
+    pendingSession,
+    clearPendingSession,
   } = useFocusTimer();
 
   // Quick action modals
@@ -115,6 +119,31 @@ const Dashboard = () => {
     window.addEventListener('ambis:tasks-updated', handleSync);
     return () => window.removeEventListener('ambis:tasks-updated', handleSync);
   }, [fetchDashboardData]);
+
+  // Auto-save completed focus session when stopped on Dashboard
+  useEffect(() => {
+    if (pendingSession) {
+      const autoSave = async () => {
+        try {
+          await studySessionApi.create({
+            title: pendingSession.topic || "Sesi Fokus Selesai",
+            duration_minutes: pendingSession.duration,
+            takeaway: "Sesi selesai (Auto-logged)",
+            start_time: new Date(Date.now() - pendingSession.duration * 60000).toISOString(),
+            end_time: new Date().toISOString(),
+          });
+          showToast(`Sesi fokus selesai: +${pendingSession.duration * 2} XP!`);
+          fetchDashboardData();
+          window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
+        } catch (e) {
+          console.error("Auto-save failed", e);
+        } finally {
+          clearPendingSession();
+        }
+      };
+      autoSave();
+    }
+  }, [pendingSession, fetchDashboardData, clearPendingSession]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -236,16 +265,79 @@ const Dashboard = () => {
                 <span className="material-symbols-outlined text-[18px]">checklist</span>
                 <span>Buka Task Harian</span>
               </button>
-              <button
-                onClick={() => { isFocusActive ? (isFocusPaused ? resumeTimer() : pauseTimer()) : startTimer(45); }}
-                className="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-neutral-800/50 font-medium text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+
+              {/* Focus Button Connected to Today Timer */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => {
+                    if (isFocusActive) {
+                      if (isFocusPaused) {
+                        resumeTimer();
+                      } else {
+                        pauseTimer();
+                      }
+                    } else {
+                      startTimer(25);
+                    }
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer border ${
+                    isFocusActive
+                      ? isFocusPaused
+                        ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25'
+                        : 'bg-secondary/15 text-secondary border-secondary/30 hover:bg-secondary/25'
+                      : 'bg-surface-container hover:bg-surface-container-high text-on-surface border-neutral-800/50'
+                  }`}
+                  title={isFocusActive ? (isFocusPaused ? "Lanjutkan Sprint" : "Jeda Sprint") : "Mulai 25m Focus Sprint (Sinkron dengan Today)"}
+                >
+                  <span className={`material-symbols-outlined text-[18px] ${isFocusActive && !isFocusPaused ? 'animate-pulse text-secondary' : isFocusPaused ? 'text-amber-400' : 'text-secondary'}`}>
+                    {isFocusActive ? (isFocusPaused ? 'play_arrow' : 'pause') : 'play_arrow'}
+                  </span>
+                  <span>
+                    {isFocusActive
+                      ? `${formatTimer()} • ${isFocusPaused ? 'Resume' : 'Pause'}`
+                      : 'Mulai Fokus'}
+                  </span>
+                </button>
+
+                {isFocusActive && (
+                  <button
+                    onClick={() => stopTimer()}
+                    className="px-2.5 py-2 rounded-lg bg-surface-container hover:bg-red-500/20 text-on-surface-variant hover:text-red-400 border border-neutral-800/50 transition-colors cursor-pointer flex items-center gap-1 text-xs"
+                    title="Selesaikan / Hentikan Sesi Sprint"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">stop</span>
+                    <span className="hidden sm:inline">Selesai</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Linked Target Stat (Connected to Timer in Today) */}
+              <div
+                onClick={() => navigate('/today#focus-sprint-section')}
+                className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container/60 hover:bg-surface-container hover:border-secondary/40 transition-all cursor-pointer border border-neutral-800/50 group"
+                title="Buka Timer Focus Sprint di menu Today"
               >
-                <span className="material-symbols-outlined text-secondary text-[18px]">{isFocusActive && !isFocusPaused ? 'pause' : 'play_arrow'}</span>
-                <span>{isFocusActive && !isFocusPaused ? 'Pause Fokus' : isFocusPaused ? 'Resume Fokus' : 'Mulai Fokus'}</span>
-              </button>
-              <div className="hidden xl:flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container/60 font-mono text-xs text-on-surface-variant border border-neutral-800/50">
-                <span className="material-symbols-outlined text-secondary text-[15px]">bolt</span>
-                <span>Target: 4j 00m (Selesai: {Math.floor((analytics?.today?.focusTimeMinutes || 0) / 60)}j {(analytics?.today?.focusTimeMinutes || 0) % 60}m)</span>
+                <div className="flex items-center gap-1.5">
+                  <span className={`material-symbols-outlined text-[15px] ${isFocusActive ? 'text-secondary animate-pulse' : 'text-secondary'}`}>
+                    {isFocusActive ? 'timer' : 'bolt'}
+                  </span>
+                  <span className="font-mono text-xs text-on-surface">
+                    {isFocusActive ? (
+                      <span className="text-secondary font-bold">
+                        Sprint: {formatTimer()}
+                      </span>
+                    ) : (
+                      <span>Target: 4j 00m</span>
+                    )}
+                  </span>
+                </div>
+                <span className="text-neutral-600 font-mono text-xs">•</span>
+                <span className="font-mono text-xs text-on-surface-variant group-hover:text-on-surface transition-colors">
+                  Selesai: {Math.floor((analytics?.today?.focusTimeMinutes || 0) / 60)}j {(analytics?.today?.focusTimeMinutes || 0) % 60}m
+                </span>
+                <span className="material-symbols-outlined text-[14px] text-on-surface-variant/60 group-hover:text-secondary group-hover:translate-x-0.5 transition-all">
+                  arrow_forward
+                </span>
               </div>
             </div>
           </div>
@@ -371,8 +463,19 @@ const Dashboard = () => {
           </div>
           <div className="mt-3.5 flex items-center justify-between text-xs text-on-surface-variant">
             <div className="flex items-center gap-1.5 truncate">
-              <span className="material-symbols-outlined text-[14px] text-primary">flag</span>
-              <span className="truncate">Target: 4j 00m</span>
+              {isFocusActive ? (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-ping"></span>
+                  <span className="text-secondary font-semibold font-mono text-[11px] truncate">
+                    Sprint: {formatTimer()} ({isFocusPaused ? 'Paused' : 'Running'})
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[14px] text-primary">flag</span>
+                  <span className="truncate">Target: 4j 00m</span>
+                </>
+              )}
             </div>
             <span className="text-primary font-sans text-[11px] font-semibold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
               Sprint →

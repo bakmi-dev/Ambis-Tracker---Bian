@@ -6,9 +6,6 @@ import { useGlobalState } from '../../context/GlobalContext';
 const Header = () => {
   const { 
     setIsCommandPaletteOpen, 
-    setIsAudioModalOpen,
-    isPlayingBinaural,
-    audioMode,
     setIsSettingsModalOpen
   } = useGlobalState();
   const {
@@ -18,8 +15,7 @@ const Header = () => {
     pauseTimer,
     resumeTimer,
     stopTimer,
-    setCustomDuration,
-    pendingSession
+    setCustomDuration
   } = useFocusTimer();
   const navigate = useNavigate();
 
@@ -41,14 +37,6 @@ const Header = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    if (pendingSession) {
-      navigate('/study-space');
-    }
-  }, [pendingSession, navigate]);
-
-  const hasActiveAudio = isPlayingBinaural || audioMode === 'spotify';
 
   return (
     <header className="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl z-40 border-b border-white/5">
@@ -115,19 +103,7 @@ const Header = () => {
             </div>
           )}
           
-          <div className="hidden md:flex items-center gap-space-xs px-space-sm py-1 rounded-lg bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm">
-            <span className="material-symbols-outlined text-[14px] text-secondary">cloud_done</span>
-            <span>Telemetry Synced</span>
-          </div>
-          
           <div className="flex items-center gap-space-xs">
-            <button 
-              onClick={() => setIsAudioModalOpen(true)}
-              className={`relative w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${hasActiveAudio ? 'bg-primary/10 text-primary' : 'bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface'}`}
-            >
-              <span className="material-symbols-outlined text-[18px]">headphones</span>
-              {hasActiveAudio && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary animate-ping"></span>}
-            </button>
             <button className="relative w-9 h-9 rounded-xl bg-surface-container-low hover:bg-surface-container-high hover:text-on-surface text-on-surface-variant flex items-center justify-center transition-colors">
               <span className="material-symbols-outlined text-[18px]">notifications</span>
               <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-tertiary shadow-[0_0_6px_rgba(255,176,205,0.8)]"></span>
@@ -151,7 +127,7 @@ const Header = () => {
                     Lihat Profil
                   </button>
                   <button 
-                    onClick={() => { !isFocusActive ? setCustomDuration(45) : null; navigate('/study-space'); setIsProfileOpen(false); }}
+                    onClick={() => { !isFocusActive ? setCustomDuration(45) : null; navigate('/today#focus-sprint-section'); setIsProfileOpen(false); }}
                     className="w-full px-4 py-2 text-left font-body-sm text-on-surface hover:bg-surface-container-high flex items-center gap-3 transition-colors"
                   >
                     <span className="material-symbols-outlined text-[18px] text-secondary">center_focus_strong</span>

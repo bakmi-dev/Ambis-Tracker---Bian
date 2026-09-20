@@ -114,6 +114,18 @@ const Today = () => {
     return () => window.removeEventListener('ambis:tasks-updated', handleSync);
   }, [fetchTasks, fetchAnalytics]);
 
+  // Handle hash scrolling to sprint section from Dashboard
+  useEffect(() => {
+    if (window.location.hash === '#focus-sprint-section') {
+      setTimeout(() => {
+        const el = document.getElementById('focus-sprint-section');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 200);
+    }
+  }, []);
+
   // Fetch deadlines (Tasks & Competitions H-1 to H-3)
   const fetchDeadlines = useCallback(async () => {
     try {
@@ -462,11 +474,14 @@ const Today = () => {
 
       {/* Compact Daily Telemetry Strip - ALL INTER-LINKED */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Stat 1: Focus Time (Linked to Study Space) */}
+        {/* Stat 1: Focus Time (Linked to Focus Sprint) */}
         <div 
-          onClick={() => navigate('/study-space')}
+          onClick={() => {
+            const el = document.getElementById('focus-sprint-section');
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }}
           className="relative p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between shadow-none overflow-hidden group min-h-[140px] cursor-pointer"
-          title="Buka Study Space & Knowledge Forge"
+          title="Lihat Modul Focus Sprint"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs uppercase tracking-wider text-outline font-semibold font-sans group-hover:text-primary transition-colors flex items-center gap-1">
@@ -498,7 +513,7 @@ const Today = () => {
           <div className="mt-2.5 flex items-center justify-between text-xs text-on-surface-variant font-normal">
             <span>{focusMinutes > 0 ? `${focusMinutes}m fokus tercatat` : "Target 8j fokus"}</span>
             <span className="text-secondary font-sans font-semibold group-hover:translate-x-0.5 transition-transform">
-              Study Space →
+              Focus Sprint →
             </span>
           </div>
         </div>
@@ -542,11 +557,14 @@ const Today = () => {
           </div>
         </div>
 
-        {/* Stat 3: Deep Work Blocks (Linked to Study Space) */}
+        {/* Stat 3: Deep Work Blocks (Linked to Focus Sprint) */}
         <div 
-          onClick={() => navigate('/study-space')}
+          onClick={() => {
+            const el = document.getElementById('focus-sprint-section');
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }}
           className="relative p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between shadow-none overflow-hidden group min-h-[140px] cursor-pointer"
-          title="Buka Sesi Belajar & Kurikulum"
+          title="Lihat Sesi & Modul Sprint"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs uppercase tracking-wider text-outline font-semibold font-sans group-hover:text-primary transition-colors flex items-center gap-1">
@@ -576,7 +594,7 @@ const Today = () => {
           <div className="mt-2.5 flex items-center justify-between text-xs text-on-surface-variant font-normal">
             <span>{analytics?.today?.sessionsCount > 0 ? `${analytics.today.sessionsCount} sesi tercatat` : "Siklus deep work"}</span>
             <span className="text-tertiary font-sans font-semibold group-hover:translate-x-0.5 transition-transform">
-              Forge →
+              Focus Sprint →
             </span>
           </div>
         </div>
@@ -940,7 +958,7 @@ const Today = () => {
         {/* RIGHT COLUMN */}
         <div className="lg:col-span-4 flex flex-col space-y-6 sm:space-y-8">
           {/* Current Sprint Module */}
-          <div className="relative rounded-2xl bg-surface-container-low p-6 sm:p-7 border border-white/5 shadow-sm overflow-hidden space-y-6">
+          <div id="focus-sprint-section" className="relative rounded-2xl bg-surface-container-low p-6 sm:p-7 border border-white/5 shadow-sm overflow-hidden space-y-6 scroll-mt-20 transition-all">
             <div className="absolute top-0 right-0 w-36 h-36 bg-secondary/10 rounded-full blur-2xl pointer-events-none"></div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

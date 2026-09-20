@@ -7,7 +7,6 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Today from './pages/Today';
 import Tasks from './pages/Tasks';
-import StudySpace from './pages/StudySpace';
 import Goals from './pages/Goals';
 import Competitions from './pages/Competitions';
 import Projects from './pages/Projects';
@@ -87,7 +86,7 @@ const AppRoutes = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/today" element={<Today />} />
             <Route path="/tasks" element={<Tasks />} />
-            <Route path="/study-space" element={<StudySpace />} />
+            <Route path="/study-space" element={<Navigate to="/today" replace />} />
             <Route path="/goals" element={<Goals />} />
             <Route path="/competitions" element={<Competitions />} />
             <Route path="/projects" element={<Projects />} />

@@ -6,7 +6,6 @@ const NAV_ITEMS = [
   { label: 'Dashboard', path: '/dashboard', icon: 'grid_view' },
   { label: 'Today', path: '/today', icon: 'today' },
   { label: 'Tasks', path: '/tasks', icon: 'check_box' },
-  { label: 'Study Space', path: '/study-space', icon: 'school' },
   { label: 'Goals', path: '/goals', icon: 'flag' },
   { label: 'Projects', path: '/projects', icon: 'terminal' },
   { label: 'Competitions', path: '/competitions', icon: 'trophy' },
