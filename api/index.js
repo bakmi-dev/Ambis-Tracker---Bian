@@ -27822,6 +27822,9 @@ import bcrypt from "bcryptjs";
 // backend/src/db.ts
 import { PrismaClient } from "@prisma/client";
 var globalForPrisma = globalThis;
+if (!process.env.DATABASE_URL) {
+  console.error("DATABASE_URL is missing in environment variables!");
+}
 var prisma = globalForPrisma.prisma || new PrismaClient({
   datasources: {
     db: {
