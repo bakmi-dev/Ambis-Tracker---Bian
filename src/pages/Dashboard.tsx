@@ -284,14 +284,19 @@ const Dashboard = () => {
   const liveTaskPercent = liveTasksTotal > 0 ? Math.round((liveTasksCompleted / liveTasksTotal) * 100) : 0;
 
   return (
-    <div className="flex flex-col w-full space-y-5 relative">
-      {/* Toast */}
+    <div className="p-8 space-y-8 max-w-[1600px] mx-auto min-h-screen">
+{/* Toast */}
       <div className={`fixed bottom-6 right-6 z-[300] bg-surface-container-high text-on-surface border border-white/10 px-5 py-3 rounded-xl shadow-xl transition-all duration-300 transform flex items-center gap-2.5 ${toastMessage ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
         <span className="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
         <span className="text-xs font-mono font-medium">{toastMessage}</span>
       </div>
 
-      {/* TOP HERO & COGNITIVE TELEMETRY STATUS */}
+      
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        
+        {/* KOLOM KIRI / UTAMA (8 Kolom) */}
+        <div className="xl:col-span-8 space-y-8">
+{/* TOP HERO & COGNITIVE TELEMETRY STATUS */}
       <section className="relative overflow-hidden rounded-xl bg-surface-container-low border border-neutral-800/50 p-5 sm:p-6">
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           {/* Left Narrative */}
@@ -629,13 +634,7 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* CORE TWO-COLUMN TELEMETRY DECK */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-
-        {/* LEFT COLUMN */}
-        <div className="lg:col-span-7 space-y-5">
-
-          {/* TASKS */}
+      {/* TASKS */}
           <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -897,12 +896,124 @@ const Dashboard = () => {
               )}
             </div>
           </div>
+        {/* REKOMENDASI BIMBEL */}
+      <section className="space-y-4 pt-2 relative">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container text-secondary font-mono text-[11px] font-semibold uppercase tracking-wider border border-white/5">
+              <span className="material-symbols-outlined text-[14px]">school</span>
+              <span>PROGRAM REKOMENDASI</span>
+            </div>
+            <h2 className="text-lg sm:text-xl font-bold text-on-surface">Rekomendasi Bimbel</h2>
+            <p className="text-xs sm:text-sm text-on-surface-variant">Akses bimbingan belajar terbaik untuk mempercepat pencapaian target ambisimu.</p>
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5">
+            <button
+              onClick={handlePrevCarousel}
+              className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors cursor-pointer border border-white/5"
+              title="Sebelumnya"
+            >
+              <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+            </button>
+            <button
+              onClick={handleNextCarousel}
+              className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors cursor-pointer border border-white/5"
+              title="Selanjutnya"
+            >
+              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+            </button>
+          </div>
         </div>
 
-        {/* RIGHT COLUMN */}
-        <div className="lg:col-span-5 space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden relative">
+          {[0, 1, 2].map(offset => {
+            const idx = (carouselIndex + offset) % GALLERY.length;
+            const item = GALLERY[idx];
+            return (
+              <div
+                key={idx}
+                className="relative group overflow-hidden rounded-xl bg-surface-container-low border border-white/5 hover:border-white/10 flex flex-col h-72 transition-all duration-200"
+              >
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                  style={{ backgroundImage: `url('${item.img}')` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/80 to-transparent"></div>
 
-          {/* DAILY RITUALS */}
+                {/* Header Tag */}
+                <div className="relative z-10 flex items-center justify-between p-4">
+                  <span className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold uppercase tracking-wider bg-surface-container-lowest/80 backdrop-blur-md ${item.badgeColor} border border-white/10`}>
+                    {item.badge}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      showToast(`Bimbel disimpan: ${item.title}`);
+                    }}
+                    className="w-8 h-8 rounded-lg bg-surface-container-lowest/80 backdrop-blur-md text-on-surface hover:text-secondary flex items-center justify-center transition-colors cursor-pointer border border-white/10"
+                    title="Simpan Rekomendasi"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">bookmark</span>
+                  </button>
+                </div>
+
+                {/* Footer Info */}
+                <div className="relative z-10 mt-auto p-4 space-y-1">
+                  <h3 className="text-sm sm:text-base font-semibold text-on-surface group-hover:text-secondary transition-colors">{item.title}</h3>
+                  <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">{item.desc}</p>
+                  <div className="pt-2 flex items-center justify-between text-xs">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        showToast(`Membuka: ${item.title}`);
+                      }}
+                      className={`inline-flex items-center gap-1 font-semibold ${item.color} hover:underline transition-all group-hover:translate-x-0.5 duration-200 cursor-pointer`}
+                    >
+                      {item.actionText}
+                    </button>
+                    <span className="text-[11px] font-mono text-outline px-2 py-0.5 rounded-md bg-surface-container/80 border border-white/5">
+                      {item.infoText}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* Footer Banner */}
+      <div
+        onClick={() => navigate('/progress')}
+        className="p-5 rounded-xl bg-surface-container-low border border-white/5 hover:bg-surface-container-low/90 flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer transition-colors"
+      >
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary flex-shrink-0">
+            <span className="material-symbols-outlined text-[22px]">rocket_launch</span>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-on-surface">Accelerate Your Vision</h3>
+            <p className="text-xs text-on-surface-variant mt-0.5">Konsistensi kecil yang berulang setiap hari menghasilkan kemajuan eksponensial.</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="text-right hidden sm:block font-mono">
+            <span className="text-[11px] font-semibold text-on-surface uppercase tracking-wider block">Engine Status</span>
+            <span className="text-xs text-secondary font-medium">Session Optimized</span>
+          </div>
+          <button className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors border border-white/5">
+            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+
+              </div>
+
+        {/* KOLOM KANAN / SIDEBAR WIDGETS (4 Kolom) */}
+        <div className="xl:col-span-4 space-y-6">
+{/* DAILY RITUALS */}
           <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1112,8 +1223,7 @@ const Dashboard = () => {
               )}
             </div>
           </div>
-        </div>
-          {/* CRUCIAL DEADLINES WIDGET */}
+        {/* CRUCIAL DEADLINES WIDGET */}
           <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1224,122 +1334,10 @@ const Dashboard = () => {
             </div>
           </div>
 
-      </div>
-
-      {/* REKOMENDASI BIMBEL */}
-      <section className="space-y-4 pt-2 relative">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container text-secondary font-mono text-[11px] font-semibold uppercase tracking-wider border border-white/5">
-              <span className="material-symbols-outlined text-[14px]">school</span>
-              <span>PROGRAM REKOMENDASI</span>
-            </div>
-            <h2 className="text-lg sm:text-xl font-bold text-on-surface">Rekomendasi Bimbel</h2>
-            <p className="text-xs sm:text-sm text-on-surface-variant">Akses bimbingan belajar terbaik untuk mempercepat pencapaian target ambisimu.</p>
-          </div>
-          <div className="hidden sm:flex items-center gap-1.5">
-            <button
-              onClick={handlePrevCarousel}
-              className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors cursor-pointer border border-white/5"
-              title="Sebelumnya"
-            >
-              <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-            </button>
-            <button
-              onClick={handleNextCarousel}
-              className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors cursor-pointer border border-white/5"
-              title="Selanjutnya"
-            >
-              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden relative">
-          {[0, 1, 2].map(offset => {
-            const idx = (carouselIndex + offset) % GALLERY.length;
-            const item = GALLERY[idx];
-            return (
-              <div
-                key={idx}
-                className="relative group overflow-hidden rounded-xl bg-surface-container-low border border-white/5 hover:border-white/10 flex flex-col h-72 transition-all duration-200"
-              >
-                <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  style={{ backgroundImage: `url('${item.img}')` }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/80 to-transparent"></div>
-
-                {/* Header Tag */}
-                <div className="relative z-10 flex items-center justify-between p-4">
-                  <span className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold uppercase tracking-wider bg-surface-container-lowest/80 backdrop-blur-md ${item.badgeColor} border border-white/10`}>
-                    {item.badge}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      showToast(`Bimbel disimpan: ${item.title}`);
-                    }}
-                    className="w-8 h-8 rounded-lg bg-surface-container-lowest/80 backdrop-blur-md text-on-surface hover:text-secondary flex items-center justify-center transition-colors cursor-pointer border border-white/10"
-                    title="Simpan Rekomendasi"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">bookmark</span>
-                  </button>
-                </div>
-
-                {/* Footer Info */}
-                <div className="relative z-10 mt-auto p-4 space-y-1">
-                  <h3 className="text-sm sm:text-base font-semibold text-on-surface group-hover:text-secondary transition-colors">{item.title}</h3>
-                  <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">{item.desc}</p>
-                  <div className="pt-2 flex items-center justify-between text-xs">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        showToast(`Membuka: ${item.title}`);
-                      }}
-                      className={`inline-flex items-center gap-1 font-semibold ${item.color} hover:underline transition-all group-hover:translate-x-0.5 duration-200 cursor-pointer`}
-                    >
-                      {item.actionText}
-                    </button>
-                    <span className="text-[11px] font-mono text-outline px-2 py-0.5 rounded-md bg-surface-container/80 border border-white/5">
-                      {item.infoText}
-                    </span>
                   </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </section>
-
-      {/* Footer Banner */}
-      <div
-        onClick={() => navigate('/progress')}
-        className="p-5 rounded-xl bg-surface-container-low border border-white/5 hover:bg-surface-container-low/90 flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer transition-colors"
-      >
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary flex-shrink-0">
-            <span className="material-symbols-outlined text-[22px]">rocket_launch</span>
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-on-surface">Accelerate Your Vision</h3>
-            <p className="text-xs text-on-surface-variant mt-0.5">Konsistensi kecil yang berulang setiap hari menghasilkan kemajuan eksponensial.</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <div className="text-right hidden sm:block font-mono">
-            <span className="text-[11px] font-semibold text-on-surface uppercase tracking-wider block">Engine Status</span>
-            <span className="text-xs text-secondary font-medium">Session Optimized</span>
-          </div>
-          <button className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors border border-white/5">
-            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-          </button>
-        </div>
       </div>
 
-      {/* QUICK ADD TASK MODAL */}
+{/* QUICK ADD TASK MODAL */}
       {showTaskModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="bg-surface-container-low p-6 rounded-2xl max-w-md w-full shadow-2xl flex flex-col border border-white/10 relative space-y-4">
