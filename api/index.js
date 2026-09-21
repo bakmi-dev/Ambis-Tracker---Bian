@@ -27606,7 +27606,9 @@ var errorHandler = (err, _req, res, _next) => {
   const message = err.message || "Internal Server Error";
   res.status(statusCode).json({
     success: false,
-    error: message
+    error: message,
+    stack: process.env.NODE_ENV === "development" ? err.stack : void 0,
+    code: err.code
   });
 };
 var asyncHandler = (fn) => {
@@ -27818,7 +27820,9 @@ import bcrypt from "bcryptjs";
 
 // backend/src/db.ts
 import { PrismaClient } from "@prisma/client";
-var prisma = new PrismaClient();
+var globalForPrisma = globalThis;
+var prisma = globalForPrisma.prisma || new PrismaClient();
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 var db_default = prisma;
 
 // backend/src/controllers/authController.ts
@@ -28054,6 +28058,9 @@ var authenticateJWT = (req, res, next) => {
     import_jsonwebtoken2.default.verify(token, process.env.JWT_SECRET || "ambis_tracker_super_secret_jwt_key_2026", (err, user) => {
       if (err) {
         return res.status(403).json({ success: false, message: "Invalid or expired token." });
+      }
+      if (!user || !user.id) {
+        return res.status(401).json({ success: false, message: "Invalid token payload: missing user ID." });
       }
       req.user = user;
       next();

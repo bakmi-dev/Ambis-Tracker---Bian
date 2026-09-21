@@ -21,6 +21,10 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
         return res.status(403).json({ success: false, message: 'Invalid or expired token.' });
       }
 
+      if (!user || !user.id) {
+        return res.status(401).json({ success: false, message: 'Invalid token payload: missing user ID.' });
+      }
+
       req.user = user;
       next();
     });
