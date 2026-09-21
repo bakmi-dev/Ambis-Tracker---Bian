@@ -556,7 +556,7 @@ const Goals = () => {
                   <span className="text-[11px] text-outline font-normal">Klik untuk update</span>
                 </div>
                 
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
                   {goal.milestones.length > 0 ? goal.milestones.map(milestone => {
                     const isDone = milestone.status === 'DONE';
                     const isActive = milestone.status === 'ACTIVE';
@@ -794,7 +794,7 @@ const Goals = () => {
                     </div>
                   </div>
                 )}
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
                   {formGoal.milestones.map((m, idx) => (
                     <div key={m.id} className="flex items-center gap-2">
                       <button

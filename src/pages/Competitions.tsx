@@ -641,8 +641,8 @@ const Competitions = () => {
             {comp.checklist.length > 0 && (
               <div className="mx-5 mb-4 space-y-1">
                 <span className="text-[10px] uppercase font-bold tracking-widest text-outline">Deliverables</span>
-                <div className="space-y-1">
-                  {comp.checklist.slice(0, 4).map(chk => (
+                <div className="space-y-1 max-h-48 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+                  {comp.checklist.map(chk => (
                     <div
                       key={chk.id}
                       onClick={() => toggleChecklist(comp.id, chk.id)}
@@ -661,9 +661,6 @@ const Competitions = () => {
                       </span>
                     </div>
                   ))}
-                  {comp.checklist.length > 4 && (
-                    <span className="text-[10px] text-outline italic pl-2">+{comp.checklist.length - 4} item lainnya...</span>
-                  )}
                 </div>
               </div>
             )}

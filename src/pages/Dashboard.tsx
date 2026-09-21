@@ -902,60 +902,6 @@ const Dashboard = () => {
         {/* RIGHT COLUMN */}
         <div className="lg:col-span-5 space-y-5">
 
-          {/* CRUCIAL DEADLINES WIDGET */}
-          <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-error">
-                  <span className="material-symbols-outlined text-[18px]">crisis_alert</span>
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Crucial Deadlines</h2>
-                  <p className="text-xs text-on-surface-variant mt-0.5">Deadline 7 hari ke depan</p>
-                </div>
-              </div>
-              <span className="w-2.5 h-2.5 rounded-full bg-error animate-pulse"></span>
-            </div>
-
-            <div className="space-y-2">
-              {crucialDeadlines.length > 0 ? (
-                crucialDeadlines.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => navigate('/today')}
-                    className="p-3.5 rounded-xl bg-surface-container flex items-center justify-between gap-3 border border-neutral-800/40 hover:bg-surface-container-high transition-all cursor-pointer"
-                  >
-                    <div className="space-y-1 min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
-                            item.source === 'LOMBA'
-                              ? 'bg-tertiary-container/30 text-tertiary border border-tertiary/30'
-                              : item.source === 'GOAL'
-                              ? 'bg-primary-container/30 text-primary border border-primary/30'
-                              : 'bg-error-container/30 text-error border border-error/30'
-                          }`}
-                        >
-                          {item.source}
-                        </span>
-                        <span className="text-[11px] text-outline font-mono">{item.dateStr}</span>
-                      </div>
-                      <h4 className="text-xs font-semibold text-on-surface truncate">{item.title}</h4>
-                    </div>
-                    <span className="px-2.5 py-1 rounded-lg bg-surface-container-highest text-on-surface font-mono font-bold text-xs border border-neutral-800/50 flex-shrink-0">
-                      {item.countdown}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div className="py-6 text-center bg-surface-container/30 rounded-xl border border-neutral-800/40">
-                  <span className="material-symbols-outlined text-outline/60 text-[28px] mb-1">done_all</span>
-                  <p className="text-xs text-outline font-mono">Tidak ada deadline krusial dalam 7 hari.</p>
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* DAILY RITUALS */}
           <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
@@ -985,7 +931,7 @@ const Dashboard = () => {
               </button>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
               {rituals.length > 0 ? (
                 rituals.map(ritual => (
                   <div
@@ -1112,6 +1058,115 @@ const Dashboard = () => {
             </div>
           </div>
 
+          {/* GOALS & VISION */}
+          <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                  <span className="material-symbols-outlined text-[18px]">flag</span>
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Goals & Vision</h2>
+                  <p className="text-xs text-on-surface-variant mt-0.5">North-star arah pembelajaran</p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/goals')}
+                className="text-xs font-medium text-primary hover:text-primary-fixed transition-colors flex items-center gap-0.5 cursor-pointer"
+              >
+                Semua Target <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {goals.length > 0 ? (
+                goals.slice(0, 5).map(goal => (
+                  <div
+                    key={goal.id}
+                    onClick={() => navigate('/goals')}
+                    className="p-3.5 rounded-lg bg-surface-container space-y-2 hover:bg-surface-container-high transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 truncate mr-2">
+                        <span className="material-symbols-outlined text-primary text-[16px]">flag</span>
+                        <span className="text-xs font-semibold text-on-surface truncate">{goal.title}</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-surface-container-highest text-on-surface whitespace-nowrap">
+                        {goal.category || 'Goal'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-on-surface-variant text-[11px]">Progress</span>
+                      <span className="text-primary font-semibold">{goal.progress_percentage}% Selesai</span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
+                      <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${goal.progress_percentage}%` }}></div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="py-8 text-center bg-surface-container/30 rounded-lg flex flex-col items-center justify-center">
+                  <span className="material-symbols-outlined text-outline/60 text-[32px] mb-1.5">flag</span>
+                  <p className="text-xs text-outline font-medium">Belum ada target jangka panjang.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+          {/* CRUCIAL DEADLINES WIDGET */}
+          <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-error">
+                  <span className="material-symbols-outlined text-[18px]">crisis_alert</span>
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Crucial Deadlines</h2>
+                  <p className="text-xs text-on-surface-variant mt-0.5">Deadline 7 hari ke depan</p>
+                </div>
+              </div>
+              <span className="w-2.5 h-2.5 rounded-full bg-error animate-pulse"></span>
+            </div>
+
+            <div className="space-y-2">
+              {crucialDeadlines.length > 0 ? (
+                crucialDeadlines.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => navigate('/today')}
+                    className="p-3.5 rounded-xl bg-surface-container flex items-center justify-between gap-3 border border-neutral-800/40 hover:bg-surface-container-high transition-all cursor-pointer"
+                  >
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
+                            item.source === 'LOMBA'
+                              ? 'bg-tertiary-container/30 text-tertiary border border-tertiary/30'
+                              : item.source === 'GOAL'
+                              ? 'bg-primary-container/30 text-primary border border-primary/30'
+                              : 'bg-error-container/30 text-error border border-error/30'
+                          }`}
+                        >
+                          {item.source}
+                        </span>
+                        <span className="text-[11px] text-outline font-mono">{item.dateStr}</span>
+                      </div>
+                      <h4 className="text-xs font-semibold text-on-surface truncate">{item.title}</h4>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg bg-surface-container-highest text-on-surface font-mono font-bold text-xs border border-neutral-800/50 flex-shrink-0">
+                      {item.countdown}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="py-6 text-center bg-surface-container/30 rounded-xl border border-neutral-800/40">
+                  <span className="material-symbols-outlined text-outline/60 text-[28px] mb-1">done_all</span>
+                  <p className="text-xs text-outline font-mono">Tidak ada deadline krusial dalam 7 hari.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* AUDIO SANCTUARY */}
           <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
@@ -1169,61 +1224,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* GOALS & VISION */}
-          <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined text-[18px]">flag</span>
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Goals & Vision</h2>
-                  <p className="text-xs text-on-surface-variant mt-0.5">North-star arah pembelajaran</p>
-                </div>
-              </div>
-              <button
-                onClick={() => navigate('/goals')}
-                className="text-xs font-medium text-primary hover:text-primary-fixed transition-colors flex items-center gap-0.5 cursor-pointer"
-              >
-                Semua Target <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-              </button>
-            </div>
-
-            <div className="space-y-2.5">
-              {goals.length > 0 ? (
-                goals.slice(0, 5).map(goal => (
-                  <div
-                    key={goal.id}
-                    onClick={() => navigate('/goals')}
-                    className="p-3.5 rounded-lg bg-surface-container space-y-2 hover:bg-surface-container-high transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 truncate mr-2">
-                        <span className="material-symbols-outlined text-primary text-[16px]">flag</span>
-                        <span className="text-xs font-semibold text-on-surface truncate">{goal.title}</span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-surface-container-highest text-on-surface whitespace-nowrap">
-                        {goal.category || 'Goal'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs font-mono">
-                      <span className="text-on-surface-variant text-[11px]">Progress</span>
-                      <span className="text-primary font-semibold">{goal.progress_percentage}% Selesai</span>
-                    </div>
-                    <div className="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
-                      <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${goal.progress_percentage}%` }}></div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="py-8 text-center bg-surface-container/30 rounded-lg flex flex-col items-center justify-center">
-                  <span className="material-symbols-outlined text-outline/60 text-[32px] mb-1.5">flag</span>
-                  <p className="text-xs text-outline font-medium">Belum ada target jangka panjang.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* REKOMENDASI BIMBEL */}
