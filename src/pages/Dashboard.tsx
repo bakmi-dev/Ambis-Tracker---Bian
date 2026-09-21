@@ -4,6 +4,55 @@ import { taskApi, projectApi, competitionApi, goalApi, analyticsApi, studySessio
 import { useGlobalState } from '../context/GlobalContext';
 import { useFocusTimer } from '../context/FocusTimerContext';
 import { useDailyRituals } from '../context/RitualContext';
+import { fetchCrucialDeadlines, type CrucialDeadlineItem } from '../utils/deadlineUtils';
+
+const formatRupiah = (num: number) => {
+  if (!num || num === 0) return 'Rp 0';
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(num);
+};
+
+const parseCompInfo = (comp: any) => {
+  let prizePool = 0;
+  let checklist: any[] = [];
+  try {
+    const parsed = JSON.parse(comp.description || '{}');
+    if (parsed && parsed.isJSONCompDesc) {
+      prizePool = parsed.prizePool || 0;
+      checklist = parsed.checklist || [];
+    }
+  } catch (e) { }
+
+  let progressPercent = 0;
+  if (checklist.length > 0) {
+    const doneCount = checklist.filter((c: any) => c.isChecked).length;
+    progressPercent = Math.round((doneCount / checklist.length) * 100);
+  } else {
+    const st = (comp.status || '').toLowerCase();
+    if (st === 'submitted') progressPercent = 90;
+    else if (st === 'active focus' || st === 'active') progressPercent = 50;
+    else if (st === 'preparing' || st === 'preparation') progressPercent = 25;
+  }
+
+  let daysRemaining = 'TBA';
+  if (comp.deadline) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(comp.deadline);
+    due.setHours(0, 0, 0, 0);
+    const diff = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    if (diff < 0) daysRemaining = 'Berakhir';
+    else if (diff === 0) daysRemaining = 'Hari Ini!';
+    else if (diff === 1) daysRemaining = 'Besok';
+    else daysRemaining = `Sisa ${diff} Hari`;
+  }
+
+  return { prizePool, progressPercent, daysRemaining };
+};
 
 const BIMBEL_RECOMMENDATIONS = [
   {
@@ -48,6 +97,7 @@ const Dashboard = () => {
   const [projects, setProjects] = useState<any[]>([]);
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [goals, setGoals] = useState<any[]>([]);
+  const [crucialDeadlines, setCrucialDeadlines] = useState<CrucialDeadlineItem[]>([]);
   const [analytics, setAnalytics] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -100,20 +150,26 @@ const Dashboard = () => {
         projectsRes,
         competitionsRes,
         goalsRes,
-        analyticsRes
+        analyticsRes,
+        cDeadlines
       ] = await Promise.all([
         taskApi.getAll({ date: today }),
         projectApi.getAll(),
         competitionApi.getAll(),
         goalApi.getAll(),
-        analyticsApi.getSummary()
+        analyticsApi.getSummary(),
+        fetchCrucialDeadlines()
       ]);
 
       setTasks(tasksRes.data);
       setProjects(projectsRes.data.filter((p: any) => p.status === 'Planning' || p.status === 'Development'));
-      setCompetitions(competitionsRes.data.filter((c: any) => c.status === 'Active Focus'));
+      setCompetitions(competitionsRes.data.filter((c: any) => {
+        const st = (c.status || '').toLowerCase();
+        return st !== 'finished' && st !== 'completed' && st !== 'archived';
+      }));
       setGoals(goalsRes.data);
       setAnalytics(analyticsRes.data);
+      setCrucialDeadlines(cDeadlines);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -529,11 +585,11 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Stat 4: Next Countdown (Linked to Tasks / Backlog) */}
+        {/* Stat 4: Next Countdown (Linked to Crucial Deadlines & Tasks) */}
         <div 
-          onClick={() => navigate('/tasks')}
+          onClick={() => navigate('/today')}
           className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 hover:border-purple-500/50 hover:bg-surface-container/60 transition-all flex flex-col justify-between cursor-pointer group shadow-none"
-          title="Buka Backlog Tasks untuk pantau tenggat waktu"
+          title="Lihat Detail Crucial Deadlines"
         >
           <div>
             <div className="flex items-center justify-between">
@@ -547,20 +603,27 @@ const Dashboard = () => {
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-2xl font-bold font-sans tracking-tight text-secondary">
-                {projects.length > 0 && projects[0].deadline ? new Date(projects[0].deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '-'}
+                {crucialDeadlines.length > 0 ? crucialDeadlines[0].countdown : '-'}
               </span>
+              {crucialDeadlines.length > 0 && (
+                <span className="text-xs font-mono font-semibold text-outline">
+                  {crucialDeadlines[0].dateStr}
+                </span>
+              )}
             </div>
             <div className="mt-3 w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
               <div
                 className="h-full bg-secondary rounded-full transition-all duration-500"
-                style={{ width: projects.length > 0 && projects[0].deadline ? '60%' : '0%' }}
+                style={{ width: crucialDeadlines.length > 0 ? '75%' : '0%' }}
               />
             </div>
           </div>
           <div className="mt-3.5 flex items-center justify-between text-xs text-on-surface-variant">
-            <span className="truncate max-w-[140px]">{projects.length > 0 && projects[0].deadline ? projects[0].title : 'Tidak ada tenggat'}</span>
+            <span className="truncate max-w-[140px]">
+              {crucialDeadlines.length > 0 ? crucialDeadlines[0].title : 'Tidak ada tenggat'}
+            </span>
             <span className="text-secondary font-sans text-[11px] font-semibold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
-              Tasks →
+              Today →
             </span>
           </div>
         </div>
@@ -775,43 +838,61 @@ const Dashboard = () => {
                 </div>
               </div>
               <button
-                onClick={() => setShowCompModal(true)}
+                onClick={() => navigate('/competitions')}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-neutral-800/50 text-xs font-medium transition-colors cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[14px]">add</span>
-                <span>Tambah Target</span>
+                <span>Ke Workspace</span>
+                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
               </button>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               {competitions.length > 0 ? (
-                competitions.slice(0, 3).map((comp, idx) => (
-                  <div key={comp.id} className="p-3.5 rounded-lg bg-surface-container flex flex-col md:flex-row md:items-center justify-between gap-3">
-                    <div className="space-y-1 w-full min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider ${idx === 0 ? 'bg-tertiary text-on-tertiary' : 'bg-surface-container-highest text-on-surface'
-                          }`}>
-                          {comp.deadline ? `DEADLINE: ${new Date(comp.deadline).toLocaleDateString('id-ID')}` : 'NO DEADLINE'}
+                competitions.slice(0, 4).map((comp) => {
+                  const info = parseCompInfo(comp);
+                  return (
+                    <div
+                      key={comp.id}
+                      onClick={() => navigate('/competitions')}
+                      className="p-4 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all cursor-pointer border border-neutral-800/40 space-y-2.5 group"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-tertiary-container/30 text-tertiary border border-tertiary/20">
+                          {comp.status || 'Active'}
                         </span>
-                        <span className={`text-[11px] font-mono ${idx === 0 ? 'text-secondary' : 'text-outline'}`}>{comp.status}</span>
+                        <span className="text-xs font-mono font-semibold text-secondary px-2 py-0.5 rounded bg-surface-container-highest">
+                          {info.daysRemaining}
+                        </span>
                       </div>
-                      <h4 className="text-sm font-semibold text-on-surface truncate">{comp.title}</h4>
-                      <p className="text-xs text-on-surface-variant line-clamp-1">{comp.description || 'Target kompetisi aktif'}</p>
+
+                      <div>
+                        <h4 className="text-sm font-semibold text-on-surface group-hover:text-tertiary transition-colors truncate">
+                          {comp.title}
+                        </h4>
+                        <p className="text-xs text-outline mt-0.5">
+                          Prize Pool: <span className="text-on-surface font-semibold">{formatRupiah(info.prizePool)}</span>
+                        </p>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[11px] font-mono text-on-surface-variant">
+                          <span>Persyaratan Progress</span>
+                          <span className="font-semibold text-tertiary">{info.progressPercent}%</span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
+                          <div
+                            className="h-full bg-tertiary rounded-full transition-all duration-500"
+                            style={{ width: `${info.progressPercent}%` }}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <button
-                        onClick={() => navigate('/competitions')}
-                        className="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-secondary hover:text-on-secondary text-on-surface text-xs font-semibold transition-colors cursor-pointer"
-                      >
-                        Buka Workspace
-                      </button>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
-                <div className="py-8 text-center bg-surface-container/30 rounded-lg flex flex-col items-center justify-center">
+                <div className="py-8 text-center bg-surface-container/30 rounded-lg flex flex-col items-center justify-center border border-neutral-800/40">
                   <span className="material-symbols-outlined text-outline/60 text-[32px] mb-1.5">emoji_events</span>
-                  <p className="text-xs text-outline font-medium">Belum ada kompetisi yang diikuti.</p>
+                  <p className="text-xs text-outline font-medium">Belum ada kompetisi aktif.</p>
                 </div>
               )}
             </div>
@@ -820,6 +901,60 @@ const Dashboard = () => {
 
         {/* RIGHT COLUMN */}
         <div className="lg:col-span-5 space-y-5">
+
+          {/* CRUCIAL DEADLINES WIDGET */}
+          <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-error">
+                  <span className="material-symbols-outlined text-[18px]">crisis_alert</span>
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Crucial Deadlines</h2>
+                  <p className="text-xs text-on-surface-variant mt-0.5">Deadline 7 hari ke depan</p>
+                </div>
+              </div>
+              <span className="w-2.5 h-2.5 rounded-full bg-error animate-pulse"></span>
+            </div>
+
+            <div className="space-y-2">
+              {crucialDeadlines.length > 0 ? (
+                crucialDeadlines.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => navigate('/today')}
+                    className="p-3.5 rounded-xl bg-surface-container flex items-center justify-between gap-3 border border-neutral-800/40 hover:bg-surface-container-high transition-all cursor-pointer"
+                  >
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
+                            item.source === 'LOMBA'
+                              ? 'bg-tertiary-container/30 text-tertiary border border-tertiary/30'
+                              : item.source === 'GOAL'
+                              ? 'bg-primary-container/30 text-primary border border-primary/30'
+                              : 'bg-error-container/30 text-error border border-error/30'
+                          }`}
+                        >
+                          {item.source}
+                        </span>
+                        <span className="text-[11px] text-outline font-mono">{item.dateStr}</span>
+                      </div>
+                      <h4 className="text-xs font-semibold text-on-surface truncate">{item.title}</h4>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg bg-surface-container-highest text-on-surface font-mono font-bold text-xs border border-neutral-800/50 flex-shrink-0">
+                      {item.countdown}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="py-6 text-center bg-surface-container/30 rounded-xl border border-neutral-800/40">
+                  <span className="material-symbols-outlined text-outline/60 text-[28px] mb-1">done_all</span>
+                  <p className="text-xs text-outline font-mono">Tidak ada deadline krusial dalam 7 hari.</p>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* DAILY RITUALS */}
           <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 space-y-4">

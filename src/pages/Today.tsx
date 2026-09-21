@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { taskApi, analyticsApi, studySessionApi, competitionApi } from "../api";
+import { taskApi, analyticsApi, studySessionApi } from "../api";
 import { useFocusTimer } from "../context/FocusTimerContext";
 import { useDailyRituals } from "../context/RitualContext";
+import { fetchCrucialDeadlines, type CrucialDeadlineItem } from "../utils/deadlineUtils";
 
 interface ChecklistTask {
   id: string;
@@ -17,20 +18,10 @@ interface ChecklistTask {
   due_date?: string;
 }
 
-interface Deadline {
-  id: string;
-  icon: string;
-  colorClass: string;
-  bgClass: string;
-  time: string;
-  timeRemaining: string;
-  title: string;
-  description: string;
-}
-
 const Today = () => {
   const navigate = useNavigate();
-  const [deadlines, setDeadlines] = useState<Deadline[]>([]);
+  const [deadlines, setDeadlines] = useState<CrucialDeadlineItem[]>([]);
+  const [showCompletedTasks, setShowCompletedTasks] = useState(false);
   const { rituals, toggleRitual, addRitual, updateRitual, deleteRitual } = useDailyRituals();
   const [editingRitualId, setEditingRitualId] = useState<string | null>(null);
   const [editRitualTitle, setEditRitualTitle] = useState('');
@@ -116,75 +107,11 @@ const Today = () => {
       }, 200);
     }
   }, []);
-  // Fetch deadlines (Tasks & Competitions H-1 to H-3)
+  // Fetch deadlines (Tasks, Competitions & Goals within 7 days)
   const fetchDeadlines = useCallback(async () => {
     try {
-      // Get all tasks and competitions
-      const [taskRes, compRes] = await Promise.all([
-        taskApi.getAll(), 
-        competitionApi.getAll() // Note: assuming this gets all upcoming
-      ]);
-      
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-
-      const items: Deadline[] = [];
-
-      // Process Tasks
-      if (taskRes.success) {
-        taskRes.data.forEach((t: any) => {
-          if (!t.is_completed && t.due_date) {
-            const due = new Date(t.due_date);
-            due.setHours(0, 0, 0, 0);
-            const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-            
-            if (diffDays >= 1 && diffDays <= 3) {
-              items.push({
-                id: `task-${t.id}`,
-                icon: "task",
-                colorClass: "text-secondary",
-                bgClass: "bg-secondary-container",
-                time: due.toLocaleDateString(),
-                timeRemaining: diffDays === 1 ? "Besok" : `${diffDays} hari lagi`,
-                title: t.title,
-                description: `Tugas • Prioritas: ${t.priority || "MED"}`,
-              });
-            }
-          }
-        });
-      }
-
-      // Process Competitions
-      if (compRes.success) {
-        compRes.data.forEach((c: any) => {
-          if (c.date) {
-            const due = new Date(c.date);
-            due.setHours(0, 0, 0, 0);
-            const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-            
-            if (diffDays >= 1 && diffDays <= 3) {
-              items.push({
-                id: `comp-${c.id}`,
-                icon: "emoji_events",
-                colorClass: "text-primary",
-                bgClass: "bg-primary-container",
-                time: due.toLocaleDateString(),
-                timeRemaining: diffDays === 1 ? "Besok" : `${diffDays} hari lagi`,
-                title: c.title,
-                description: `Kompetisi • Tingkat: ${c.level || "Regional"}`,
-              });
-            }
-          }
-        });
-      }
-
-      // Sort by nearest deadline
-      items.sort((a, b) => {
-        const getDays = (str: string) => str === "Besok" ? 1 : parseInt(str.split(" ")[0]);
-        return getDays(a.timeRemaining) - getDays(b.timeRemaining);
-      });
-
-      setDeadlines(items.slice(0, 5)); // Limit to 5 items
+      const items = await fetchCrucialDeadlines();
+      setDeadlines(items);
     } catch (e) {
       console.error(e);
     }
@@ -653,137 +580,172 @@ const Today = () => {
                     Coba Lagi
                   </button>
                 </div>
-              ) : checklistTasks.length > 0 ? (
-                checklistTasks.map((task) => {
-                  const todayStr = new Date().toISOString().split("T")[0];
-                  const isOverdue = !task.completed && !!task.due_date && task.due_date.split("T")[0] < todayStr;
-                  const overdueDate = isOverdue ? new Date(task.due_date!).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' }) : "";
+              ) : (() => {
+                const activeTasks = checklistTasks.filter((t) => !t.completed);
+                const completedTasks = checklistTasks.filter((t) => t.completed);
+                const todayStr = new Date().toISOString().split("T")[0];
 
-                  return (
-                  <div
-                    key={task.id}
-                    className={`p-4 sm:p-5 rounded-xl transition-all flex items-start justify-between gap-4 group ${
-                      task.completed
-                        ? "bg-surface-container/50 hover:bg-surface-container"
-                        : isOverdue 
-                        ? "bg-error-container/10 border border-error/30 hover:bg-error-container/20"
-                        : "bg-surface-container hover:bg-surface-container-high"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3.5 flex-1 min-w-0">
-                      <button
-                        onClick={() => toggleTask(task.id)}
-                        className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all border ${
-                          task.completed
-                            ? "bg-primary border-primary text-on-primary"
-                            : isOverdue
-                            ? "border-error/40 bg-error-container text-error hover:border-error hover:bg-error hover:text-on-error"
-                            : "border-outline/40 hover:border-primary text-transparent"
-                        }`}
-                      >
-                        <span className="material-symbols-outlined text-[15px] font-bold">
-                          check
-                        </span>
-                      </button>
-                      <div className="space-y-1.5 flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {isOverdue && (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-error text-on-error flex items-center gap-1 shadow-[0_0_10px_rgba(255,84,73,0.3)]">
-                              <span className="material-symbols-outlined text-[12px]">warning</span>
-                              OVERDUE // {overdueDate}
-                            </span>
-                          )}
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
-                              task.completed
-                                ? "bg-surface-container-highest text-outline"
-                                : task.priority === "HIGH"
-                                  ? "bg-error-container text-on-error-container"
-                                  : "bg-surface-container-highest text-outline"
+                return (
+                  <div className="space-y-4">
+                    {activeTasks.length > 0 ? (
+                      activeTasks.map((task) => {
+                        const isOverdue = !!task.due_date && task.due_date.split("T")[0] < todayStr;
+                        const overdueDate = isOverdue ? new Date(task.due_date!).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' }) : "";
+
+                        return (
+                          <div
+                            key={task.id}
+                            className={`p-4 sm:p-5 rounded-xl transition-all flex items-start justify-between gap-4 group ${
+                              isOverdue 
+                                ? "bg-error-container/10 border border-error/30 hover:bg-error-container/20"
+                                : "bg-surface-container hover:bg-surface-container-high border border-neutral-800/40"
                             }`}
                           >
-                            {task.priority}
-                          </span>
-                          <button
-                            onClick={() => startTimer(task.estimatedMinutes, task.title)}
-                            className="text-xs text-outline hover:text-secondary flex items-center gap-1 transition-colors cursor-pointer"
-                            title="Mulai Sprint untuk task ini"
-                          >
-                            <span className="material-symbols-outlined text-[14px]">
-                              timer
-                            </span>{" "}
-                            {task.duration}
-                          </button>
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs ${
-                              task.completed
-                                ? "bg-surface-container-high text-outline"
-                                : "bg-surface-container-highest text-secondary font-medium"
-                            }`}
-                          >
-                            {task.category}
-                          </span>
-                        </div>
-                        <div
-                          className={`text-base ${
-                            task.completed
-                              ? "text-on-surface-variant line-through font-normal"
-                              : "text-on-surface font-semibold"
-                          }`}
-                        >
-                          {task.title}
-                        </div>
-                        {!task.completed && task.description && (
-                          <p className="text-xs sm:text-sm text-on-surface-variant font-normal leading-relaxed">
-                            {task.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    {task.completed ? (
-                      <span className="text-xs font-semibold text-secondary px-2.5 py-1 rounded bg-surface-container-low flex-shrink-0">
-                        +{task.xp} XP
-                      </span>
+                            <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                              <button
+                                onClick={() => toggleTask(task.id)}
+                                className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all border cursor-pointer ${
+                                  isOverdue
+                                    ? "border-error/40 bg-error-container/40 text-error hover:border-error hover:bg-error hover:text-on-error"
+                                    : "border-outline/40 hover:border-primary text-transparent"
+                                }`}
+                                title="Centang Selesai"
+                              >
+                                <span className="material-symbols-outlined text-[15px] font-bold">
+                                  check
+                                </span>
+                              </button>
+                              <div className="space-y-1.5 flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {isOverdue && (
+                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-error text-on-error flex items-center gap-1 shadow-[0_0_10px_rgba(255,84,73,0.3)]">
+                                      <span className="material-symbols-outlined text-[12px]">warning</span>
+                                      OVERDUE // {overdueDate}
+                                    </span>
+                                  )}
+                                  <span
+                                    className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
+                                      task.priority === "HIGH"
+                                        ? "bg-error-container text-on-error-container"
+                                        : "bg-surface-container-highest text-outline"
+                                    }`}
+                                  >
+                                    {task.priority}
+                                  </span>
+                                  <button
+                                    onClick={() => startTimer(task.estimatedMinutes, task.title)}
+                                    className="text-xs text-outline hover:text-secondary flex items-center gap-1 transition-colors cursor-pointer"
+                                    title="Mulai Sprint untuk task ini"
+                                  >
+                                    <span className="material-symbols-outlined text-[14px]">
+                                      timer
+                                    </span>{" "}
+                                    {task.duration}
+                                  </button>
+                                  <span className="px-2 py-0.5 rounded text-xs bg-surface-container-highest text-secondary font-medium">
+                                    {task.category}
+                                  </span>
+                                </div>
+                                <div className="text-base text-on-surface font-semibold">
+                                  {task.title}
+                                </div>
+                                {task.description && (
+                                  <p className="text-xs sm:text-sm text-on-surface-variant font-normal leading-relaxed">
+                                    {task.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                              <button
+                                className="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-lowest transition-colors"
+                                title="Snooze to tomorrow"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">
+                                  update
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
                     ) : (
-                      <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                      <div className="py-10 text-center bg-surface-container/30 rounded-xl border border-neutral-800/40">
+                        <span className="material-symbols-outlined text-secondary text-[44px] mb-2">
+                          task_alt
+                        </span>
+                        <p className="text-sm font-semibold text-on-surface mb-1">
+                          {completedTasks.length > 0 ? "Semua task aktif hari ini telah selesai! 🎉" : "Belum ada task harian aktif."}
+                        </p>
+                        <p className="text-xs text-outline mb-4">
+                          {completedTasks.length > 0 ? "Riwayat tugas tersimpan di accordion selesai bawah." : "Tambahkan tugas baru untuk memulai eksekusi."}
+                        </p>
                         <button
-                          className="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-lowest transition-colors"
-                          title="Snooze to tomorrow"
+                          onClick={() => setIsTaskModalOpen(true)}
+                          className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-2 mx-auto border border-purple-500/30 shadow-none active:scale-95 cursor-pointer"
                         >
-                          <span className="material-symbols-outlined text-[18px]">
-                            update
-                          </span>
-                        </button>
-                        <button
-                          className="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-lowest transition-colors"
-                          title="More options"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">
-                            more_vert
-                          </span>
+                          <span className="material-symbols-outlined text-[18px]">add</span>
+                          Tambah Task Hari Ini
                         </button>
                       </div>
                     )}
+
+                    {/* TOGGLE ACCORDION UNTUK TASK SELESAI HARI INI */}
+                    {completedTasks.length > 0 && (
+                      <div className="pt-3 border-t border-neutral-800/40 space-y-3">
+                        <button
+                          onClick={() => setShowCompletedTasks(!showCompletedTasks)}
+                          className="flex items-center justify-between w-full py-2.5 px-4 rounded-xl bg-surface-container/60 hover:bg-surface-container text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer border border-neutral-800/40"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[18px] text-secondary">
+                              {showCompletedTasks ? 'expand_more' : 'chevron_right'}
+                            </span>
+                            <span>Lihat {completedTasks.length} Task Selesai Hari Ini</span>
+                          </div>
+                          <span className="px-2.5 py-0.5 rounded-full bg-secondary/15 text-[10px] font-mono font-bold text-secondary border border-secondary/30">
+                            {completedTasks.length} DONE
+                          </span>
+                        </button>
+
+                        {showCompletedTasks && (
+                          <div className="space-y-2 pl-2 border-l-2 border-secondary/30 transition-all">
+                            {completedTasks.map((task) => (
+                              <div
+                                key={task.id}
+                                className="p-3.5 sm:p-4 rounded-xl bg-surface-container/40 flex items-center justify-between gap-3 opacity-80 hover:opacity-100 transition-all border border-neutral-800/30"
+                              >
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                  <button
+                                    onClick={() => toggleTask(task.id)}
+                                    className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 bg-secondary border border-secondary text-on-secondary cursor-pointer hover:bg-secondary/80 transition-colors"
+                                    title="Batalkan Selesai"
+                                  >
+                                    <span className="material-symbols-outlined text-[14px] font-bold">check</span>
+                                  </button>
+                                  <div className="space-y-0.5 min-w-0 flex-1">
+                                    <div className="text-sm font-medium text-on-surface-variant line-through truncate">
+                                      {task.title}
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[11px] text-outline">
+                                      <span className="px-1.5 py-0.2 bg-surface-container-highest rounded">{task.category}</span>
+                                      <span>•</span>
+                                      <span>{task.duration}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <span className="text-xs font-semibold text-secondary px-2.5 py-1 rounded bg-secondary/10 border border-secondary/20 flex-shrink-0">
+                                  +{task.xp} XP
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  );
-                })
-              ) : (
-                <div className="py-12 text-center">
-                  <span className="material-symbols-outlined text-outline text-[48px] mb-2">
-                    task_alt
-                  </span>
-                  <p className="text-sm text-outline mb-4">
-                    Belum ada task harian yang dibuat.
-                  </p>
-                  <button
-                    onClick={() => setIsTaskModalOpen(true)}
-                    className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-2 mx-auto border border-purple-500/30 shadow-none active:scale-95"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">add</span>
-                    Tambah Task Hari Ini
-                  </button>
-                </div>
-              )}
+                );
+              })()}
             </div>
 
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-surface-container-lowest">
@@ -992,42 +954,49 @@ const Today = () => {
                 deadlines.map((deadline) => (
                   <div
                     key={deadline.id}
-                    className="p-4 rounded-xl bg-surface-container flex items-start gap-3.5 transition-all hover:bg-surface-container-high"
+                    className="p-4 rounded-xl bg-surface-container flex items-center justify-between gap-3 transition-all hover:bg-surface-container-high border border-neutral-800/40"
                   >
-                    <div
-                      className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${deadline.bgClass}`}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">
-                        {deadline.icon}
-                      </span>
-                    </div>
                     <div className="space-y-1 min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
                         <span
-                          className={`text-xs font-bold tracking-wider uppercase ${deadline.colorClass}`}
+                          className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
+                            deadline.source === 'LOMBA'
+                              ? 'bg-tertiary-container/30 text-tertiary border border-tertiary/30'
+                              : deadline.source === 'GOAL'
+                              ? 'bg-primary-container/30 text-primary border border-primary/30'
+                              : 'bg-error-container/30 text-error border border-error/30'
+                          }`}
                         >
-                          {deadline.time}
+                          {deadline.source}
                         </span>
-                        <span className="text-xs text-outline font-medium">
-                          {deadline.timeRemaining}
+                        <span className="text-xs text-outline font-mono">
+                          {deadline.dateStr}
                         </span>
                       </div>
                       <div className="text-sm font-semibold text-on-surface truncate">
                         {deadline.title}
                       </div>
-                      <div className="text-xs text-on-surface-variant font-normal">
-                        {deadline.description}
-                      </div>
+                      {deadline.categoryOrPriority && (
+                        <div className="text-xs text-on-surface-variant">
+                          {deadline.categoryOrPriority}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-shrink-0">
+                      <span className="px-3 py-1 rounded-lg bg-surface-container-highest text-on-surface font-mono font-bold text-xs border border-neutral-800/50">
+                        {deadline.countdown}
+                      </span>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="py-8 text-center">
+                <div className="py-8 text-center bg-surface-container/30 rounded-xl border border-neutral-800/40">
                   <span className="material-symbols-outlined text-outline text-[36px] mb-1">
                     done_all
                   </span>
-                  <p className="text-xs text-outline">
-                    Tidak ada deadline krusial terdekat.
+                  <p className="text-xs text-outline font-mono">
+                    Tidak ada deadline krusial dalam 7 hari. System optimal!
                   </p>
                 </div>
               )}
