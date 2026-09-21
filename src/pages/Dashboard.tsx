@@ -292,10 +292,7 @@ const Dashboard = () => {
       </div>
 
       
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-        
-        {/* KOLOM KIRI / UTAMA (8 Kolom) */}
-        <div className="xl:col-span-8 space-y-8">
+      {/* BARIS 1: Banner & Stats */}
 {/* TOP HERO & COGNITIVE TELEMETRY STATUS */}
       <section className="relative overflow-hidden rounded-xl bg-surface-container-low border border-neutral-800/50 p-5 sm:p-6">
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -453,7 +450,8 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* QUICK STATS TELEMETRY GRID - ALL INTER-LINKED */}
+      
+{/* QUICK STATS TELEMETRY GRID - ALL INTER-LINKED */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Stat 1: Tasks (Linked to Today & Tasks) */}
         <div 
@@ -634,7 +632,9 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* TASKS */}
+      {/* BARIS 2: Fokus Harian Sejajar */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+{/* TASKS */}
           <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -750,269 +750,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* ACTIVE PROJECTS */}
-          <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined text-[18px]">terminal</span>
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Active Projects & Builds</h2>
-                  <p className="text-xs text-on-surface-variant mt-0.5">{projects.length} artefak dalam jalur kompilasi</p>
-                </div>
-              </div>
-              <button
-                onClick={() => navigate('/projects')}
-                className="text-xs font-medium text-primary hover:text-primary-fixed transition-colors flex items-center gap-0.5 cursor-pointer"
-              >
-                Semua Proyek <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-              {projects.length > 0 ? (
-                projects.slice(0, 4).map((project, idx) => (
-                  <div key={project.id} className="p-4 rounded-lg bg-surface-container space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {project.logo_url && <img src={project.logo_url} alt="Logo" className="w-5 h-5 rounded bg-surface-container-high object-contain p-0.5" />}
-                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider ${idx % 2 === 0 ? 'bg-secondary-container/20 text-secondary' : 'bg-primary-container/20 text-primary'}`}>
-                          {project.category || 'PROJECT'}
-                        </span>
-                      </div>
-                      <span className="text-xs font-mono text-on-surface-variant font-semibold">{project.progress_percent || 0}% Done</span>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-on-surface truncate">{project.title}</h4>
-                      <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-1">{project.description || 'Tidak ada deskripsi tambahan'}</p>
-                    </div>
-                    <div className="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${idx % 2 === 0 ? 'bg-secondary' : 'bg-primary'}`}
-                        style={{ width: `${project.progress_percent || 0}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-[11px] font-mono text-outline pt-0.5">
-                      <span>Status: {project.status}</span>
-                      <div className="flex items-center gap-2 text-on-surface-variant">
-                          {project.repo_url && (
-                            <a href={project.repo_url} target="_blank" rel="noreferrer" className="hover:text-primary transition-colors" title="Repository">
-                              <span className="material-symbols-outlined text-[16px]">code</span>
-                            </a>
-                          )}
-                          {project.design_url && (
-                            <a href={project.design_url} target="_blank" rel="noreferrer" className="hover:text-primary transition-colors" title="Design">
-                              <span className="material-symbols-outlined text-[16px]">design_services</span>
-                            </a>
-                          )}
-                          {project.demo_url && (
-                            <a href={project.demo_url} target="_blank" rel="noreferrer" className="hover:text-primary transition-colors" title="Live Demo">
-                              <span className="material-symbols-outlined text-[16px]">open_in_new</span>
-                            </a>
-                          )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-1 md:col-span-2 py-8 text-center bg-surface-container/30 rounded-lg flex flex-col items-center justify-center">
-                  <span className="material-symbols-outlined text-outline/60 text-[32px] mb-1.5">construction</span>
-                  <p className="text-xs text-outline font-medium">Belum ada project aktif.</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ACTIVE COMPETITIONS */}
-          <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
-                  <span className="material-symbols-outlined text-[18px]">trophy</span>
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Active Competitions</h2>
-                  <p className="text-xs text-on-surface-variant mt-0.5">Tantangan kompetitif yang sedang dikejar</p>
-                </div>
-              </div>
-              <button
-                onClick={() => navigate('/competitions')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-neutral-800/50 text-xs font-medium transition-colors cursor-pointer"
-              >
-                <span>Ke Workspace</span>
-                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {competitions.length > 0 ? (
-                competitions.slice(0, 4).map((comp) => {
-                  const info = parseCompInfo(comp);
-                  return (
-                    <div
-                      key={comp.id}
-                      onClick={() => navigate('/competitions')}
-                      className="p-4 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all cursor-pointer border border-neutral-800/40 space-y-2.5 group"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-tertiary-container/30 text-tertiary border border-tertiary/20">
-                          {comp.status || 'Active'}
-                        </span>
-                        <span className="text-xs font-mono font-semibold text-secondary px-2 py-0.5 rounded bg-surface-container-highest">
-                          {info.daysRemaining}
-                        </span>
-                      </div>
-
-                      <div>
-                        <h4 className="text-sm font-semibold text-on-surface group-hover:text-tertiary transition-colors truncate">
-                          {comp.title}
-                        </h4>
-                        <p className="text-xs text-outline mt-0.5">
-                          Prize Pool: <span className="text-on-surface font-semibold">{formatRupiah(info.prizePool)}</span>
-                        </p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[11px] font-mono text-on-surface-variant">
-                          <span>Persyaratan Progress</span>
-                          <span className="font-semibold text-tertiary">{info.progressPercent}%</span>
-                        </div>
-                        <div className="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
-                          <div
-                            className="h-full bg-tertiary rounded-full transition-all duration-500"
-                            style={{ width: `${info.progressPercent}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="py-8 text-center bg-surface-container/30 rounded-lg flex flex-col items-center justify-center border border-neutral-800/40">
-                  <span className="material-symbols-outlined text-outline/60 text-[32px] mb-1.5">emoji_events</span>
-                  <p className="text-xs text-outline font-medium">Belum ada kompetisi aktif.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        {/* REKOMENDASI BIMBEL */}
-      <section className="space-y-4 pt-2 relative">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container text-secondary font-mono text-[11px] font-semibold uppercase tracking-wider border border-white/5">
-              <span className="material-symbols-outlined text-[14px]">school</span>
-              <span>PROGRAM REKOMENDASI</span>
-            </div>
-            <h2 className="text-lg sm:text-xl font-bold text-on-surface">Rekomendasi Bimbel</h2>
-            <p className="text-xs sm:text-sm text-on-surface-variant">Akses bimbingan belajar terbaik untuk mempercepat pencapaian target ambisimu.</p>
-          </div>
-          <div className="hidden sm:flex items-center gap-1.5">
-            <button
-              onClick={handlePrevCarousel}
-              className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors cursor-pointer border border-white/5"
-              title="Sebelumnya"
-            >
-              <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-            </button>
-            <button
-              onClick={handleNextCarousel}
-              className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors cursor-pointer border border-white/5"
-              title="Selanjutnya"
-            >
-              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden relative">
-          {[0, 1, 2].map(offset => {
-            const idx = (carouselIndex + offset) % GALLERY.length;
-            const item = GALLERY[idx];
-            return (
-              <div
-                key={idx}
-                className="relative group overflow-hidden rounded-xl bg-surface-container-low border border-white/5 hover:border-white/10 flex flex-col h-72 transition-all duration-200"
-              >
-                <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  style={{ backgroundImage: `url('${item.img}')` }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/80 to-transparent"></div>
-
-                {/* Header Tag */}
-                <div className="relative z-10 flex items-center justify-between p-4">
-                  <span className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold uppercase tracking-wider bg-surface-container-lowest/80 backdrop-blur-md ${item.badgeColor} border border-white/10`}>
-                    {item.badge}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      showToast(`Bimbel disimpan: ${item.title}`);
-                    }}
-                    className="w-8 h-8 rounded-lg bg-surface-container-lowest/80 backdrop-blur-md text-on-surface hover:text-secondary flex items-center justify-center transition-colors cursor-pointer border border-white/10"
-                    title="Simpan Rekomendasi"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">bookmark</span>
-                  </button>
-                </div>
-
-                {/* Footer Info */}
-                <div className="relative z-10 mt-auto p-4 space-y-1">
-                  <h3 className="text-sm sm:text-base font-semibold text-on-surface group-hover:text-secondary transition-colors">{item.title}</h3>
-                  <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">{item.desc}</p>
-                  <div className="pt-2 flex items-center justify-between text-xs">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        showToast(`Membuka: ${item.title}`);
-                      }}
-                      className={`inline-flex items-center gap-1 font-semibold ${item.color} hover:underline transition-all group-hover:translate-x-0.5 duration-200 cursor-pointer`}
-                    >
-                      {item.actionText}
-                    </button>
-                    <span className="text-[11px] font-mono text-outline px-2 py-0.5 rounded-md bg-surface-container/80 border border-white/5">
-                      {item.infoText}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </section>
-
-      {/* Footer Banner */}
-      <div
-        onClick={() => navigate('/progress')}
-        className="p-5 rounded-xl bg-surface-container-low border border-white/5 hover:bg-surface-container-low/90 flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer transition-colors"
-      >
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary flex-shrink-0">
-            <span className="material-symbols-outlined text-[22px]">rocket_launch</span>
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-on-surface">Accelerate Your Vision</h3>
-            <p className="text-xs text-on-surface-variant mt-0.5">Konsistensi kecil yang berulang setiap hari menghasilkan kemajuan eksponensial.</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <div className="text-right hidden sm:block font-mono">
-            <span className="text-[11px] font-semibold text-on-surface uppercase tracking-wider block">Engine Status</span>
-            <span className="text-xs text-secondary font-medium">Session Optimized</span>
-          </div>
-          <button className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors border border-white/5">
-            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-          </button>
-        </div>
-      </div>
-
-              </div>
-
-        {/* KOLOM KANAN / SIDEBAR WIDGETS (4 Kolom) */}
-        <div className="xl:col-span-4 space-y-6">
+          
 {/* DAILY RITUALS */}
           <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
@@ -1169,7 +907,281 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* GOALS & VISION */}
+          
+      </div>
+
+      {/* BARIS 3: Ambis & Progres */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        {/* Kolom Kiri */}
+        <div className="xl:col-span-8 space-y-8">
+{/* ACTIVE PROJECTS */}
+          <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                  <span className="material-symbols-outlined text-[18px]">terminal</span>
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Active Projects & Builds</h2>
+                  <p className="text-xs text-on-surface-variant mt-0.5">{projects.length} artefak dalam jalur kompilasi</p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/projects')}
+                className="text-xs font-medium text-primary hover:text-primary-fixed transition-colors flex items-center gap-0.5 cursor-pointer"
+              >
+                Semua Proyek <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              {projects.length > 0 ? (
+                projects.slice(0, 4).map((project, idx) => (
+                  <div key={project.id} className="p-4 rounded-lg bg-surface-container space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {project.logo_url && <img src={project.logo_url} alt="Logo" className="w-5 h-5 rounded bg-surface-container-high object-contain p-0.5" />}
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider ${idx % 2 === 0 ? 'bg-secondary-container/20 text-secondary' : 'bg-primary-container/20 text-primary'}`}>
+                          {project.category || 'PROJECT'}
+                        </span>
+                      </div>
+                      <span className="text-xs font-mono text-on-surface-variant font-semibold">{project.progress_percent || 0}% Done</span>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-on-surface truncate">{project.title}</h4>
+                      <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-1">{project.description || 'Tidak ada deskripsi tambahan'}</p>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${idx % 2 === 0 ? 'bg-secondary' : 'bg-primary'}`}
+                        style={{ width: `${project.progress_percent || 0}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] font-mono text-outline pt-0.5">
+                      <span>Status: {project.status}</span>
+                      <div className="flex items-center gap-2 text-on-surface-variant">
+                          {project.repo_url && (
+                            <a href={project.repo_url} target="_blank" rel="noreferrer" className="hover:text-primary transition-colors" title="Repository">
+                              <span className="material-symbols-outlined text-[16px]">code</span>
+                            </a>
+                          )}
+                          {project.design_url && (
+                            <a href={project.design_url} target="_blank" rel="noreferrer" className="hover:text-primary transition-colors" title="Design">
+                              <span className="material-symbols-outlined text-[16px]">design_services</span>
+                            </a>
+                          )}
+                          {project.demo_url && (
+                            <a href={project.demo_url} target="_blank" rel="noreferrer" className="hover:text-primary transition-colors" title="Live Demo">
+                              <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+                            </a>
+                          )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-1 md:col-span-2 py-8 text-center bg-surface-container/30 rounded-lg flex flex-col items-center justify-center">
+                  <span className="material-symbols-outlined text-outline/60 text-[32px] mb-1.5">construction</span>
+                  <p className="text-xs text-outline font-medium">Belum ada project aktif.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          
+{/* ACTIVE COMPETITIONS */}
+          <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+                  <span className="material-symbols-outlined text-[18px]">trophy</span>
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-on-surface tracking-tight">Active Competitions</h2>
+                  <p className="text-xs text-on-surface-variant mt-0.5">Tantangan kompetitif yang sedang dikejar</p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/competitions')}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-neutral-800/50 text-xs font-medium transition-colors cursor-pointer"
+              >
+                <span>Ke Workspace</span>
+                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {competitions.length > 0 ? (
+                competitions.slice(0, 4).map((comp) => {
+                  const info = parseCompInfo(comp);
+                  return (
+                    <div
+                      key={comp.id}
+                      onClick={() => navigate('/competitions')}
+                      className="p-4 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all cursor-pointer border border-neutral-800/40 space-y-2.5 group"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-tertiary-container/30 text-tertiary border border-tertiary/20">
+                          {comp.status || 'Active'}
+                        </span>
+                        <span className="text-xs font-mono font-semibold text-secondary px-2 py-0.5 rounded bg-surface-container-highest">
+                          {info.daysRemaining}
+                        </span>
+                      </div>
+
+                      <div>
+                        <h4 className="text-sm font-semibold text-on-surface group-hover:text-tertiary transition-colors truncate">
+                          {comp.title}
+                        </h4>
+                        <p className="text-xs text-outline mt-0.5">
+                          Prize Pool: <span className="text-on-surface font-semibold">{formatRupiah(info.prizePool)}</span>
+                        </p>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[11px] font-mono text-on-surface-variant">
+                          <span>Persyaratan Progress</span>
+                          <span className="font-semibold text-tertiary">{info.progressPercent}%</span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
+                          <div
+                            className="h-full bg-tertiary rounded-full transition-all duration-500"
+                            style={{ width: `${info.progressPercent}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="py-8 text-center bg-surface-container/30 rounded-lg flex flex-col items-center justify-center border border-neutral-800/40">
+                  <span className="material-symbols-outlined text-outline/60 text-[32px] mb-1.5">emoji_events</span>
+                  <p className="text-xs text-outline font-medium">Belum ada kompetisi aktif.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        
+{/* REKOMENDASI BIMBEL */}
+      <section className="space-y-4 pt-2 relative">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container text-secondary font-mono text-[11px] font-semibold uppercase tracking-wider border border-white/5">
+              <span className="material-symbols-outlined text-[14px]">school</span>
+              <span>PROGRAM REKOMENDASI</span>
+            </div>
+            <h2 className="text-lg sm:text-xl font-bold text-on-surface">Rekomendasi Bimbel</h2>
+            <p className="text-xs sm:text-sm text-on-surface-variant">Akses bimbingan belajar terbaik untuk mempercepat pencapaian target ambisimu.</p>
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5">
+            <button
+              onClick={handlePrevCarousel}
+              className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors cursor-pointer border border-white/5"
+              title="Sebelumnya"
+            >
+              <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+            </button>
+            <button
+              onClick={handleNextCarousel}
+              className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors cursor-pointer border border-white/5"
+              title="Selanjutnya"
+            >
+              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden relative">
+          {[0, 1, 2].map(offset => {
+            const idx = (carouselIndex + offset) % GALLERY.length;
+            const item = GALLERY[idx];
+            return (
+              <div
+                key={idx}
+                className="relative group overflow-hidden rounded-xl bg-surface-container-low border border-white/5 hover:border-white/10 flex flex-col h-72 transition-all duration-200"
+              >
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                  style={{ backgroundImage: `url('${item.img}')` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/80 to-transparent"></div>
+
+                {/* Header Tag */}
+                <div className="relative z-10 flex items-center justify-between p-4">
+                  <span className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold uppercase tracking-wider bg-surface-container-lowest/80 backdrop-blur-md ${item.badgeColor} border border-white/10`}>
+                    {item.badge}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      showToast(`Bimbel disimpan: ${item.title}`);
+                    }}
+                    className="w-8 h-8 rounded-lg bg-surface-container-lowest/80 backdrop-blur-md text-on-surface hover:text-secondary flex items-center justify-center transition-colors cursor-pointer border border-white/10"
+                    title="Simpan Rekomendasi"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">bookmark</span>
+                  </button>
+                </div>
+
+                {/* Footer Info */}
+                <div className="relative z-10 mt-auto p-4 space-y-1">
+                  <h3 className="text-sm sm:text-base font-semibold text-on-surface group-hover:text-secondary transition-colors">{item.title}</h3>
+                  <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">{item.desc}</p>
+                  <div className="pt-2 flex items-center justify-between text-xs">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        showToast(`Membuka: ${item.title}`);
+                      }}
+                      className={`inline-flex items-center gap-1 font-semibold ${item.color} hover:underline transition-all group-hover:translate-x-0.5 duration-200 cursor-pointer`}
+                    >
+                      {item.actionText}
+                    </button>
+                    <span className="text-[11px] font-mono text-outline px-2 py-0.5 rounded-md bg-surface-container/80 border border-white/5">
+                      {item.infoText}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      
+{/* Footer Banner */}
+      <div
+        onClick={() => navigate('/progress')}
+        className="p-5 rounded-xl bg-surface-container-low border border-white/5 hover:bg-surface-container-low/90 flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer transition-colors"
+      >
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary flex-shrink-0">
+            <span className="material-symbols-outlined text-[22px]">rocket_launch</span>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-on-surface">Accelerate Your Vision</h3>
+            <p className="text-xs text-on-surface-variant mt-0.5">Konsistensi kecil yang berulang setiap hari menghasilkan kemajuan eksponensial.</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="text-right hidden sm:block font-mono">
+            <span className="text-[11px] font-semibold text-on-surface uppercase tracking-wider block">Engine Status</span>
+            <span className="text-xs text-secondary font-medium">Session Optimized</span>
+          </div>
+          <button className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors border border-white/5">
+            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+
+      
+        </div>
+
+        {/* Kolom Kanan */}
+        <div className="xl:col-span-4 space-y-6">
+{/* GOALS & VISION */}
           <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1223,7 +1235,8 @@ const Dashboard = () => {
               )}
             </div>
           </div>
-        {/* CRUCIAL DEADLINES WIDGET */}
+        
+{/* CRUCIAL DEADLINES WIDGET */}
           <div className="p-5 rounded-2xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1277,7 +1290,8 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* AUDIO SANCTUARY */}
+          
+{/* AUDIO SANCTUARY */}
           <div className="p-5 rounded-xl bg-surface-container-low border border-neutral-800/50 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1334,7 +1348,8 @@ const Dashboard = () => {
             </div>
           </div>
 
-                  </div>
+          
+        </div>
       </div>
 
 {/* QUICK ADD TASK MODAL */}
