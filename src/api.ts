@@ -32,164 +32,24 @@ function showToast(message: string) {
   }, 3000);
 }
 
-// LocalStorage CRUD Engine
-function handleLocalStorageFallback<T>(url: string, options?: RequestInit): T {
-  const method = options?.method || 'GET';
-  const urlParts = url.split('?')[0].split('/').filter(Boolean);
-  const resource = urlParts[0];
-  const id = urlParts[1];
-  
-  // Custom mock for analytics & profile
-  if (resource === 'analytics') {
-    if (method === 'GET') {
-      try {
-        const tasks = JSON.parse(localStorage.getItem('ambis_tasks') || '[]');
-        const todayStr = new Date().toISOString().split('T')[0];
-        const completedTasks = tasks.filter((t: any) => t.is_completed);
-        const sessions = JSON.parse(localStorage.getItem('ambis_study-sessions') || '[]');
-        const todaySessions = sessions.filter((s: any) => (s.start_time || s.created_at || '').startsWith(todayStr));
-        const totalFocusMinutes = todaySessions.reduce((acc: number, s: any) => acc + (s.duration_minutes || 0), 0);
-        const userSaved = JSON.parse(localStorage.getItem('ambis_user') || '{}');
-        
-        return {
-          success: true,
-          data: {
-            today: {
-              tasksCompleted: completedTasks.length,
-              tasksTotal: tasks.length,
-              focusTimeMinutes: totalFocusMinutes || 0,
-              sessionsCount: todaySessions.length || 0,
-            },
-            user: {
-              xp: (userSaved.xp || 200) + completedTasks.length * 10,
-              streak: userSaved.current_streak || 1,
-            }
-          }
-        } as any;
-      } catch {
-        return { success: true, data: {} } as any;
-      }
-    }
-  }
-
-  if (resource === 'profile') {
-    if (method === 'GET') {
-      return { success: true, data: { name: 'Operator' } } as any;
-    }
-  }
-
-  const storageKey = `ambis_${resource}`;
-  
-  let data: any[] = [];
-  try {
-    data = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    if (!Array.isArray(data)) data = [];
-  } catch {
-    data = [];
-  }
-
-  const body = options?.body ? JSON.parse(options.body as string) : null;
-
-  if (method === 'GET') {
-    if (id) {
-       const item = data.find((d: any) => d.id === id);
-       return { success: true, data: item || null } as any;
-    }
-    return { success: true, data } as any;
-  }
-
-  if (method === 'POST') {
-    const newItem = {
-      id: Date.now().toString(),
-      created_at: new Date().toISOString(),
-      ...body
-    };
-    
-    // Sub-resource handling (Project Tasks)
-    if (resource === 'projects' && id && urlParts[2] === 'tasks') {
-        const pTasksKey = `ambis_project_tasks`;
-        let pTasks = JSON.parse(localStorage.getItem(pTasksKey) || '[]');
-        if (!Array.isArray(pTasks)) pTasks = [];
-        newItem.project_id = id;
-        pTasks.push(newItem);
-        localStorage.setItem(pTasksKey, JSON.stringify(pTasks));
-        showToast('Task proyek berhasil ditambahkan (Local)');
-        return { success: true, data: newItem } as any;
-    }
-    
-    data.push(newItem);
-    localStorage.setItem(storageKey, JSON.stringify(data));
-    showToast(`Data berhasil disimpan (Local)`);
-    if (resource === 'tasks' || resource === 'study-sessions') {
-      window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
-    }
-    return { success: true, data: newItem } as any;
-  }
-
-  if (method === 'PATCH' || method === 'PUT') {
-    if (resource === 'projects' && id && urlParts[2] === 'tasks') {
-        const taskId = urlParts[3];
-        const pTasksKey = `ambis_project_tasks`;
-        let pTasks = JSON.parse(localStorage.getItem(pTasksKey) || '[]');
-        if (!Array.isArray(pTasks)) pTasks = [];
-        const index = pTasks.findIndex((d: any) => d.id === taskId);
-        if (index !== -1) {
-            pTasks[index] = { ...pTasks[index], ...body };
-            localStorage.setItem(pTasksKey, JSON.stringify(pTasks));
-        }
-        // showToast('Task proyek diperbarui (Local)');
-        return { success: true, data: pTasks[index] } as any;
-    }
-
-    const index = data.findIndex((d: any) => d.id === id);
-    if (index !== -1) {
-      data[index] = { ...data[index], ...body };
-      localStorage.setItem(storageKey, JSON.stringify(data));
-    }
-    
-    // Only toast on explicit save actions, avoid spamming on checkbox toggles
-    if (body && Object.keys(body).length > 2) {
-       showToast(`Data berhasil diperbarui (Local)`);
-    }
-    if (resource === 'tasks') {
-      window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
-    }
-    return { success: true, data: data[index] } as any;
-  }
-
-  if (method === 'DELETE') {
-    if (resource === 'projects' && id && urlParts[2] === 'tasks') {
-        const taskId = urlParts[3];
-        const pTasksKey = `ambis_project_tasks`;
-        let pTasks = JSON.parse(localStorage.getItem(pTasksKey) || '[]');
-        if (!Array.isArray(pTasks)) pTasks = [];
-        pTasks = pTasks.filter((d: any) => d.id !== taskId);
-        localStorage.setItem(pTasksKey, JSON.stringify(pTasks));
-        showToast('Data berhasil dihapus (Local)');
-        return { success: true, message: 'Deleted' } as any;
-    }
-
-    data = data.filter((d: any) => d.id !== id);
-    localStorage.setItem(storageKey, JSON.stringify(data));
-    showToast('Data berhasil dihapus (Local)');
-    if (resource === 'tasks') {
-      window.dispatchEvent(new CustomEvent('ambis:tasks-updated'));
-    }
-    return { success: true, message: 'Deleted' } as any;
-  }
-
-  return { success: true, data: [] } as any;
-}
-
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const token = localStorage.getItem('ambis_token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...options?.headers,
+  };
+
   try {
     const res = await fetch(`${API_BASE}${url}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
       ...options,
+      headers,
     });
+
+    if (res.status === 401) {
+      window.dispatchEvent(new CustomEvent('ambis:unauthorized'));
+      throw new Error('Unauthorized');
+    }
 
     if (!res.ok) {
       let errorMsg = `Request failed with status ${res.status}`;
@@ -208,18 +68,15 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     
     // Toast if backend actually worked
     if (options?.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method)) {
-      if (options.method === 'DELETE') showToast('Data berhasil dihapus!');
-      else if (options.body && Object.keys(JSON.parse(options.body as string)).length > 2) showToast('Data berhasil disimpan!');
+      if (options.method === 'DELETE') showToast('Data berhasil dihapus (Cloud)!');
+      else if (options.body && Object.keys(JSON.parse(options.body as string)).length > 2) showToast('Data berhasil disimpan (Cloud)!');
+      else showToast('Data berhasil diperbarui (Cloud)!');
     }
 
     return data;
   } catch (error: any) {
-    if (url.startsWith('/auth')) {
-      // Never fallback to localStorage for auth routes, throw the actual error to UI
-      throw error;
-    }
-    console.warn(`[API] Server unavailable. Using LocalStorage fallback for ${options?.method || 'GET'} ${url}`);
-    return handleLocalStorageFallback<T>(url, options);
+    console.error(`[API Error] ${options?.method || 'GET'} ${url}:`, error.message);
+    throw error;
   }
 }
 

@@ -56,10 +56,9 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 };
 
 const DocumentTitleUpdater = () => {
-  const { user } = useGlobalState();
   useEffect(() => {
-    document.title = `Ambis Tracker ${user?.name ? `[${user.name}]` : ''}`.trim();
-  }, [user?.name]);
+    document.title = 'Ambis Tracker';
+  }, []);
   return null;
 };
 

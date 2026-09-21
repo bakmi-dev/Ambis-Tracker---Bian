@@ -121,7 +121,16 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    const handleUnauthorized = () => {
+      logout();
+    };
+    window.addEventListener('ambis:unauthorized', handleUnauthorized as EventListener);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('ambis:unauthorized', handleUnauthorized as EventListener);
+    };
   }, []);
 
   const parseSpotifyUrl = (url: string) => {
