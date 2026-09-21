@@ -1,17 +1,11 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middlewares/auth';
 import prisma from '../db';
 import { asyncHandler } from '../middlewares/errorMiddleware';
 
-// For now we use a single default user. This will be replaced by auth later.
-const getDefaultUserId = async (): Promise<string> => {
-  const user = await prisma.user.findFirst();
-  if (!user) throw Object.assign(new Error('No default user found. Run db:seed first.'), { statusCode: 500 });
-  return user.id;
-};
-
 // GET /api/v1/tasks
-export const getTasks = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const getTasks = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const { date, completed, priority } = req.query;
 
   let where: any = { user_id: userId };
@@ -58,8 +52,8 @@ export const getTasks = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // POST /api/v1/tasks
-export const createTask = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const createTask = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const { title, description, priority, due_date, estimated_minutes, category, tags, xp } = req.body;
 
   if (!title || typeof title !== 'string' || title.trim() === '') {
@@ -85,9 +79,9 @@ export const createTask = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // PATCH /api/v1/tasks/:id
-export const updateTask = asyncHandler(async (req: Request, res: Response) => {
+export const updateTask = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.task.findFirst({ where: { id, user_id: userId } });
   if (!existing) {
@@ -138,9 +132,9 @@ export const updateTask = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // DELETE /api/v1/tasks/:id
-export const deleteTask = asyncHandler(async (req: Request, res: Response) => {
+export const deleteTask = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.task.findFirst({ where: { id, user_id: userId } });
   if (!existing) {

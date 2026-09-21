@@ -57,9 +57,12 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
         const text = await res.text();
         const parsed = JSON.parse(text);
         if (parsed.message) errorMsg = parsed.message;
+        else if (parsed.error) errorMsg = parsed.error;
       } catch (e) {
-        // ignore parse error
+        // Not JSON
       }
+      console.error(`[API Error] ${url}:`, errorMsg);
+      showToast(`Error: ${errorMsg}`);
       throw new Error(errorMsg);
     }
 

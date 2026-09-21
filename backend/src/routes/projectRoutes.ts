@@ -3,8 +3,10 @@ import {
   getProjects, createProject, updateProject, deleteProject,
   createProjectTask, updateProjectTask, deleteProjectTask
 } from '../controllers/projectController';
+import { authenticateJWT } from '../middlewares/auth';
 
 const router = Router();
+router.use(authenticateJWT);
 
 router.get('/', getProjects);
 router.post('/', createProject);

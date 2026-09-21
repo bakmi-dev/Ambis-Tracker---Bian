@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middlewares/auth';
 import prisma from '../db';
 import { asyncHandler } from '../middlewares/errorMiddleware';
 
@@ -9,8 +10,8 @@ const getDefaultUserId = async (): Promise<string> => {
 };
 
 // GET /api/v1/knowledge
-export const getKnowledgeDocs = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const getKnowledgeDocs = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const { category, pinned } = req.query;
 
   const where: any = { user_id: userId };
@@ -25,9 +26,9 @@ export const getKnowledgeDocs = asyncHandler(async (req: Request, res: Response)
 });
 
 // GET /api/v1/knowledge/:id
-export const getKnowledgeDoc = asyncHandler(async (req: Request, res: Response) => {
+export const getKnowledgeDoc = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const doc = await prisma.knowledgeDoc.findFirst({ where: { id, user_id: userId } });
   if (!doc) {
@@ -39,8 +40,8 @@ export const getKnowledgeDoc = asyncHandler(async (req: Request, res: Response) 
 });
 
 // POST /api/v1/knowledge
-export const createKnowledgeDoc = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const createKnowledgeDoc = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const { title, content, category, is_pinned, tags } = req.body;
 
   if (!title || typeof title !== 'string' || title.trim() === '') {
@@ -63,9 +64,9 @@ export const createKnowledgeDoc = asyncHandler(async (req: Request, res: Respons
 });
 
 // PATCH /api/v1/knowledge/:id
-export const updateKnowledgeDoc = asyncHandler(async (req: Request, res: Response) => {
+export const updateKnowledgeDoc = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.knowledgeDoc.findFirst({ where: { id, user_id: userId } });
   if (!existing) {
@@ -90,9 +91,9 @@ export const updateKnowledgeDoc = asyncHandler(async (req: Request, res: Respons
 });
 
 // DELETE /api/v1/knowledge/:id
-export const deleteKnowledgeDoc = asyncHandler(async (req: Request, res: Response) => {
+export const deleteKnowledgeDoc = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.knowledgeDoc.findFirst({ where: { id, user_id: userId } });
   if (!existing) {

@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middlewares/auth';
 import prisma from '../db';
 import { asyncHandler } from '../middlewares/errorMiddleware';
 
@@ -10,8 +11,8 @@ const getDefaultUserId = async (): Promise<string> => {
 
 // GET /api/v1/analytics/summary
 // Returns dashboard aggregate: XP, streak, tasks completed today, focus time today, upcoming deadlines
-export const getDashboardSummary = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const getDashboardSummary = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
 
   const now = new Date();
   const startOfDay = new Date(now); startOfDay.setUTCHours(0, 0, 0, 0);

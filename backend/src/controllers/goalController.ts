@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middlewares/auth';
 import prisma from '../db';
 import { asyncHandler } from '../middlewares/errorMiddleware';
 
@@ -9,8 +10,8 @@ const getDefaultUserId = async (): Promise<string> => {
 };
 
 // GET /api/v1/goals
-export const getGoals = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const getGoals = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const goals = await prisma.goal.findMany({
     where: { user_id: userId },
     orderBy: { created_at: 'desc' },
@@ -19,8 +20,8 @@ export const getGoals = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // POST /api/v1/goals
-export const createGoal = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const createGoal = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const { title, description, deadline, category, target_date, milestones } = req.body;
 
   if (!title || typeof title !== 'string' || title.trim() === '') {
@@ -44,9 +45,9 @@ export const createGoal = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // PATCH /api/v1/goals/:id
-export const updateGoal = asyncHandler(async (req: Request, res: Response) => {
+export const updateGoal = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.goal.findFirst({ where: { id, user_id: userId } });
   if (!existing) {
@@ -74,9 +75,9 @@ export const updateGoal = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // DELETE /api/v1/goals/:id
-export const deleteGoal = asyncHandler(async (req: Request, res: Response) => {
+export const deleteGoal = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.goal.findFirst({ where: { id, user_id: userId } });
   if (!existing) {

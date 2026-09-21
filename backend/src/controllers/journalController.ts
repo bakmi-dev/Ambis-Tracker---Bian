@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middlewares/auth';
 import prisma from '../db';
 import { asyncHandler } from '../middlewares/errorMiddleware';
 
@@ -9,8 +10,8 @@ const getDefaultUserId = async (): Promise<string> => {
 };
 
 // GET /api/v1/journal
-export const getJournalEntries = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const getJournalEntries = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const entries = await prisma.journalEntry.findMany({
     where: { user_id: userId },
     orderBy: { entry_date: 'desc' },
@@ -19,8 +20,8 @@ export const getJournalEntries = asyncHandler(async (req: Request, res: Response
 });
 
 // POST /api/v1/journal
-export const createJournalEntry = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const createJournalEntry = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const { title, content, entry_date, emotion_tag } = req.body;
 
   if (!content || typeof content !== 'string' || content.trim() === '') {
@@ -42,9 +43,9 @@ export const createJournalEntry = asyncHandler(async (req: Request, res: Respons
 });
 
 // PATCH /api/v1/journal/:id
-export const updateJournalEntry = asyncHandler(async (req: Request, res: Response) => {
+export const updateJournalEntry = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.journalEntry.findFirst({ where: { id, user_id: userId } });
   if (!existing) {
@@ -68,9 +69,9 @@ export const updateJournalEntry = asyncHandler(async (req: Request, res: Respons
 });
 
 // DELETE /api/v1/journal/:id
-export const deleteJournalEntry = asyncHandler(async (req: Request, res: Response) => {
+export const deleteJournalEntry = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.journalEntry.findFirst({ where: { id, user_id: userId } });
   if (!existing) {

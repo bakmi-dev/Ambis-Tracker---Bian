@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middlewares/auth';
 import prisma from '../db';
 import { asyncHandler } from '../middlewares/errorMiddleware';
 
@@ -9,8 +10,8 @@ const getDefaultUserId = async (): Promise<string> => {
 };
 
 // GET /api/v1/projects
-export const getProjects = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const getProjects = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const projects = await prisma.project.findMany({
     where: { user_id: userId },
     include: { tasks: true },
@@ -20,8 +21,8 @@ export const getProjects = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // POST /api/v1/projects
-export const createProject = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const createProject = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const {
     title, description, deadline, status,
     priority, progress_percent, logo_url, category,
@@ -56,9 +57,9 @@ export const createProject = asyncHandler(async (req: Request, res: Response) =>
 });
 
 // PATCH /api/v1/projects/:id
-export const updateProject = asyncHandler(async (req: Request, res: Response) => {
+export const updateProject = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.project.findFirst({ where: { id, user_id: userId } });
   if (!existing) {
@@ -103,9 +104,9 @@ export const updateProject = asyncHandler(async (req: Request, res: Response) =>
 });
 
 // DELETE /api/v1/projects/:id
-export const deleteProject = asyncHandler(async (req: Request, res: Response) => {
+export const deleteProject = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.project.findFirst({ where: { id, user_id: userId } });
   if (!existing) {
@@ -120,9 +121,9 @@ export const deleteProject = asyncHandler(async (req: Request, res: Response) =>
 // --- ProjectTask Sub-routes ---
 
 // POST /api/v1/projects/:projectId/tasks
-export const createProjectTask = asyncHandler(async (req: Request, res: Response) => {
+export const createProjectTask = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { projectId } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const project = await prisma.project.findFirst({ where: { id: projectId, user_id: userId } });
   if (!project) {
@@ -150,7 +151,7 @@ export const createProjectTask = asyncHandler(async (req: Request, res: Response
 });
 
 // PATCH /api/v1/projects/:projectId/tasks/:taskId
-export const updateProjectTask = asyncHandler(async (req: Request, res: Response) => {
+export const updateProjectTask = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { projectId, taskId } = req.params;
 
   const existing = await prisma.projectTask.findFirst({ where: { id: taskId, project_id: projectId } });
@@ -176,7 +177,7 @@ export const updateProjectTask = asyncHandler(async (req: Request, res: Response
 });
 
 // DELETE /api/v1/projects/:projectId/tasks/:taskId
-export const deleteProjectTask = asyncHandler(async (req: Request, res: Response) => {
+export const deleteProjectTask = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { projectId, taskId } = req.params;
 
   const existing = await prisma.projectTask.findFirst({ where: { id: taskId, project_id: projectId } });

@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middlewares/auth';
 import prisma from '../db';
 import { asyncHandler } from '../middlewares/errorMiddleware';
 
@@ -9,8 +10,8 @@ const getDefaultUserId = async (): Promise<string> => {
 };
 
 // GET /api/v1/rituals
-export const getRituals = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const getRituals = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
 
@@ -37,8 +38,8 @@ export const getRituals = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // POST /api/v1/rituals
-export const createRitual = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const createRitual = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const { title, target_minutes } = req.body;
 
   if (!title || typeof title !== 'string' || title.trim() === '') {
@@ -58,9 +59,9 @@ export const createRitual = asyncHandler(async (req: Request, res: Response) => 
 });
 
 // PATCH /api/v1/rituals/:id/toggle
-export const toggleRitual = asyncHandler(async (req: Request, res: Response) => {
+export const toggleRitual = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.dailyRitual.findFirst({ where: { id, user_id: userId } });
   if (!existing) {
@@ -109,9 +110,9 @@ export const toggleRitual = asyncHandler(async (req: Request, res: Response) => 
 });
 
 // PATCH /api/v1/rituals/:id (update title/target_minutes)
-export const updateRitual = asyncHandler(async (req: Request, res: Response) => {
+export const updateRitual = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
   const { title, target_minutes } = req.body;
 
   const existing = await prisma.dailyRitual.findFirst({ where: { id, user_id: userId } });
@@ -132,9 +133,9 @@ export const updateRitual = asyncHandler(async (req: Request, res: Response) => 
 });
 
 // DELETE /api/v1/rituals/:id
-export const deleteRitual = asyncHandler(async (req: Request, res: Response) => {
+export const deleteRitual = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.dailyRitual.findFirst({ where: { id, user_id: userId } });
   if (!existing) {

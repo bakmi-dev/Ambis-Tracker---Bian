@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middlewares/auth';
 import prisma from '../db';
 import { asyncHandler } from '../middlewares/errorMiddleware';
 
@@ -9,8 +10,8 @@ const getDefaultUserId = async (): Promise<string> => {
 };
 
 // GET /api/v1/competitions
-export const getCompetitions = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const getCompetitions = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const competitions = await prisma.competition.findMany({
     where: { user_id: userId },
     orderBy: { created_at: 'desc' },
@@ -19,8 +20,8 @@ export const getCompetitions = asyncHandler(async (req: Request, res: Response) 
 });
 
 // POST /api/v1/competitions
-export const createCompetition = asyncHandler(async (req: Request, res: Response) => {
-  const userId = await getDefaultUserId();
+export const createCompetition = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
   const { title, description, organizer, type, deadline, timeline, outcome, links, documentation_images } = req.body;
 
   if (!title || typeof title !== 'string' || title.trim() === '') {
@@ -47,9 +48,9 @@ export const createCompetition = asyncHandler(async (req: Request, res: Response
 });
 
 // PATCH /api/v1/competitions/:id
-export const updateCompetition = asyncHandler(async (req: Request, res: Response) => {
+export const updateCompetition = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.competition.findFirst({ where: { id, user_id: userId } });
   if (!existing) {
@@ -79,9 +80,9 @@ export const updateCompetition = asyncHandler(async (req: Request, res: Response
 });
 
 // DELETE /api/v1/competitions/:id
-export const deleteCompetition = asyncHandler(async (req: Request, res: Response) => {
+export const deleteCompetition = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const userId = await getDefaultUserId();
+  const userId = req.user!.id;
 
   const existing = await prisma.competition.findFirst({ where: { id, user_id: userId } });
   if (!existing) {
