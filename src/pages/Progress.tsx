@@ -88,8 +88,8 @@ const Progress = () => {
         const activeComps = compRes.data.filter((c: any) => c.status === 'active' || c.status === 'preparation' || c.status === 'preparing').length;
         
         setMetrics({
-          xp: analyticsRes.data.totalXP || 0,
-          streak: analyticsRes.data.currentStreak || 0,
+          xp: analyticsRes.data.total_xp || 0,
+          streak: analyticsRes.data.current_streak || 0,
           studyMinutes: totalFocus,
           tasksCompleted: completedTasks,
           learningPaths: activeLearning > 0 ? activeLearning : learningRes.data.length || 0,

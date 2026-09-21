@@ -91,7 +91,7 @@ const Journal = () => {
     try {
       setIsLoading(true);
       const res = await journalApi.getAll();
-      setEntries(res.data.sort((a, b) => new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime()));
+      setEntries(res.data.sort((a: any, b: any) => new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime()));
     } catch (error) {
       console.error('Error fetching journal data:', error);
     } finally {
