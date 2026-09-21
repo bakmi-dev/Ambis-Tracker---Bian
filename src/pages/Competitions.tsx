@@ -176,6 +176,8 @@ const Competitions = () => {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCompId, setEditingCompId] = useState<string | null>(null);
+  const [showBulkPasteReq, setShowBulkPasteReq] = useState(false);
+  const [bulkPasteReqText, setBulkPasteReqText] = useState('');
   const [form, setForm] = useState({
     title: '',
     organizer: '',
@@ -208,6 +210,8 @@ const Competitions = () => {
 
   const openEditModal = (comp: Competition) => {
     setEditingCompId(comp.id);
+    setShowBulkPasteReq(false);
+    setBulkPasteReqText('');
     setForm({
       title: comp.title,
       organizer: comp.organizer,
@@ -260,6 +264,8 @@ const Competitions = () => {
 
       setIsModalOpen(false);
       setEditingCompId(null);
+      setShowBulkPasteReq(false);
+      setBulkPasteReqText('');
       setForm({
         title: '',
         organizer: '',
@@ -321,6 +327,36 @@ const Competitions = () => {
     } catch (err) {
       console.error(err);
       fetchCompetitions();
+    }
+  };
+
+  const handleBulkPasteReq = () => {
+    const lines = bulkPasteReqText.split('\n');
+    const newReqs = lines.map(line => {
+      let cleanTitle = line.trim();
+      cleanTitle = cleanTitle.replace(/^(?:\d+[\.\)]\s*|-\s*|\*\s*)/, '').trim();
+      return cleanTitle;
+    }).filter(t => t.length > 0);
+
+    if (newReqs.length > 0) {
+      const addedReqs = newReqs.map((t, i) => ({
+        id: Date.now().toString() + i,
+        title: t,
+        isChecked: false
+      }));
+      
+      setForm(prev => {
+        let current = prev.checklist;
+        if (current.length === 1 && current[0].title === '') {
+          current = [];
+        }
+        return {
+          ...prev,
+          checklist: [...current, ...addedReqs]
+        };
+      });
+      setBulkPasteReqText('');
+      setShowBulkPasteReq(false);
     }
   };
 
@@ -786,8 +822,32 @@ const Competitions = () => {
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-semibold uppercase tracking-wider text-outline">Persyaratan Submisi / Checklist</label>
-                  <button onClick={() => setForm(p => ({...p, checklist: [...p.checklist, {id: Date.now().toString(), title: '', isChecked: false}]}))} className="text-primary text-xs font-semibold hover:text-primary-fixed cursor-pointer">+ Tambah Dokumen</button>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setShowBulkPasteReq(!showBulkPasteReq)} className="text-secondary text-xs font-semibold hover:text-secondary-fixed cursor-pointer flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">content_paste</span> {showBulkPasteReq ? 'Tutup Bulk Paste' : 'Bulk Paste (AI)'}
+                    </button>
+                    <button onClick={() => setForm(p => ({...p, checklist: [...p.checklist, {id: Date.now().toString(), title: '', isChecked: false}]}))} className="text-primary text-xs font-semibold hover:text-primary-fixed cursor-pointer flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">add</span> Tambah Dokumen
+                    </button>
+                  </div>
                 </div>
+                {showBulkPasteReq && (
+                  <div className="mb-3 p-3 bg-surface-container/30 border border-secondary/30 rounded-xl space-y-2">
+                    <label className="block text-[11px] font-semibold text-secondary uppercase tracking-wider">Paste Teks dari AI (Baris per baris)</label>
+                    <textarea
+                      value={bulkPasteReqText}
+                      onChange={e => setBulkPasteReqText(e.target.value)}
+                      className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-secondary resize-none"
+                      rows={4}
+                      placeholder="1. Proposal PDF&#10;2. Pitch Deck PPT&#10;- Atau format bullet list"
+                    />
+                    <div className="flex justify-end">
+                      <button onClick={handleBulkPasteReq} className="px-3 py-1.5 rounded-lg bg-secondary text-on-secondary text-xs font-semibold flex items-center gap-1 hover:bg-secondary-fixed transition-colors">
+                        <span className="material-symbols-outlined text-[14px]">auto_awesome</span> Konversi Teks
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-2">
                   {form.checklist.map((m, idx) => (
                     <div key={m.id} className="flex items-center gap-2">

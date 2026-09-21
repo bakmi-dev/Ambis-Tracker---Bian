@@ -106,6 +106,8 @@ const Goals = () => {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
+  const [showBulkPasteMilestone, setShowBulkPasteMilestone] = useState(false);
+  const [bulkPasteMilestoneText, setBulkPasteMilestoneText] = useState('');
   const [formGoal, setFormGoal] = useState<{
     title: string;
     category: string;
@@ -198,6 +200,8 @@ const Goals = () => {
 
   const openEditModal = (goal: Goal) => {
     setEditingGoalId(goal.id);
+    setShowBulkPasteMilestone(false);
+    setBulkPasteMilestoneText('');
     setFormGoal({
       title: goal.title,
       category: goal.categoryId,
@@ -240,6 +244,8 @@ const Goals = () => {
 
       setIsModalOpen(false);
       setEditingGoalId(null);
+      setShowBulkPasteMilestone(false);
+      setBulkPasteMilestoneText('');
       setFormGoal({
         title: '',
         category: 'career',
@@ -271,6 +277,37 @@ const Goals = () => {
       ...prev,
       milestones: [...prev.milestones, { id: Date.now().toString(), title: '', status: 'TODO' }]
     }));
+  };
+
+  const handleBulkPasteMilestone = () => {
+    const lines = bulkPasteMilestoneText.split('\n');
+    const newMilestones = lines.map(line => {
+      let cleanTitle = line.trim();
+      // Bersihkan numbering dan bullet points
+      cleanTitle = cleanTitle.replace(/^(?:\d+[\.\)]\s*|-\s*|\*\s*)/, '').trim();
+      return cleanTitle;
+    }).filter(t => t.length > 0);
+
+    if (newMilestones.length > 0) {
+      const addedMilestones = newMilestones.map((t, i) => ({
+        id: Date.now().toString() + i,
+        title: t,
+        status: 'TODO' as const
+      }));
+      
+      setFormGoal(prev => {
+        let current = prev.milestones;
+        if (current.length === 1 && current[0].title === '') {
+          current = [];
+        }
+        return {
+          ...prev,
+          milestones: [...current, ...addedMilestones]
+        };
+      });
+      setBulkPasteMilestoneText('');
+      setShowBulkPasteMilestone(false);
+    }
   };
 
   // Telemetry Calculations
@@ -731,10 +768,32 @@ const Goals = () => {
                       </span>
                     )}
                   </div>
-                  <button onClick={handleAddMilestoneInput} className="text-primary text-xs font-semibold hover:text-primary-fixed cursor-pointer flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">add</span> Tambah Milestone
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setShowBulkPasteMilestone(!showBulkPasteMilestone)} className="text-secondary text-xs font-semibold hover:text-secondary-fixed cursor-pointer flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">content_paste</span> {showBulkPasteMilestone ? 'Tutup Bulk Paste' : 'Bulk Paste (AI)'}
+                    </button>
+                    <button onClick={handleAddMilestoneInput} className="text-primary text-xs font-semibold hover:text-primary-fixed cursor-pointer flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">add</span> Tambah Milestone
+                    </button>
+                  </div>
                 </div>
+                {showBulkPasteMilestone && (
+                  <div className="mb-3 p-3 bg-surface-container/30 border border-secondary/30 rounded-xl space-y-2">
+                    <label className="block text-[11px] font-semibold text-secondary uppercase tracking-wider">Paste Teks dari AI (Baris per baris)</label>
+                    <textarea
+                      value={bulkPasteMilestoneText}
+                      onChange={e => setBulkPasteMilestoneText(e.target.value)}
+                      className="w-full bg-surface-container text-on-surface px-3 py-2 rounded-lg text-sm border border-neutral-800/50 focus:outline-none focus:ring-2 focus:ring-secondary resize-none"
+                      rows={4}
+                      placeholder="1. Selesaikan modul AI&#10;2. Push ke Github&#10;- Atau format bullet list"
+                    />
+                    <div className="flex justify-end">
+                      <button onClick={handleBulkPasteMilestone} className="px-3 py-1.5 rounded-lg bg-secondary text-on-secondary text-xs font-semibold flex items-center gap-1 hover:bg-secondary-fixed transition-colors">
+                        <span className="material-symbols-outlined text-[14px]">auto_awesome</span> Konversi Teks
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-2">
                   {formGoal.milestones.map((m, idx) => (
                     <div key={m.id} className="flex items-center gap-2">
