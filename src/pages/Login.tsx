@@ -136,7 +136,7 @@ const Login = () => {
           if (token) setToken(token);
           
           setIsSuccess(true);
-          setLogs((prev) => [...prev, '> AKSES DIIZINKAN. MEMUAT COMMAND DECK...']);
+          setLogs((prev) => [...prev, `> Login berhasil! Selamat datang kembali, ${userData.name || 'Operator'}.`]);
           
           setTimeout(() => {
             navigate('/dashboard');
@@ -205,9 +205,9 @@ const Login = () => {
               {logs.map((log, index) => (
                 <div key={index} className="flex items-start">
                   <span className={
-                    log.includes('ERROR') || log.includes('ERR_AUTH')
+                    log.includes('ERROR') || log.includes('ERR_AUTH') || log.includes('salah')
                       ? 'text-[#ff5f57]'
-                      : log.includes('AKSES DIIZINKAN') || log.includes('MEMUAT') || log.includes('TERVERIFIKASI') || log.includes('BERHASIL')
+                      : log.includes('AKSES DIIZINKAN') || log.includes('MEMUAT') || log.includes('TERVERIFIKASI') || log.includes('BERHASIL') || log.includes('Login berhasil')
                         ? 'text-[#28c840]'
                         : log.includes('MODUL AUTENTIKASI') || log.includes('MENUNGGU INPUT')
                           ? 'text-[#4cd7f6]'

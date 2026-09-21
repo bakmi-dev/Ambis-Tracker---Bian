@@ -67,7 +67,7 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     const data = text ? JSON.parse(text) : { success: true, data: [] };
     
     // Toast if backend actually worked
-    if (options?.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method)) {
+    if (!url.startsWith('/auth') && options?.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method)) {
       if (options.method === 'DELETE') showToast('Data berhasil dihapus (Cloud)!');
       else if (options.body && Object.keys(JSON.parse(options.body as string)).length > 2) showToast('Data berhasil disimpan (Cloud)!');
       else showToast('Data berhasil diperbarui (Cloud)!');

@@ -122,6 +122,7 @@ const Register = () => {
           setLogs(prev => [
             ...prev,
             `> IDENTITAS TERDAFTAR: ${userData.email || registerEmail}`,
+            `> Selamat datang, ${userData.name}!`,
             '> INISIALISASI SESI OPERATOR: BERHASIL.',
             '> OTORISASI COMMAND DECK DIBERIKAN.',
             '> MENGALIHKAN KE DASHBOARD...',
@@ -310,9 +311,9 @@ const Register = () => {
               {logs.map((log, index) => (
                 <div key={index}>
                   <span className={
-                    log.includes('ERROR') ? 'text-[#ff5f57]' :
-                    log.includes('TERVERIFIKASI') || log.includes('SELESAI') || log.includes('BERHASIL') ? 'text-[#28c840]' :
-                    log.includes('MEMUAT') ? 'text-[#28c840]' :
+                    log.includes('ERROR') || log.includes('ERR_') || log.includes('salah') ? 'text-[#ff5f57]' :
+                    log.includes('TERVERIFIKASI') || log.includes('SELESAI') || log.includes('BERHASIL') || log.includes('Selamat datang') ? 'text-[#28c840]' :
+                    log.includes('MEMUAT') || log.includes('TERDAFTAR') ? 'text-[#28c840]' :
                     'text-secondary'
                   }>{log}</span>
                 </div>

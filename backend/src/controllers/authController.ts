@@ -203,7 +203,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const result = await query('SELECT * FROM users WHERE email = $1', [email]);
     if (result.rows.length === 0) {
-      res.status(401).json({ success: false, message: 'Kredensial tidak valid' });
+      res.status(401).json({ success: false, message: 'Email atau password salah.' });
       return;
     }
 
@@ -220,7 +220,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
-      res.status(401).json({ success: false, message: 'Kredensial tidak valid' });
+      res.status(401).json({ success: false, message: 'Email atau password salah.' });
       return;
     }
 
