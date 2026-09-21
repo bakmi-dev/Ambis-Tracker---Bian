@@ -9,7 +9,8 @@ const Header = () => {
     setIsAudioModalOpen,
     isPlayingBinaural,
     audioMode,
-    setIsSettingsModalOpen
+    setIsSettingsModalOpen,
+    logout
   } = useGlobalState();
   const {
     isActive: isFocusActive,
@@ -153,6 +154,14 @@ const Header = () => {
                   >
                     <span className="material-symbols-outlined text-[18px] text-outline">settings</span>
                     Pengaturan
+                  </button>
+                  <div className="border-t border-surface-container-highest my-1"></div>
+                  <button 
+                    onClick={() => { logout(); setIsProfileOpen(false); }}
+                    className="w-full px-4 py-2 text-left font-body-sm text-error hover:bg-error-container/20 flex items-center gap-3 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">logout</span>
+                    Keluar Sistem
                   </button>
                 </div>
               )}

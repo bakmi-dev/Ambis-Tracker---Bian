@@ -91,6 +91,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
+    window.location.href = '/login';
   };
 
   // Audio State
