@@ -158,6 +158,17 @@ const mapBackendToFrontend = (bc: any): Competition => {
 };
 
 const Competitions = () => {
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const [activeTab, setActiveTab] = useState('all');
   const [sortOption, setSortOption] = useState('deadline');
   

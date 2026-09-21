@@ -19,6 +19,20 @@ interface ChecklistTask {
 }
 
 const Today = () => {
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsStudyModalOpen(false);
+        setIsTaskModalOpen(false);
+        setIsRitualModalOpen(false);
+        setIsDurationModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const navigate = useNavigate();
   const [deadlines, setDeadlines] = useState<CrucialDeadlineItem[]>([]);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);

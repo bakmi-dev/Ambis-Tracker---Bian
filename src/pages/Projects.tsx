@@ -90,6 +90,17 @@ const mapBackendToFrontend = (bp: any): Project => {
 };
 
 const Projects = () => {
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const [activeStatusTab, setActiveStatusTab] = useState('all');
   const [sortOption, setSortOption] = useState('priority');
   

@@ -3,6 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { taskApi } from '../api';
 
 const Tasks = () => {
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsTaskModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const navigate = useNavigate();
   const [allTasks, setAllTasks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);

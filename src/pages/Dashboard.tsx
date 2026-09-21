@@ -90,6 +90,20 @@ const BIMBEL_RECOMMENDATIONS = [
 const GALLERY = BIMBEL_RECOMMENDATIONS;
 
 const Dashboard = () => {
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowRitualModal(false);
+        setShowCompModal(false);
+        setShowTaskModal(false);
+        setIsAudioModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const navigate = useNavigate();
 
   // Data states

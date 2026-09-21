@@ -16,6 +16,17 @@ interface ProfileData {
 }
 
 const Progress = () => {
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsEditModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const { user, setUser } = useGlobalState();
   const [metrics, setMetrics] = useState({
     xp: 0,

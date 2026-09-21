@@ -88,6 +88,17 @@ const mapBackendGoalToFrontend = (bg: any): Goal => {
 };
 
 const Goals = () => {
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('all');
 

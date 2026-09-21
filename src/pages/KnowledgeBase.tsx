@@ -19,6 +19,18 @@ interface ExternalLinkData {
 }
 
 const KnowledgeBase = () => {
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowExtModal(false);
+        setShowNoteModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const { user } = useGlobalState();
   const [activeDoc, setActiveDoc] = useState<KnowledgeDoc | null>(null);
   const [docs, setDocs] = useState<KnowledgeDoc[]>([]);
