@@ -6,15 +6,16 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction
 ) => {
-  console.error('[ERROR]', err.stack || err.message);
+  console.error("API_FATAL_ERROR:", err);
 
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
 
   res.status(statusCode).json({
     success: false,
-    error: message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    message: message,
+    stack: err.stack,
+    detail: "Gagal menyimpan ke database Neon",
     code: err.code,
   });
 };
