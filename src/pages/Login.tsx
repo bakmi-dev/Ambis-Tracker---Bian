@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '../api';
 import { useGlobalState } from '../context/GlobalContext';
 
@@ -38,15 +38,25 @@ const Login = () => {
     '> MENUNGGU INPUT KREDENSIAL DARI PENGGUNA.',
   ];
 
+  const location = useLocation();
+
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const reason = params.get('reason');
     let delay = 0;
-    initialLogs.forEach((log) => {
+
+    const dynamicLogs = [...initialLogs];
+    if (reason === 'session_expired') {
+      dynamicLogs.push('> ERROR: Sesi telah berakhir atau akun tidak terdaftar. Silakan daftar kembali.');
+    }
+
+    dynamicLogs.forEach((log) => {
       delay += 700;
       setTimeout(() => {
         setLogs((prev) => [...prev, log]);
       }, delay);
     });
-  }, []);
+  }, [location.search]);
 
   // ─── Google sign-in callback ───
   const handleGoogleCredentialResponse = useCallback(async (response: any) => {

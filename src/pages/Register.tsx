@@ -81,12 +81,13 @@ const Register = () => {
     });
   }, []);
 
-  // If user is already logged in and onboarded, go to dashboard
-  useEffect(() => {
-    if (user && user.is_onboarded) {
-      navigate('/dashboard');
-    }
-  }, [user, navigate]);
+  // Do not automatically redirect on mount to allow manual logout or registration
+  // if the user has stale data.
+  // useEffect(() => {
+  //   if (user && user.is_onboarded) {
+  //     navigate('/dashboard');
+  //   }
+  // }, [user, navigate]);
 
   // ─── Handle Email/Password Registration ───
   const handleEmailRegister = async (e: React.FormEvent) => {

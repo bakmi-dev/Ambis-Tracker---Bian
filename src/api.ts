@@ -212,6 +212,7 @@ export const profileApi = {
 
 // ==================== AUTH ====================
 export const authApi = {
+  getMe: () => request<{ success: boolean; user: any }>('/auth/me'),
   login: (body: { email: string; password?: string }) =>
     request<{ success: boolean; data: { user: any; token: string }; message?: string }>('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   register: (body: { name: string; email: string; password?: string }) =>

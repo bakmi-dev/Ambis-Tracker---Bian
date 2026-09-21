@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { authApi } from '../api';
 
 type AudioMode = 'spotify' | 'binaural';
 type WorkspaceType = string;
@@ -88,11 +89,30 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
+  const logout = (reason?: string) => {
     setUser(null);
     setToken(null);
-    window.location.href = '/login';
+    window.location.href = reason ? `/login?reason=${reason}` : '/login';
   };
+
+  // Verify session on mount
+  useEffect(() => {
+    const verifySession = async () => {
+      if (token) {
+        try {
+          const res = await authApi.getMe();
+          if (res.success && res.user) {
+            setUser(res.user); // Update with fresh data
+          } else {
+            logout('session_expired');
+          }
+        } catch (error) {
+          logout('session_expired');
+        }
+      }
+    };
+    verifySession();
+  }, []);
 
   // Audio State
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);

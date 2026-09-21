@@ -2,8 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
-import { randomUUID } from 'crypto';
-import { query } from '../config/db';
+import prisma from '../db';
 import { AuthRequest } from '../middlewares/auth';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'ambis_tracker_super_secret_jwt_key_2026';
@@ -40,56 +39,69 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
     const { sub: googleId, email, name, picture } = payload;
 
     // Check if user exists by google_id or email
-    const existingUser = await query(
-      'SELECT * FROM users WHERE google_id = $1 OR email = $2',
-      [googleId, email]
-    );
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { google_id: googleId },
+          { email: email }
+        ]
+      }
+    });
 
-    if (existingUser.rows.length > 0) {
+    if (user) {
       // ── User exists: login ──
-      const user = existingUser.rows[0];
-
       // Update google_id and avatar if they came via a manual registration before
       if (!user.google_id) {
-        await query('UPDATE users SET google_id = $1, avatar_url = $2 WHERE id = $3', [googleId, picture, user.id]);
-        user.google_id = googleId;
-        user.avatar_url = picture;
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            google_id: googleId,
+            avatar_url: picture || null
+          }
+        });
       }
 
       const token = generateToken(user.id);
-      delete user.password_hash;
+      
+      // Exclude password_hash
+      const { password_hash, ...safeUser } = user;
 
       res.status(200).json({
         success: true,
         isNewUser: false,
-        user,
+        user: safeUser,
         token,
         data: {
-          user,
+          user: safeUser,
           token
         }
       });
     } else {
       // ── New user: create with is_onboarded = true ──
-      const userId = randomUUID();
       const defaultWorkspace = `${name || 'Operator'}'s Command Deck`;
-      const insertResult = await query(
-        `INSERT INTO users (id, google_id, email, name, avatar_url, is_onboarded, workspace_name, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, TRUE, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-         RETURNING id, google_id, email, name, avatar_url, role_track, workspace_name, focus_target_hours, is_onboarded, xp, current_streak, created_at, updated_at`,
-        [userId, googleId, email, name || 'User', picture || null, defaultWorkspace]
-      );
+      
+      const newUser = await prisma.user.create({
+        data: {
+          google_id: googleId,
+          email: email,
+          name: name || 'User',
+          avatar_url: picture || null,
+          is_onboarded: true,
+          workspace_name: defaultWorkspace,
+          password_hash: '', // Set empty or dummy for Google auth
+        }
+      });
 
-      const newUser = insertResult.rows[0];
       const token = generateToken(newUser.id);
+      const { password_hash, ...safeUser } = newUser;
 
       res.status(201).json({
         success: true,
-        isNewUser: false,
-        user: newUser,
+        isNewUser: true,
+        user: safeUser,
         token,
         data: {
-          user: newUser,
+          user: safeUser,
           token
         }
       });
@@ -116,27 +128,22 @@ export const completeOnboarding = async (req: AuthRequest, res: Response): Promi
       return;
     }
 
-    const result = await query(
-      `UPDATE users SET
-        name = $1,
-        role_track = $2,
-        workspace_name = $3,
-        focus_target_hours = $4,
-        is_onboarded = TRUE,
-        updated_at = NOW()
-       WHERE id = $5
-       RETURNING id, google_id, email, name, avatar_url, role_track, workspace_name, focus_target_hours, is_onboarded, xp, current_streak, created_at`,
-      [name, role_track || null, workspace_name || `${name}'s Command Deck`, focus_target_hours || 4, userId]
-    );
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: name,
+        role_track: role_track || null,
+        workspace_name: workspace_name || `${name}'s Command Deck`,
+        focus_target_hours: focus_target_hours || 4,
+        is_onboarded: true,
+      }
+    });
 
-    if (result.rows.length === 0) {
-      res.status(404).json({ success: false, message: 'User not found' });
-      return;
-    }
+    const { password_hash, ...safeUser } = updatedUser;
 
     res.status(200).json({
       success: true,
-      user: result.rows[0]
+      user: safeUser
     });
   } catch (error) {
     console.error('[Auth Onboarding] Error:', error);
@@ -155,33 +162,38 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Cek apakah user sudah ada
-    const userExists = await query('SELECT * FROM users WHERE email = $1', [email]);
-    if (userExists.rows.length > 0) {
+    const userExists = await prisma.user.findUnique({
+      where: { email: email }
+    });
+
+    if (userExists) {
       res.status(400).json({ success: false, message: 'Email sudah terdaftar. Silakan login.' });
       return;
     }
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
-    const userId = randomUUID();
     const defaultWorkspace = `${name}'s Command Deck`;
 
-    const result = await query(
-      `INSERT INTO users (id, name, email, password_hash, is_onboarded, workspace_name, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, TRUE, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-       RETURNING id, email, name, role_track, workspace_name, focus_target_hours, is_onboarded, created_at, updated_at`,
-      [userId, name, email, passwordHash, defaultWorkspace]
-    );
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password_hash: passwordHash,
+        is_onboarded: true,
+        workspace_name: defaultWorkspace,
+      }
+    });
 
-    const newUser = result.rows[0];
     const token = generateToken(newUser.id);
+    const { password_hash, ...safeUser } = newUser;
 
     res.status(201).json({
       success: true,
-      user: newUser,
+      user: safeUser,
       token,
       data: {
-        user: newUser,
+        user: safeUser,
         token
       }
     });
@@ -201,13 +213,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const result = await query('SELECT * FROM users WHERE email = $1', [email]);
-    if (result.rows.length === 0) {
+    const user = await prisma.user.findUnique({
+      where: { email: email }
+    });
+
+    if (!user) {
       res.status(401).json({ success: false, message: 'Email atau password salah.' });
       return;
     }
-
-    const user = result.rows[0];
 
     // Jika user dibuat dari Google Auth dan tidak punya password
     if (!user.password_hash) {
@@ -225,19 +238,45 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     const token = generateToken(user.id);
-    delete user.password_hash; // Jangan pernah mengirim hash password ke frontend
+    const { password_hash, ...safeUser } = user;
 
     res.status(200).json({
       success: true,
-      user,
+      user: safeUser,
       token,
       data: {
-        user,
+        user: safeUser,
         token
       }
     });
   } catch (error) {
     console.error('[Auth Login] Error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// ==================== GET CURRENT USER ====================
+export const getCurrentUser = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    const { password_hash, ...safeUser } = user;
+    res.status(200).json({ success: true, user: safeUser });
+  } catch (error) {
+    console.error('[Auth GetCurrentUser] Error:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
