@@ -88,7 +88,6 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
           avatar_url: picture || null,
           is_onboarded: true,
           workspace_name: defaultWorkspace,
-          password_hash: '', // Set empty or dummy for Google auth
         }
       });
 
